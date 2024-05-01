@@ -1,5 +1,6 @@
+import localFont from 'next/font/local'
 import React from 'react'
-import { PLAYBACKFont } from '../layout'
+const PLAYBACKFont = localFont({ src: '../../../public/fonts/playbackfont.ttf' })
 export default function NavBar() {
     return (
         <header className="">
