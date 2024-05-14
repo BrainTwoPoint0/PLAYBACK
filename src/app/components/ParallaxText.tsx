@@ -60,7 +60,7 @@ export function ParallaxText({ children, baseVelocity = 100 }: ParallaxProps) {
 
     return (
         <div className="overflow-hidden whitespace-nowrap flex">
-            <motion.div className="font-bold text-7xl uppercase flex" style={{ x }}>
+            <motion.div className="font-bold text-3xl md:text-7xl uppercase flex" style={{ x }}>
                 {Array.from({ length: repeatCount }).map((_, i) => (
                     <span key={i} className="mr-8" ref={i === 0 ? textRef : null}>
                         {children}
