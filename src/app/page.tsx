@@ -36,7 +36,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center overflow-hidden">
       <section className="container flex justify-center items-center my-10">
-        <h2 className="text-3xl font-bold mr-5">Here to Help: </h2>
+        <h2 className="text-2xl font-bold mr-3">Here to Help: </h2>
         <div className="flex flex-row items-center justify-center">
           <AnimatedTooltip items={people} />
         </div>
