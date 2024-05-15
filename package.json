@@ -10,10 +10,12 @@
   },
   "dependencies": {
     "@motionone/utils": "^10.17.0",
-    "framer-motion": "^11.1.9",
+    "clsx": "^2.1.1",
+    "framer-motion": "^11.2.2",
     "next": "14.2.3",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "tailwind-merge": "^2.3.0"
   },
   "devDependencies": {
     "@types/node": "^20",
