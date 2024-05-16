@@ -56,7 +56,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center overflow-hidden">
 
-      <section className="my-6 w-full flex flex-wrap items-center justify-center space-y-10">
+      <section className="my-6 w-full flex flex-wrap items-center justify-center gap-10">
         {partners.map((partner) => (
           <PinContainer key={partner.name}
             title={partner.title}
@@ -76,7 +76,7 @@ export default function Home() {
           </PinContainer>
         )
         )
-        },
+        }
       </section>
       <section className="container flex justify-center items-center my-10">
         <h2 className="text-2xl font-bold mr-3">Here to Help: </h2>
