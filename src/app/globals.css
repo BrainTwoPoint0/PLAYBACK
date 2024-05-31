@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 :root {
-  --night: #0A100D;
-  --ash-grey: #B9BAA3;
-  --timberwolf: #D6D5C9;
+  --night: #0a100d;
+  --ash-grey: #b9baa3;
+  --timberwolf: #d6d5c9;
 }
 
 body {
