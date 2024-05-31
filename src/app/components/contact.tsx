@@ -8,11 +8,6 @@ import { Textarea } from './ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/app/components/ui/radio-group';
 
 export function ContactForm() {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log('Form submitted');
-  };
-
   return (
     <div className="md:border border-[var(--timberwolf)]  max-w-md w-full mx-auto rounded-none md:rounded-2xl p-4 md:p-8 shadow-input bg-[var(--night)] mb-8">
       <h2 className="font-bold text-xl text-neutral-200">Join us</h2>
@@ -22,7 +17,6 @@ export function ContactForm() {
 
       <form
         className="my-8 flex flex-col items-start space-y-6"
-        onSubmit={handleSubmit}
         data-netlify="true"
         action="/success"
         name="contact"
