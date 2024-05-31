@@ -1,7 +1,5 @@
 'use client';
 
-import { SuccessIllustration } from '../components/success-illustration';
-
 export default function Home() {
   return (
     <main className="min-h-[80vh] mt-20">
