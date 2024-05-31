@@ -1,11 +1,9 @@
-"use client"
-import { ParallaxText } from "./components/ParallaxText";
-import Team from "./components/team";
-import Image from "next/image";
-import Venues from "./components/venues";
-import { Header } from "./components/header";
-
-
+'use client';
+import { ParallaxText } from './components/ParallaxText';
+import Team from './components/team';
+import Image from 'next/image';
+import Venues from './components/venues';
+import { Header } from './components/header';
 
 export default function Home() {
   return (

@@ -1,9 +1,3 @@
-
-
 export default function CorporateLeague() {
-  return (
-    <div>
-
-    </div>
-  )
+  return <div></div>;
 }
