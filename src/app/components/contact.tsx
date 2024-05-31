@@ -24,7 +24,9 @@ export function ContactForm() {
         className="my-8 flex flex-col items-start space-y-6"
         onSubmit={handleSubmit}
         data-netlify="true"
+        action="/success"
         name="contact"
+        method="POST"
       >
         <RadioGroup defaultValue="venue" className="mb-2">
           <Label className="mb-2">How am I?</Label>
