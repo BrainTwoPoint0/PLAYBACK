@@ -21,7 +21,14 @@ export function ContactForm() {
         action="/success"
         name="contact"
         method="POST"
+        netlify-honeypot="bot-field"
       >
+        <p className="hidden">
+          <label>
+            Don&rsquo;t fill this out if you&rsquo;re human: <input name="bot-field" />
+          </label>
+        </p>
+        <input type="hidden" name="form-name" value="contact" />
         <RadioGroup defaultValue="venue" className="mb-2">
           <Label className="mb-2">How am I?</Label>
           <div className="flex items-center space-x-2">
