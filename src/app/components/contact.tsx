@@ -21,8 +21,7 @@ export function ContactForm() {
         action="/success"
         name="contact"
         method="POST"
-        netlify-honeypot="bot-field"
-      >
+        netlify-honeypot="bot-field">
         <p className="hidden">
           <label>
             Don&rsquo;t fill this out if you&rsquo;re human: <input name="bot-field" />
