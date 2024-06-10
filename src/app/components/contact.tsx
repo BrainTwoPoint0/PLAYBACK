@@ -18,7 +18,7 @@ export function ContactForm() {
       <form
         className="my-8 flex flex-col items-start space-y-6"
         data-netlify="true"
-        action="/success"
+        action="/"
         name="contact"
         method="POST"
         netlify-honeypot="bot-field">
