@@ -18,13 +18,15 @@ export function ContactForm() {
       <form
         className="my-8 flex flex-col items-start space-y-6"
         data-netlify="true"
-        action="/"
+        action="/contact"
         name="contact"
         method="POST"
-        netlify-honeypot="bot-field">
+        netlify-honeypot="bot-field"
+      >
         <p className="hidden">
           <label>
-            Don&rsquo;t fill this out if you&rsquo;re human: <input name="bot-field" />
+            Don&rsquo;t fill this out if you&rsquo;re human:{' '}
+            <input name="bot-field" />
           </label>
         </p>
         <input type="hidden" name="form-name" value="contact" />
@@ -42,24 +44,46 @@ export function ContactForm() {
         <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
           <LabelInputContainer>
             <Label htmlFor="firstname">First name</Label>
-            <Input id="firstname" placeholder="Tyler" type="text" name='First Name' />
+            <Input
+              id="firstname"
+              placeholder="Tyler"
+              type="text"
+              name="First Name"
+            />
           </LabelInputContainer>
           <LabelInputContainer>
             <Label htmlFor="lastname">Last name</Label>
-            <Input id="lastname" placeholder="Durden" type="text" name='Last Name' />
+            <Input
+              id="lastname"
+              placeholder="Durden"
+              type="text"
+              name="Last Name"
+            />
           </LabelInputContainer>
         </div>
         <LabelInputContainer>
           <Label htmlFor="email">Email Address</Label>
-          <Input id="email" placeholder="projectmayhem@fc.com" type="email" name='E-Mail' required />
+          <Input
+            id="email"
+            placeholder="projectmayhem@fc.com"
+            type="email"
+            name="E-Mail"
+            required
+          />
         </LabelInputContainer>
         <LabelInputContainer>
           <Label htmlFor="company">Company</Label>
-          <Input id="company" placeholder="Alphabet LTD" type="text" name='Company' required />
+          <Input
+            id="company"
+            placeholder="Alphabet LTD"
+            type="text"
+            name="Company"
+            required
+          />
         </LabelInputContainer>
         <LabelInputContainer>
           <Label htmlFor="message">Message (optional)</Label>
-          <Textarea id="message" placeholder="Hi..." name='Message' />
+          <Textarea id="message" placeholder="Hi..." name="Message" />
         </LabelInputContainer>
         <button
           className="bg-gradient-to-br relative group/btn from-zinc-900 to-zinc-900 block bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
