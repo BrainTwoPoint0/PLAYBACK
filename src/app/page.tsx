@@ -10,10 +10,10 @@ export default function Home() {
     <main className="overflow-hidden">
       <Header />
       {/* <Venues /> */}
-      <section className="my-20">
+      {/* <section className="my-20">
         <ParallaxText baseVelocity={3}>Access The Moment</ParallaxText>
         <ParallaxText baseVelocity={-3}>Share The Memories</ParallaxText>
-      </section>
+      </section> */}
       {/* <Team /> */}
     </main>
   );
