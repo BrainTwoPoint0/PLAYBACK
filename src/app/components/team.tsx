@@ -1,5 +1,6 @@
 import React from 'react';
 import { AnimatedTooltip } from './ui/animated-tooltip';
+import SectionTitle from './ui/section-title';
 
 export default function Team() {
   const people = [
@@ -27,11 +28,12 @@ export default function Team() {
       designation: 'Operations',
       image: '/team/yuval.jpeg',
     },
+
   ];
   return (
-    <section className="container flex justify-center items-center my-10">
-      <h2 className="text-2xl font-bold mr-3">Here to Help: </h2>
-      <div className="flex flex-row items-center justify-center">
+    <section className="container my-5">
+      <SectionTitle title="Here to Help" />
+      <div className="flex flex-row flex-wrap items-center justify-center">
         <AnimatedTooltip items={people} />
       </div>
     </section>
