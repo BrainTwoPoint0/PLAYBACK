@@ -4,7 +4,7 @@ import SectionTitle from './ui/section-title'
 export const Partners = () => {
     return (
         <section className='container my-5'>
-            <SectionTitle title='Our Partners:' />
+            <SectionTitle title='Our Partners' />
             <div className='flex flex-wrap space-x-5 justify-center'>
                 <Image alt="SE FA Logo" src="/partners/soccerelite.svg" height={100} width={100} className='opacity-75 md:w-28' />
                 <Image alt="Forbes Logo" src="/partners/forbes.svg" height={100} width={100} className='opacity-75 md:w-28' />
