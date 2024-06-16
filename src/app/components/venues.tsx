@@ -40,11 +40,9 @@ export default function Venues() {
               <div className="text-base !m-0 !p-0 font-normal">
                 <span className="text-slate-500 ">{partner.address}</span>
               </div>
-              <Image
+              <img
                 className="flex flex-1 w-full rounded-lg mt-4"
                 src={partner.imageSrc}
-                height={100}
-                width={100}
                 alt={partner.name}
               />
             </div>
