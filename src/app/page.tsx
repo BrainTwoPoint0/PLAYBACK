@@ -4,6 +4,7 @@ import Team from './components/team';
 import Image from 'next/image';
 import Venues from './components/venues';
 import { Header } from './components/header';
+import { Partners } from './components/partners';
 
 export default function Home() {
   return (
@@ -15,6 +16,8 @@ export default function Home() {
         <ParallaxText baseVelocity={-3}>Share The Memories</ParallaxText>
       </section> */}
       {/* <Team /> */}
+      <Partners />
+
     </main>
   );
 }
