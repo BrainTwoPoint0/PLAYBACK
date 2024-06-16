@@ -14,15 +14,14 @@ export default function NavBar() {
           PLAYBACK
         </span>
       </Link>
-      <nav className="md:mr-auto md:ml-4 md:py-1 md:pl-4 md:border-l md:border-[var(--timberwolf)] flex-wrap items-center text-lg justify-center hidden md:flex">
+      {/* <nav className="md:mr-auto md:ml-4 md:py-1 md:pl-4 md:border-l md:border-[var(--timberwolf)] flex-wrap items-center text-lg justify-center hidden md:flex">
         <Link href="/corporateleague" className="mr-5 hover:text-white">
           The Corporate League
         </Link>
-      </nav>
+      </nav> */}
       <Link
         href="/contact"
-        className="text-[var(--night)] inline-flex items-center bg-[var(--ash-grey)] border-0 py-3 px-6 focus:outline-none hover:bg-[var(--timberwolf)] rounded text-base"
-      >
+        className="text-[var(--night)] inline-flex items-center bg-[var(--ash-grey)] border-0 py-3 px-6 focus:outline-none hover:bg-[var(--timberwolf)] rounded text-base">
         Get Started
         <svg
           fill="none"
