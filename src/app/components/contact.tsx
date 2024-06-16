@@ -52,12 +52,10 @@ export function ContactForm() {
           </span>
         )}
       </div>
-      <h2 className="font-bold text-xl text-neutral-200">Join us</h2>
-      <p className=" text-sm max-w-sm mt-2 text-neutral-300">
-        Become a PLAYBACK venue partner.
-      </p>
+      <h2 className="font-bold text-3xl text-neutral-200">Join us</h2>
+
       <form
-        className="my-8 flex flex-col items-start space-y-6"
+        className="my-2 flex flex-col items-start space-y-6"
         name="contact"
         onSubmit={handleFormSubmit}
       >
@@ -69,7 +67,7 @@ export function ContactForm() {
         </p>
         <input type="hidden" name="form-name" value="contact" />
         <RadioGroup defaultValue="venue" className="mb-2" name="who">
-          <Label className="mb-2">How am I?</Label>
+          <Label className="mb-2">Who am I?</Label>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="venue" id="r1" />
             <Label htmlFor="r1">Venue</Label>
@@ -78,27 +76,24 @@ export function ContactForm() {
             <RadioGroupItem value="camera_provider" id="r2" />
             <Label htmlFor="r2">Camera provider</Label>
           </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="league_organiser" id="r3" />
+            <Label htmlFor="r3">League Organiser</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="ambassador" id="r4" />
+            <Label htmlFor="r4">Potential Ambassador</Label>
+          </div>
         </RadioGroup>
-        <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
-          <LabelInputContainer>
-            <Label htmlFor="firstname">First name</Label>
-            <Input
-              id="firstname"
-              placeholder="Tyler"
-              type="text"
-              name="first_name"
-            />
-          </LabelInputContainer>
-          <LabelInputContainer>
-            <Label htmlFor="lastname">Last name</Label>
-            <Input
-              id="lastname"
-              placeholder="Durden"
-              type="text"
-              name="last_name"
-            />
-          </LabelInputContainer>
-        </div>
+        <LabelInputContainer>
+          <Label htmlFor="name">Full Name</Label>
+          <Input
+            id="name"
+            placeholder="Tyler Adams"
+            type="text"
+            name="name"
+          />
+        </LabelInputContainer>
         <LabelInputContainer>
           <Label htmlFor="email">Email Address</Label>
           <Input
