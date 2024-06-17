@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '../../utils/cn';
 
@@ -19,12 +19,33 @@ export const PinContainer = ({
   const [transform, setTransform] = useState(
     'translate(-50%,-50%) rotateX(0deg)'
   );
+  const [isHoverable, setIsHoverable] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(pointer: fine)');
+    setIsHoverable(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setIsHoverable(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange);
+    };
+  }, []);
 
   const onMouseEnter = () => {
-    setTransform('translate(-50%,-50%) rotateX(40deg) scale(0.8)');
+    if (isHoverable) {
+      setTransform('translate(-50%,-50%) rotateX(40deg) scale(0.8)');
+    }
   };
+
   const onMouseLeave = () => {
-    setTransform('translate(-50%,-50%) rotateX(0deg) scale(1)');
+    if (isHoverable) {
+      setTransform('translate(-50%,-50%) rotateX(0deg) scale(1)');
+    }
   };
 
   return (
@@ -52,7 +73,7 @@ export const PinContainer = ({
           <div className={cn(' relative z-50 ', className)}>{children}</div>
         </div>
       </div>
-      <PinPerspective title={title} href={href} />
+      <PinPerspective title={title} href={href} isHoverable={isHoverable} />
     </div>
   );
 };
@@ -60,14 +81,19 @@ export const PinContainer = ({
 export const PinPerspective = ({
   title,
   href,
+  isHoverable,
 }: {
   title?: string;
   href?: string;
+  isHoverable: boolean;
 }) => {
   return (
-    <motion.div className="pointer-events-none  w-96 h-80 flex items-center justify-center opacity-0 group-hover/pin:opacity-100 z-[60] transition duration-500">
-      <div className=" w-full h-full -mt-7 flex-none  inset-0">
-        <div className="absolute top-0 inset-x-0  flex justify-center">
+    <motion.div
+      className={`pointer-events-none  w-96 h-80 flex items-center justify-center ${isHoverable ? 'opacity-0 group-hover/pin:opacity-100' : 'opacity-0'
+        } z-[60] transition duration-500`}
+    >
+      <div className="w-full h-full -mt-7 flex-none inset-0">
+        <div className="absolute top-0 inset-x-0 flex justify-center">
           <a
             href={href}
             target={'_blank'}

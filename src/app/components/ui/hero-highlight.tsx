@@ -1,7 +1,7 @@
 'use client';
 import { cn } from '../../utils/cn';
-import { useMotionValue, motion, useMotionTemplate } from 'framer-motion';
-import React from 'react';
+import { useMotionValue, motion, useMotionTemplate, animate } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
 
 export const HeroHighlight = ({
   children,
@@ -14,18 +14,46 @@ export const HeroHighlight = ({
 }) => {
   let mouseX = useMotionValue(0);
   let mouseY = useMotionValue(0);
+  const [isHoverable, setIsHoverable] = useState(false);
 
-  function handleMouseMove({
-    currentTarget,
-    clientX,
-    clientY,
-  }: React.MouseEvent<HTMLDivElement>) {
-    if (!currentTarget) return;
-    let { left, top } = currentTarget.getBoundingClientRect();
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(pointer: fine)');
+    setIsHoverable(mediaQuery.matches);
 
-    mouseX.set(clientX - left);
-    mouseY.set(clientY - top);
-  }
+    const handleChange = (e: MediaQueryListEvent) => {
+      setIsHoverable(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isHoverable) {
+      const updatePosition = () => {
+        const randomX = Math.random() * window.innerWidth;
+        const randomY = Math.random() * window.innerHeight;
+        animate(mouseX, randomX, { duration: 2 });
+        animate(mouseY, randomY, { duration: 2 });
+      };
+
+      const interval = setInterval(updatePosition, 2000);
+      updatePosition();
+
+      return () => clearInterval(interval);
+    }
+  }, [isHoverable, mouseX, mouseY]);
+
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!isHoverable || !event.currentTarget) return;
+    const { left, top } = event.currentTarget.getBoundingClientRect();
+    mouseX.set(event.clientX - left);
+    mouseY.set(event.clientY - top);
+  };
+
   return (
     <div
       className={cn(
