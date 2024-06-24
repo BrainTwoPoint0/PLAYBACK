@@ -22,7 +22,7 @@ export default function NavBar() {
             PLAYBACK
           </span>
         </Link>
-        <NavigationMenu>
+        {/* <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem>
               <Link href="/docs" legacyBehavior passHref>
@@ -39,7 +39,7 @@ export default function NavBar() {
               </Link>
             </NavigationMenuItem>
           </NavigationMenuList>
-        </NavigationMenu>
+        </NavigationMenu> */}
       </div>
       {/* <nav className="md:mr-auto md:ml-4 md:py-1 md:pl-4 md:border-l md:border-[var(--timberwolf)] flex-wrap items-center text-lg justify-center hidden md:flex">
         <Link href="/corporateleague" className="mr-5 hover:text-white">
