@@ -14,7 +14,8 @@ export default function Home() {
       <Partners />
       <section className="my-20">
         <ParallaxText baseVelocity={3}>Access The Moment</ParallaxText>
-        <ParallaxText baseVelocity={-3}>Share The Memories</ParallaxText>
+        <ParallaxText baseVelocity={-3}>Relive The Memories</ParallaxText>
+        <ParallaxText baseVelocity={3}>Unlock your Potential</ParallaxText>
       </section>
       {/* <Team /> */}
 
