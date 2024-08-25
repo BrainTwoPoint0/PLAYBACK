@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Venues from './components/venues';
 import { Header } from './components/header';
 import { Partners } from './components/partners';
+import { CanvasRevealEffectDemo2 } from './components/canvas-reveal-demo';
 
 export default function Home() {
   return (
@@ -12,8 +13,9 @@ export default function Home() {
       <Header />
       {/* <Venues /> */}
       <ParallaxText baseVelocity={3}>Access The Moment</ParallaxText>
-      <ParallaxText baseVelocity={-3}>Relive The Memories</ParallaxText>
       <Partners />
+      <ParallaxText baseVelocity={-3}>Relive The Memories</ParallaxText>
+      <CanvasRevealEffectDemo2 />
       <ParallaxText baseVelocity={3}>Unlock your Potential</ParallaxText>
       {/* <Team /> */}
     </main>
