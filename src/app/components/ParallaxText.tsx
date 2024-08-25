@@ -60,7 +60,7 @@ export function ParallaxText({ children, baseVelocity = 100 }: ParallaxProps) {
   });
 
   return (
-    <div className="overflow-hidden whitespace-nowrap flex">
+    <div className="overflow-hidden whitespace-nowrap flex my-20">
       <motion.div
         className="font-bold text-3xl md:text-7xl uppercase flex"
         style={{ x }}

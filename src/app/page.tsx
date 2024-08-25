@@ -11,14 +11,18 @@ export default function Home() {
     <main className="overflow-hidden min-h-[90vh]">
       <Header />
       {/* <Venues /> */}
+      <ParallaxText baseVelocity={3}>Access The Moment</ParallaxText>
+      <ParallaxText baseVelocity={-3}>Relive The Memories</ParallaxText>
       <Partners />
-      <section className="my-20">
-        <ParallaxText baseVelocity={3}>Access The Moment</ParallaxText>
-        <ParallaxText baseVelocity={-3}>Relive The Memories</ParallaxText>
-        <ParallaxText baseVelocity={3}>Unlock your Potential</ParallaxText>
-      </section>
+      <ParallaxText baseVelocity={3}>Unlock your Potential</ParallaxText>
       {/* <Team /> */}
-
+      <Header />
+      {/* <Venues /> */}
+      <ParallaxText baseVelocity={3}>Access The Moment</ParallaxText>
+      <ParallaxText baseVelocity={-3}>Relive The Memories</ParallaxText>
+      <Partners />
+      <ParallaxText baseVelocity={3}>Unlock your Potential</ParallaxText>
+      {/* <Team /> */}
     </main>
   );
 }
