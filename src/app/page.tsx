@@ -16,13 +16,6 @@ export default function Home() {
       <Partners />
       <ParallaxText baseVelocity={3}>Unlock your Potential</ParallaxText>
       {/* <Team /> */}
-      <Header />
-      {/* <Venues /> */}
-      <ParallaxText baseVelocity={3}>Access The Moment</ParallaxText>
-      <ParallaxText baseVelocity={-3}>Relive The Memories</ParallaxText>
-      <Partners />
-      <ParallaxText baseVelocity={3}>Unlock your Potential</ParallaxText>
-      {/* <Team /> */}
     </main>
   );
 }
