@@ -20,8 +20,7 @@ export function Header() {
         }}
         className="text-3xl px-4 md:text-6xl font-bold text-white max-w-5.5xl leading-relaxed lg:leading-snug text-center mx-auto "
       >
-
-        <Highlight className="text-white">The OS for Sports.</Highlight> Soon...
+        <Highlight className="text-white">The OS</Highlight> for Sports
       </motion.h1>
     </HeroHighlight>
   );

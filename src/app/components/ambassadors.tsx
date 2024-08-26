@@ -2,10 +2,10 @@
 import React from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { CanvasRevealEffect } from "../components/ui/canvas-reveal-effect";
+import { CanvasRevealEffect } from "./ui/canvas-reveal-effect";
 import SectionTitle from "./ui/section-title";
 
-export function CanvasRevealEffectDemo2() {
+export function Ambassadors() {
     return (
         <section className='container my-5'>
             <SectionTitle title='Ambassadors' />
@@ -30,10 +30,10 @@ export function CanvasRevealEffectDemo2() {
                         </div>
                     </AnimatePresence>
                     <div className="relative z-20">
-                        <div className="text-center group-hover/canvas-card:-translate-y-4 group-hover/canvas-card:opacity-0 transition duration-200 w-full  mx-auto flex items-center justify-center">
+                        <div className="text-center w-full  mx-auto flex items-center justify-center">
                             <img src="/ambassadors/lee-spiller.png" />
                         </div>
-                        <h2 className="dark:text-white text-xl opacity-0 group-hover/canvas-card:opacity-100 relative z-10 text-black mt-4  font-bold group-hover/canvas-card:text-white group-hover/canvas-card:-translate-y-2 transition duration-200 text-center">
+                        <h2 className="text-xl relative z-10 mt-4 font-bold text-white text-center">
                             Lee Spiller
                         </h2>
                     </div>
