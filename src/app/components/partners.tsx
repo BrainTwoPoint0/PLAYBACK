@@ -10,8 +10,8 @@ export const Partners = () => {
                 <Image alt="Forbes Logo" src="/partners/forbes.svg" height={100} width={100} className='opacity-75 md:w-28' />
                 {/* <Image alt="FC Urban Logo" src="/partners/fcurban.svg" height={100} width={100} className='opacity-75 md:w-28' /> */}
                 <Image alt="Galatasaray Logo" src="/partners/galatasaray.svg" height={100} width={100} className='opacity-75 md:w-28' />
-                <Image alt="Hollands & Blair Logo" src="/partners/hb.png" height={100} width={100} className='opacity-75 md:w-28' />
                 <Image alt="Star Meadow Logo" src="/partners/smsc.svg" height={100} width={100} className='opacity-75 md:w-28' />
+                <Image alt="Hollands & Blair Logo" src="/partners/hb.png" height={100} width={100} className='opacity-75 md:w-28' />
                 {/* <Image alt="Maidstone United Logo" src="/partners/maidstone.svg" height={100} width={100} className='opacity-75 md:w-28' /> */}
             </div>
         </section>
