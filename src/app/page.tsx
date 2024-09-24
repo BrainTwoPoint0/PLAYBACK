@@ -1,23 +1,23 @@
 'use client';
 import { ParallaxText } from './components/ParallaxText';
-import Team from './components/team';
-import Image from 'next/image';
-import Venues from './components/venues';
-import { Header } from './components/header';
-import { Partners } from './components/partners';
-import { Ambassadors } from './components/ambassadors';
+import { Header } from './components/Header';
+import { Partners } from './components/Partners';
+import { Ambassadors } from './components/Ambassadors';
+// import { About } from './components/About';
 
 export default function Home() {
   return (
-    <main className="overflow-hidden min-h-[90vh]">
+    <main className="overflow-hidden">
       <Header />
       {/* <Venues /> */}
-      <ParallaxText baseVelocity={3}>Access The Moment</ParallaxText>
+      {/* <About /> */}
+      <div className='mt-20'>
+        <ParallaxText baseVelocity={-3}>Access The Moment</ParallaxText>
+        <ParallaxText baseVelocity={3}>Unlock your Potential</ParallaxText>
+      </div>
       <Partners />
-      <ParallaxText baseVelocity={-3}>Relive The Memories</ParallaxText>
+      {/* <Venues /> */}
       <Ambassadors />
-      <ParallaxText baseVelocity={3}>Unlock your Potential</ParallaxText>
-      {/* <Team /> */}
     </main>
   );
 }

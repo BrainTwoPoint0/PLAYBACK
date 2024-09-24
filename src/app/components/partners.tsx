@@ -3,7 +3,7 @@ import Image from 'next/image'
 import SectionTitle from './ui/section-title'
 export const Partners = () => {
     return (
-        <section className='container my-5'>
+        <section className='container mt-20'>
             <SectionTitle title='Our Partners' />
             <div className='flex flex-wrap gap-10 justify-center'>
                 <Image alt="SE FA Logo" src="/partners/soccerelite.svg" height={100} width={100} className='opacity-75 md:w-28' />
