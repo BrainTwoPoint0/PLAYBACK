@@ -6,7 +6,8 @@ const nextConfig = {
       'images.unsplash.com',
       'en.reformsports.com',
       'soccerelitefa.com',
-      'www.gsetiler.com'
+      'www.gsetiler.com',
+      'assets.aceternity.com'
     ],
   },
 };
