@@ -119,7 +119,7 @@ export const SkeletonTwo = () => {
         "/showcase/veo-platform/platform-analytics.png",
         "/showcase/player-profile/player-highlights.png",
         "/showcase/veo-platform/platform-recordings.png",
-        "/showcase/veo-platform/content-exampsle-2.png",
+        "/showcase/veo-platform/content-example-2.png",
         "/branding/simple-logo.png",
     ];
 
@@ -144,7 +144,7 @@ export const SkeletonTwo = () => {
         },
     };
     return (
-        <div className="relative flex flex-col items-start p-8 gap-6 overflow-hidden">
+        <div className="relative flex flex-col justify-center items-center p-8 gap-6 overflow-hidden">
 
             <div className="flex flex-row justify-center items-center md:hidden">
                 {imagesFirst.map((image, idx) => (
@@ -202,7 +202,7 @@ export const SkeletonThree = () => {
             className="relative flex group/image"
         >
             <div className="w-full mx-auto bg-transparent group ">
-                <div className="flex flex-1 w-full  flex-col space-y-2 relative">
+                <div className="flex flex-1 w-full justify-center items-center flex-col space-y-2 relative">
                     <IconBrandYoutubeFilled className="h-20 w-20 absolute z-10 inset-0 text-red-500 m-auto " />
                     <Image
                         src="/showcase/veo-platform/content-example-2.png"
