@@ -115,15 +115,15 @@ export function ContactForm() {
         </button>
 
         <div className="bg-gradient-to-r from-transparent via-neutral-700 to-transparent my-8 h-[1px] w-full" />
-        <div className="my-4 flex items-center justify-center text-lg font-medium text-center">
+        <div className="flex items-center justify-center">
           {status === 'error' && (
-            <span>
+            <span className="text-center">
               Something went wrong <br />
               {error}
             </span>
           )}
           {status === 'ok' && (
-            <span>
+            <span className="text-lg font-medium text-center">
               Thank you for your submission
             </span>
           )}
