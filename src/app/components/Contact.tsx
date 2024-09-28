@@ -39,15 +39,15 @@ export function ContactForm() {
 
   return (
     <div className="md:border border-[var(--timberwolf)]  max-w-md w-full mx-auto rounded-none md:rounded-2xl p-4 md:p-8 shadow-input bg-[var(--night)] mb-8">
-      <div className="my-4 flex items-center justify-center">
+      <div className="my-4 flex items-center justify-center text-lg font-medium text-center">
         {status === 'error' && (
-          <span className="text-red-700 text-center">
+          <span>
             Something went wrong <br />
             {error}
           </span>
         )}
         {status === 'ok' && (
-          <span className="text-green-700 text-lg font-medium text-center">
+          <span>
             Thank you for your submission
           </span>
         )}
@@ -74,7 +74,7 @@ export function ContactForm() {
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="camera_provider" id="r2" />
-            <Label htmlFor="r2">Camera provider</Label>
+            <Label htmlFor="r2">Camera Provider</Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="league_organiser" id="r3" />
