@@ -40,7 +40,6 @@ export function ContactForm() {
   return (
     <div className="md:border border-[var(--timberwolf)]  max-w-md w-full mx-auto rounded-none md:rounded-2xl p-4 md:p-8 shadow-input bg-[var(--night)] mb-8">
       <h2 className="font-bold text-3xl text-neutral-200">Join us</h2>
-
       <form
         className="my-2 flex flex-col items-start space-y-6"
         name="contact"
@@ -74,12 +73,7 @@ export function ContactForm() {
         </RadioGroup>
         <LabelInputContainer>
           <Label htmlFor="name">Full Name</Label>
-          <Input
-            id="name"
-            placeholder="Tyler Adams"
-            type="text"
-            name="name"
-          />
+          <Input id="name" placeholder="Tyler Adams" type="text" name="name" />
         </LabelInputContainer>
         <LabelInputContainer>
           <Label htmlFor="email">Email Address</Label>
@@ -114,20 +108,19 @@ export function ContactForm() {
           <BottomGradient />
         </button>
 
-        <div className="bg-gradient-to-r from-transparent via-neutral-700 to-transparent my-8 h-[1px] w-full" />
-        <div className="flex items-center justify-center">
-          {status === 'error' && (
-            <span className="text-center">
-              Something went wrong <br />
-              {error}
-            </span>
-          )}
-          {status === 'ok' && (
-            <span className="text-lg font-medium text-center">
-              Thank you for your submission
-            </span>
-          )}
-        </div>
+        <div className="bg-gradient-to-r from-transparent via-neutral-700 to-transparent my-8 h-[1.5px] w-full" />
+        {status !== null && (
+          <div className="flex items-center justify-center w-full pt-2 text-lg font-medium text-center">
+            {status === 'pending' && <span>Submitting...</span>}
+            {status === 'error' && (
+              <span>
+                Something went wrong <br />
+                {error}
+              </span>
+            )}
+            {status === 'ok' && <span>Thank you for your submission</span>}
+          </div>
+        )}
       </form>
     </div>
   );
