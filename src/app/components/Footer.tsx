@@ -19,17 +19,44 @@ export default function Footer() {
   return (
     <footer className="container mx-auto flex p-5 items-center justify-between border-t border-[var(--timberwolf)]">
       <div className="flex gap-4">
-        <Link href="https://www.instagram.com/playback_global" target='_blank'>
-          <Image src="/assets/instagram.png" alt='PLAYBACK Instagram' height={50} width={50} className='h-9 w-9' />
+        <Link href="https://www.instagram.com/playback_global" target="_blank">
+          <Image
+            src="/assets/instagram.png"
+            alt="PLAYBACK Instagram"
+            height={50}
+            width={50}
+            className="h-9 w-9"
+          />
         </Link>
-        <Link href="https://youtube.com/@playback-sports-ai" target='_blank'>
-          <Image src="/assets/youtube.png" alt='PLAYBACK Instagram' height={50} width={50} className='h-9 w-9' />
+        <Link href="https://youtube.com/@playback-sports-ai" target="_blank">
+          <Image
+            src="/assets/youtube.png"
+            alt="PLAYBACK Instagram"
+            height={50}
+            width={50}
+            className="h-9 w-9"
+          />
         </Link>
-        <Link href="https://www.tiktok.com/@playbacksports.ai" target='_blank'>
-          <Image src="/assets/tiktok.png" alt='PLAYBACK Instagram' height={50} width={50} className='h-9 w-9' />
+        <Link href="https://www.tiktok.com/@playbacksports.ai" target="_blank">
+          <Image
+            src="/assets/tiktok.png"
+            alt="PLAYBACK Instagram"
+            height={50}
+            width={50}
+            className="h-9 w-9"
+          />
         </Link>
-        <Link href="https://www.linkedin.com/company/playbacksports/" target='_blank'>
-          <Image src="/assets/linkedin.png" alt='PLAYBACK Instagram' height={50} width={50} className='h-9 w-9' />
+        <Link
+          href="https://www.linkedin.com/company/playbacksports/"
+          target="_blank"
+        >
+          <Image
+            src="/assets/linkedin.png"
+            alt="PLAYBACK Instagram"
+            height={50}
+            width={50}
+            className="h-9 w-9"
+          />
         </Link>
       </div>
       <h2 className="text-lg">
@@ -41,7 +68,6 @@ export default function Footer() {
           </span>
         </Link>
       </h2>
-
     </footer>
   );
 }

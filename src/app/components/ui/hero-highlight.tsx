@@ -1,6 +1,11 @@
 'use client';
 import { cn } from '../../utils/cn';
-import { useMotionValue, motion, useMotionTemplate, animate } from 'framer-motion';
+import {
+  useMotionValue,
+  motion,
+  useMotionTemplate,
+  animate,
+} from 'framer-motion';
 import React, { useEffect, useState } from 'react';
 
 export const HeroHighlight = ({

@@ -1,13 +1,13 @@
-"use client"
+'use client';
 
-import { AcademyOnboarding } from '../components/AcademyOnboarding'
-import { AcademySubscriptions } from '../components/AcademySubscriptions'
+import { AcademyOnboarding } from '../components/AcademyOnboarding';
+import { AcademySubscriptions } from '../components/AcademySubscriptions';
 
 export default function Academy() {
-    return (
-        <div>
-            <AcademyOnboarding />
-            <AcademySubscriptions />
-        </div>
-    )
+  return (
+    <div>
+      <AcademyOnboarding />
+      <AcademySubscriptions />
+    </div>
+  );
 }
