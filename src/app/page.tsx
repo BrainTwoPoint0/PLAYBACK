@@ -4,6 +4,7 @@ import { Header } from './components/Header';
 import { Partners } from './components/Partners';
 import { Ambassadors } from './components/Ambassadors';
 import { About } from './components/About';
+import { SportsList } from './components/SportsList';
 
 export default function Home() {
   return (
@@ -15,6 +16,7 @@ export default function Home() {
         <ParallaxText baseVelocity={3}>Unlock your Potential</ParallaxText>
       </div>
       <Partners />
+      <SportsList />
       <Ambassadors />
     </main>
   );
