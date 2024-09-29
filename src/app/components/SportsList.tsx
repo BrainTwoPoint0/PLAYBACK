@@ -8,7 +8,11 @@ export function SportsList() {
   return (
     <div className="mt-20 rounded-md flex flex-col antialiased items-center justify-center overflow-hidden">
       <SectionTitle title="Powered Sports" />
-      <InfiniteMovingCards items={sportsList} direction="right" speed="slow" />
+      <InfiniteMovingCards
+        items={sportsList}
+        direction="right"
+        speed="normal"
+      />
     </div>
   );
 }
