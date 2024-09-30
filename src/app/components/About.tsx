@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { IconBrandYoutubeFilled } from '@tabler/icons-react';
 import Link from 'next/link';
 import SectionTitle from './ui/section-title';
+import Statistics from './Statistics';
 
 export function About() {
   const features = [
@@ -100,13 +101,7 @@ export const SkeletonOne = () => {
     <div className="relative flex py-3 px-2">
       <div className="w-full p-5 mx-auto">
         <div className="flex w-full flex-col space-y-2 ">
-          <Image
-            src="/branding/PLAYBACK-Text.png"
-            alt="header"
-            width={800}
-            height={300}
-            className="rounded-sm "
-          />
+          <Statistics />
         </div>
       </div>
     </div>
