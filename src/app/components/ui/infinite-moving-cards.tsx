@@ -86,11 +86,11 @@ export const InfiniteMovingCards = ({
       >
         {items.map((item, idx) => (
           <li
-            className="w-[185px] h-[150px] relative rounded-2xl bg-neutral-400/[0.85] border border-slate-700 overflow-hidden flex items-center justify-center"
+            className="w-[200px] h-[150px] relative rounded-2xl border border-[var(--ash-grey)] overflow-hidden flex items-center justify-center"
             key={item.sportName}
           >
             <div
-              className="absolute bottom-[-30px] left-[-30px] h-36 w-36 opacity-50"
+              className="absolute bottom-[-30px] left-[-30px] h-36 w-36 opacity-75"
               style={{
                 backgroundImage: `url(${item.image})`,
                 backgroundPosition: 'bottom left',
@@ -101,7 +101,7 @@ export const InfiniteMovingCards = ({
               }}
             />
             <div className="z-50">
-              <span className="text-2xl text-[var(--night)] font-bold">
+              <span className="text-2xl text-[var(--timberwolf)] font-bold">
                 {item.sportName}
               </span>
             </div>
