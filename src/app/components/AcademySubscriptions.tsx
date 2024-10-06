@@ -36,7 +36,7 @@ export const projects = [
   {
     title: 'Maidstone United',
     description:
-      'The PLAYBACK team is continuously working on onboarding new venues and academies. If you would like to be part of the PLAYBACK ecosystem, REACH OUT!',
+      'We have partnered with Maidstone United to provide their players with the PLAYBACK Academy service.',
     link: 'https://buy.stripe.com/3cs6s30wO992eHKdQU',
     logoUrl: '/partners/maidstone.svg',
   },
