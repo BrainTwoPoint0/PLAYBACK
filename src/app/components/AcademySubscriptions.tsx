@@ -34,6 +34,13 @@ export const projects = [
     logoUrl: '/partners/hb.png',
   },
   {
+    title: 'Maidstone United',
+    description:
+      'The PLAYBACK team is continuously working on onboarding new venues and academies. If you would like to be part of the PLAYBACK ecosystem, REACH OUT!',
+    link: 'https://buy.stripe.com/3cs6s30wO992eHKdQU',
+    logoUrl: '/partners/maidstone.svg',
+  },
+  {
     title: 'Coming Soon',
     description:
       'The PLAYBACK team is continuously working on onboarding new venues and academies. If you would like to be part of the PLAYBACK ecosystem, REACH OUT!',
