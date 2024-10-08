@@ -85,7 +85,7 @@ export default function NavBar() {
         href="/contact"
         className="text-[var(--night)] inline-flex items-center bg-[var(--ash-grey)] border-0 py-3 px-3 focus:outline-none hover:bg-[var(--timberwolf)] rounded text-base "
       >
-        PLAY W/ US
+        REACH OUT
         <svg
           fill="none"
           stroke="currentColor"
