@@ -6,7 +6,7 @@ import SectionTitle from './ui/section-title';
 
 export function SportsList() {
   return (
-    <div className="mt-20 rounded-md flex flex-col antialiased items-center justify-center overflow-hidden">
+    <div className="mt-40 mb-20 rounded-md flex flex-col antialiased items-center justify-center overflow-hidden">
       <SectionTitle title="Powered Sports" />
       <InfiniteMovingCards
         items={sportsList}
