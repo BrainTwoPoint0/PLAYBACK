@@ -23,7 +23,21 @@ export const projects = [
     title: 'Soccer Elite FA',
     description:
       'With venue coverage at Star Meadow Sports Complex, SEFA players now have access to the PLAYBACK services.',
+    link: 'https://buy.stripe.com/6oE17JgvM70U7fi6ot',
+    logoUrl: '/partners/soccerelite.svg',
+  },
+  {
+    title: 'Soccer Elite FA Scholars',
+    description:
+      'With venue coverage at Star Meadow Sports Complex, SEFA Scholarship players now have access to the PLAYBACK services.',
     link: 'https://buy.stripe.com/14keYz1AS5WQ0QU5km',
+    logoUrl: '/partners/soccerelite.svg',
+  },
+  {
+    title: 'Soccer Elite FA Women',
+    description:
+      'With venue coverage at Star Meadow Sports Complex, SEFA Women players now have access to the PLAYBACK services.',
+    link: 'https://buy.stripe.com/cN26s393kgBuczC8wC',
     logoUrl: '/partners/soccerelite.svg',
   },
   {
