@@ -5,6 +5,8 @@ import { Partners } from './components/Partners';
 import { Ambassadors } from './components/Ambassadors';
 import { About } from './components/About';
 import { SportsList } from './components/SportsList';
+import Services from './components/Services';
+
 
 export default function Home() {
   return (
@@ -16,8 +18,9 @@ export default function Home() {
         <ParallaxText baseVelocity={3}>Unlock your Potential</ParallaxText>
       </div>
       <Partners />
+      <Services />
       <SportsList />
-      <Ambassadors />
+      {/* <Ambassadors /> */}
     </main>
   );
 }

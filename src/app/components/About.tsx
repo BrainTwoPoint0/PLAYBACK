@@ -153,7 +153,7 @@ export const SkeletonTwo = () => {
           >
             <Image
               src={image}
-              alt="bali images"
+              alt="PLAYBACK Service Images"
               width="300"
               height="300"
               className="rounded-lg h-20 w-20 md:h-32 md:w-32 object-cover flex-shrink-0"
@@ -175,7 +175,7 @@ export const SkeletonTwo = () => {
           >
             <Image
               src={image}
-              alt="bali images"
+              alt="PLAYBACK Service Images"
               width="300"
               height="300"
               className="rounded-lg h-20 w-20 md:h-32 md:w-32 object-cover flex-shrink-0"
