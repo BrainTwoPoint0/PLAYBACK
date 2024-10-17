@@ -20,9 +20,9 @@ export default function Home() {
       </div>
       <Partners />
       <Services />
-      <section className="md:container mt-36 text-xs md:text-4xl flex items-center md:justify-evenly justify-center">
-        <Image className='md:w-1/2 w-2/5' width={500} height={500} src={'/branding/PLAYBACK-Text.png'} alt='PLAYBACK Logo' />
-        <div className="md:w-2/5 w-1/2 pl-2 md:pl-0">
+      <section className="container mt-36 text-4xl items-center justify-evenly hidden md:flex">
+        <Image className='w-1/2' width={500} height={500} src={'/branding/PLAYBACK-Text.png'} alt='PLAYBACK Logo' />
+        <div className="w-2/5">
           AN ECOSYSTEM <br />
           TO POWER<FlipWords words={words} />
         </div>
