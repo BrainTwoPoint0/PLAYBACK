@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { Tabs } from "./ui/tabs";
 import { motion } from "framer-motion";
 import SectionTitle from "./ui/section-title";
-
 
 export default function Services() {
     return (
@@ -21,69 +21,93 @@ export function ServicesTabs() {
             title: "Academy",
             value: "academy",
             content: (
-                <div className="w-full overflow-hidden relative h-full rounded-2xl bg-[var(--ash-grey)]">
-                    <DummyContent />
-                </div>
+                <Service
+                    title="PLAYBACK Academy"
+                    images={[
+                        '/showcase/veo-platform/platform-analytics.png',
+                        '/showcase/player-profile/player-highlights.png',
+                        '/showcase/veo-platform/platform-recordings.png',
+                        '/showcase/veo-platform/content-example-2.png',
+                        '/showcase/veo-platform/platform-teams.png',
+                        '/showcase/player-profile/player-positions.png',
+                        '/showcase/veo-platform/platform-metrics.png',
+                    ]}
+                    features={[
+                        { icon: ProfileIcon, text: "Player Profiles" },
+                        { icon: ContentIcon, text: "Match & Training Footage" },
+                        { icon: AIIcon, text: "AI-Powered" },
+                        { icon: SocialMediaIcon, text: "Social Media Sharing" },
+                        { icon: EcosystemIcon, text: "Shared Ecosystem" },
+                        { icon: AnalyticsIcon, text: "Analytics" },
+                    ]}
+                    callToAction={{
+                        text: "Join Academy",
+                        link: "/academy",
+                    }}
+                />
             ),
         },
         {
-            title: "Coming Soon",
-            value: "soon",
+            title: "More",
+            value: "more",
             content: (
-                <div className="w-full overflow-hidden relative h-full rounded-2xl bg-[var(--ash-grey)]">
-                    <DummyContent />
-                </div>
-            ),
-        },
-        {
-            title: "Coming Soon",
-            value: "kk",
-            content: (
-                <div className="w-full overflow-hidden relative h-full rounded-2xl bg-[var(--ash-grey)]">
-                    <DummyContent />
-                </div>
-            ),
-        },
-        {
-            title: "Coming Soon",
-            value: "sookkkn",
-            content: (
-                <div className="w-full overflow-hidden relative h-full rounded-2xl bg-[var(--ash-grey)]">
-                    <DummyContent />
-                </div>
+                <Service
+                    title="Coming Soon..."
+                    images={[
+                        '/branding/PLAYBACK-icon.png',
+                        '/branding/simple-logo.png',
+                        '/branding/PLAYBACK-icon.png',
+                        '/branding/simple-logo.png',
+                        '/branding/PLAYBACK-icon.png',
+                        '/branding/simple-logo.png',
+                        '/branding/PLAYBACK-icon.png',
+                    ]}
+                    features={[
+                        { icon: TournamentIcon, text: "Leagues & Tournaments" },
+                        { icon: ContentIcon, text: "Footage & Content" },
+                        { icon: AIIcon, text: "AI Detection" },
+                        { icon: SocialMediaIcon, text: "Social Media Sharing" },
+                        { icon: CharityIcon, text: "PLAYBACK Foundation" },
+                    ]}
+                    callToAction={{
+                        text: "Reach Out",
+                        link: "/contact",
+                    }}
+                />
             ),
         },
     ];
 
     return (
-        <div className="h-[25rem] md:h-[30rem] [perspective:1000px] relative flex flex-col max-w-5xl mx-auto w-full px-4">
+        <div className="h-[25rem] md:h-[30rem] relative flex flex-col max-w-5xl mx-auto w-full px-4">
             <Tabs tabs={tabs} />
         </div>
     );
 }
 
-const DummyContent = () => {
-    const images = [
-        '/showcase/veo-platform/platform-analytics.png',
-        '/showcase/player-profile/player-highlights.png',
-        '/showcase/veo-platform/platform-recordings.png',
-        '/showcase/veo-platform/content-example-2.png',
-        '/showcase/veo-platform/platform-teams.png',
-        '/showcase/player-profile/player-positions.png',
-        '/showcase/veo-platform/platform-metrics.png',
-    ];
+interface ServiceProps {
+    title: string;
+    images: string[];
+    features: Array<{
+        icon: React.ComponentType<{ className?: string }>;
+        text: string;
+    }>;
+    callToAction: {
+        text: string;
+        link: string;
+    };
+}
+
+const Service = ({ title, images, features, callToAction }: ServiceProps) => {
     return (
-
-
-
-        <div className="flex flex-col justify-between">
+        <div className="flex flex-col justify-between h-full p-6 bg-[--night] border-4 border-[var(--ash-grey)] rounded-2xl overflow-hidden">
             <h4 className="text-lg md:text-2xl text-neutral-100 font-bold text-center mb-4">
-                PLAYBACK Academy
+                {title}
             </h4>
-            <div className="flex justify-center items-center">
+            <div className="flex justify-center items-center mb-6">
                 {images.map((image, idx) => (
                     <motion.div
-                        key={"images" + idx}
+                        key={idx}
                         style={{
                             rotate: Math.random() * 20 - 10,
                         }}
@@ -92,202 +116,122 @@ const DummyContent = () => {
                             rotate: 0,
                             zIndex: 100,
                         }}
-                        whileTap={{
-                            scale: 1.1,
-                            rotate: 0,
-                            zIndex: 100,
-                        }}
-                        className="rounded-xl -mr-4 mt-4 p-1 bg-white dark:bg-neutral-800 dark:border-neutral-700 border border-neutral-100 flex-shrink-0 overflow-hidden"
+                        className="rounded-xl -mr-4 mt-4 p-1 bg-neutral-800 border-neutral-700 border flex-shrink-0 overflow-hidden"
                     >
                         <Image
                             src={image}
-                            alt="bali images"
-                            width="500"
-                            height="500"
+                            alt="PLAYBACK Service Images"
+                            width={160}
+                            height={160}
                             className="rounded-lg h-20 w-20 md:h-40 md:w-40 object-cover flex-shrink-0"
                         />
                     </motion.div>
                 ))}
             </div>
-            <div className="py-10 flex flex-wrap gap-x-4 gap-y-6 items-center justify-center">
-                <div className="flex  items-center justify-center">
-                    <PlaneIcon className="mr-1 text-neutral-300 h-4 w-4" />
-                    <span className="text-neutral-700 dark:text-neutral-300 text-sm">
-                        5 connecting flights
-                    </span>
-                </div>
-                <div className="flex items-center justify-center">
-                    <ElevatorIcon className="mr-1 text-neutral-300 h-4 w-4" />
-                    <span className="text-neutral-700 dark:text-neutral-300 text-sm">
-                        12 hotels
-                    </span>
-                </div>
-                <div className="flex items-center justify-center">
-                    <VacationIcon className="mr-1 text-neutral-300 h-4 w-4" />
-                    <span className="text-neutral-700 dark:text-neutral-300 text-sm">
-                        69 visiting spots
-                    </span>
-                </div>
-                <div className="flex  items-center justify-center">
-                    <FoodIcon className="mr-1 text-neutral-300 h-4 w-4" />
-                    <span className="text-neutral-700 dark:text-neutral-300 text-sm">
-                        Good food everyday
-                    </span>
-                </div>
-                <div className="flex items-center justify-center">
-                    <MicIcon className="mr-1 text-neutral-300 h-4 w-4" />
-                    <span className="text-neutral-700 dark:text-neutral-300 text-sm">
-                        Open Mic
-                    </span>
-                </div>
-                <div className="flex items-center justify-center">
-                    <ParachuteIcon className="mr-1 text-neutral-300 h-4 w-4" />
-                    <span className="text-neutral-700 dark:text-neutral-300 text-sm">
-                        Paragliding
-                    </span>
-                </div>
+            <div className="flex gap-5 justify-center mb-5 text-[var(--ash-grey)] w-full overflow-scroll no-visible-scrollbar">
+                {features.map((feature, index) => (
+                    <div key={index} className="flex items-center justify-center">
+                        <div className="mr-2 h-5 w-5">
+                            <feature.icon className="h-5 w-5" />
+                        </div>
+                        <span className="text-xs text-center whitespace-nowrap overflow-hidden text-ellipsis w-full hidden md:block">
+                            {feature.text}
+                        </span>
+                    </div>
+                ))}
             </div>
-            <div className="gap-4">
-                <button className="px-2 py-1 bg-gray-200 text-black dark:bg-black dark:border-black dark:text-white border border-gray-300 rounded-md text-sm w-28">
-                    Cancel
-                </button>
-                <button className="bg-black text-white dark:bg-white dark:text-black text-sm px-2 py-1 rounded-md border border-black w-28">
-                    Book Now
-                </button>
+            <div className="flex justify-center">
+                <Link href={callToAction.link}>
+                    <button className="px-6 border-2 border-[var(--timberwolf)] py-2 bg-[var(--timberwolf)] text-black text-sm font-semibold rounded-md transition-colors duration-200 relative overflow-hidden group">
+                        <span className="group-hover:translate-x-40 text-center transition duration-500 inline-block">
+                            {callToAction.text}
+                        </span>
+                        <div className="-translate-x-40 group-hover:translate-x-0 flex items-center justify-center absolute inset-0 transition duration-500 bg-[var(--night)] text-[var(--timberwolf)]">
+                            PLAYBACK
+                        </div>
+                    </button>
+                </Link>
             </div>
         </div>
-
-
     );
 }
 
-const PlaneIcon = ({ className }: { className?: string }) => {
+const ProfileIcon = ({ className }: { className?: string }) => {
     return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={className}
-        >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2 -7h-4l-2 2h-3l2 -4l-2 -4h3l2 2h4l-2 -7h3z" />
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <rect x="3" y="4" width="18" height="16" rx="2" ry="2"></rect>
+            <line x1="7" y1="12" x2="17" y2="12"></line>
+            <line x1="7" y1="16" x2="17" y2="16"></line>
+            <circle cx="9" cy="8" r="2"></circle>
         </svg>
     );
 };
 
-const VacationIcon = ({ className }: { className?: string }) => {
+const TournamentIcon = ({ className }: { className?: string }) => {
     return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={className}
-        >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M17.553 16.75a7.5 7.5 0 0 0 -10.606 0" />
-            <path d="M18 3.804a6 6 0 0 0 -8.196 2.196l10.392 6a6 6 0 0 0 -2.196 -8.196z" />
-            <path d="M16.732 10c1.658 -2.87 2.225 -5.644 1.268 -6.196c-.957 -.552 -3.075 1.326 -4.732 4.196" />
-            <path d="M15 9l-3 5.196" />
-            <path d="M3 19.25a2.4 2.4 0 0 1 1 -.25a2.4 2.4 0 0 1 2 1a2.4 2.4 0 0 0 2 1a2.4 2.4 0 0 0 2 -1a2.4 2.4 0 0 1 2 -1a2.4 2.4 0 0 1 2 1a2.4 2.4 0 0 0 2 1a2.4 2.4 0 0 0 2 -1a2.4 2.4 0 0 1 2 -1a2.4 2.4 0 0 1 1 .25" />
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+            <path d="M4 22h16"></path>
+            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
         </svg>
     );
 };
 
-const ElevatorIcon = ({ className }: { className?: string }) => {
+const ContentIcon = ({ className }: { className?: string }) => {
     return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={className}
-        >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M5 4m0 1a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-12a1 1 0 0 1 -1 -1z" />
-            <path d="M10 10l2 -2l2 2" />
-            <path d="M10 14l2 2l2 -2" />
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
         </svg>
     );
 };
 
-const FoodIcon = ({ className }: { className?: string }) => {
+const AIIcon = ({ className }: { className?: string }) => {
     return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={className}
-        >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M20 20c0 -3.952 -.966 -16 -4.038 -16s-3.962 9.087 -3.962 14.756c0 -5.669 -.896 -14.756 -3.962 -14.756c-3.065 0 -4.038 12.048 -4.038 16" />
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"></path>
+            <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"></path>
         </svg>
     );
 };
 
-const MicIcon = ({ className }: { className?: string }) => {
+const SocialMediaIcon = ({ className }: { className?: string }) => {
     return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={className}
-        >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M15 12.9a5 5 0 1 0 -3.902 -3.9" />
-            <path d="M15 12.9l-3.902 -3.899l-7.513 8.584a2 2 0 1 0 2.827 2.83l8.588 -7.515z" />
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
         </svg>
     );
 };
 
-const ParachuteIcon = ({ className }: { className?: string }) => {
+const EcosystemIcon = ({ className }: { className?: string }) => {
     return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={className}
-        >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M22 12a10 10 0 1 0 -20 0" />
-            <path d="M22 12c0 -1.66 -1.46 -3 -3.25 -3c-1.8 0 -3.25 1.34 -3.25 3c0 -1.66 -1.57 -3 -3.5 -3s-3.5 1.34 -3.5 3c0 -1.66 -1.46 -3 -3.25 -3c-1.8 0 -3.25 1.34 -3.25 3" />
-            <path d="M2 12l10 10l-3.5 -10" />
-            <path d="M15.5 12l-3.5 10l10 -10" />
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
         </svg>
+    );
+};
 
+const AnalyticsIcon = ({ className }: { className?: string }) => {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+    );
+};
+
+const CharityIcon = ({ className }: { className?: string }) => {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+        </svg>
     );
 };
