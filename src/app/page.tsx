@@ -9,7 +9,15 @@ import { FlipWords } from './components/ui/flip-words';
 import Image from 'next/image';
 
 export default function Home() {
-  const words = ['PLAYERS', 'AGENTS', 'CLUBS', 'ACADEMIES', 'SCHOLARSHIPS', 'LEAGUES', 'TOURNAMENTS'];
+  const words = [
+    'PLAYERS',
+    'AGENTS',
+    'CLUBS',
+    'ACADEMIES',
+    'SCHOLARSHIPS',
+    'LEAGUES',
+    'TOURNAMENTS',
+  ];
   return (
     <main className="overflow-hidden">
       <Header />
@@ -20,13 +28,13 @@ export default function Home() {
       </div>
       <Partners />
       <Services />
-      <section className="container mt-36 text-4xl items-center justify-evenly hidden md:flex">
+      {/* <section className="container mt-36 text-4xl items-center justify-evenly hidden md:flex">
         <Image className='w-1/2' width={500} height={500} src={'/branding/PLAYBACK-Text.png'} alt='PLAYBACK Logo' />
         <div className="w-2/5">
           AN ECOSYSTEM <br />
           TO POWER<FlipWords words={words} />
         </div>
-      </section>
+      </section> */}
       <SportsList />
     </main>
   );
