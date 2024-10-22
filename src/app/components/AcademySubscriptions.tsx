@@ -6,7 +6,7 @@ export function AcademySubscriptions() {
   return (
     <div className="max-w-5xl mx-auto px-8">
       <SectionTitle title="PLAYBACK Academy Services" />
-      <HoverEffect items={projects} />
+      <HoverEffect items={teams} />
       <Link href="https://billing.stripe.com/p/login/cN29D13rV5X84UgdQQ">
         <button className="bg-gradient-to-br border border-neutral-400/[0.5] relative group/btn from-[var(--night)] to-[var(--night)] block bg-[var(--night)] w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]">
           Billing Management &rarr;
@@ -18,18 +18,11 @@ export function AcademySubscriptions() {
     </div>
   );
 }
-export const projects = [
+export const teams = [
   {
     title: 'Soccer Elite FA',
     description:
       'With venue coverage at Star Meadow Sports Complex, SEFA players now have access to the PLAYBACK services.',
-    link: 'https://buy.stripe.com/6oE17JgvM70U7fi6ot',
-    logoUrl: '/partners/soccerelite.svg',
-  },
-  {
-    title: 'Soccer Elite FA Scholars',
-    description:
-      'With venue coverage at Star Meadow Sports Complex, SEFA Scholarship players now have access to the PLAYBACK services.',
     link: 'https://buy.stripe.com/14keYz1AS5WQ0QU5km',
     logoUrl: '/partners/soccerelite.svg',
   },
