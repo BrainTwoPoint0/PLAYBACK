@@ -13,7 +13,7 @@ export default function Statistics() {
         className="md:w-[24rem]"
         formatAsMoney
       />
-      <Card title="Teams Onboarded" stat={9} className="md:mt-[2rem]" />
+      <Card title="Teams Onboarded" stat={12} className="md:mt-[2rem]" />
     </div>
   );
 }
