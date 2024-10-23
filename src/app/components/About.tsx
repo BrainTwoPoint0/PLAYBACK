@@ -14,7 +14,7 @@ export function About() {
     {
       title: 'You PLAY - We BACK',
       description:
-        'PLAYBACK is a solutions aggregator which powers sports clubs, leagues, tournaments, academies, players, analysts, agents, scouts, and fans using curated partnerships, in-house software, accessible business models, and top of the line, AI-driven equipment. PLAYBACK promotes commercialising access to premium services to the masses whilst suppressing financial and operational burdens.',
+        'PLAYBACK is a solutions aggregator which powers sports clubs, leagues, tournaments, academies, players, analysts, agents, scouts, and fans. Using curated partnerships, in-house software, accessible business models, and AI-powered equipment, PLAYBACK is commercialising access to premium services suppressing financial and operational burdens.',
       skeleton: <SkeletonOne />,
       className:
         'col-span-1 lg:col-span-4 border-b lg:border-r border-neutral-800 h-full',
