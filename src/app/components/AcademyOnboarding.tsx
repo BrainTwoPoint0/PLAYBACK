@@ -10,9 +10,8 @@ export function AcademyOnboarding() {
         <div>
           <p className="text-neutral-200 text-xs md:text-sm font-normal mb-8">
             Select your academy from the PLAYBACK Academy Services list below
-            and sign up for a subscription. Once you have signed up, you will be
-            able invited to the ClubHouse to access the platform and access your
-            match footage & data.
+            and sign up for a subscription. Upon successful sign up, you will be
+            invited to the ClubHouse via e-mail to access the platform.
           </p>
           <div className="grid grid-cols-2 gap-4">
             <Image
@@ -81,7 +80,7 @@ export function AcademyOnboarding() {
           <p className="text-neutral-200 text-xs md:text-sm font-normal mb-6">
             Players will be able to create their Player Profile which will be
             used as a repository of the player&apos;s details, stats, and
-            highlights. Shareable via link.
+            highlights - all in a shareable format.
           </p>
 
           <div className="grid grid-cols-2 gap-4">
@@ -167,7 +166,7 @@ export function AcademyOnboarding() {
       <Timeline
         data={data}
         title="Academy Onboarding"
-        description="By partnering with leading academies, players, parents, and staff can now have a shared ecosystem where growth is promoted. POWERED by PLAYBACK."
+        description="Players, parents, and staff can now have a shared ecosystem where growth is promoted, moments are analysed, and memories are preserved. POWERED by PLAYBACK."
       />
     </div>
   );
