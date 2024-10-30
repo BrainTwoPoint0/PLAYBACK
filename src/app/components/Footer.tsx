@@ -37,7 +37,7 @@ export default function Footer() {
             className="h-9 w-9"
           />
         </Link>
-        <Link href="https://www.tiktok.com/@playbacksports.ai" target="_blank">
+        <Link href="https://www.tiktok.com/@playback_global" target="_blank">
           <Image
             src="/assets/tiktok.png"
             alt="PLAYBACK Instagram"
