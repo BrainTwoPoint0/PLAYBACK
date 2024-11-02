@@ -28,7 +28,7 @@ export default function Footer() {
             className="h-9 w-9"
           />
         </Link>
-        <Link href="https://youtube.com/@playback-sports-ai" target="_blank">
+        <Link href="https://youtube.com/@playback_global" target="_blank">
           <Image
             src="/assets/youtube.png"
             alt="PLAYBACK Instagram"
