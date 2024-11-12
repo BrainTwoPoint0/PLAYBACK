@@ -59,16 +59,20 @@ export function ContactForm() {
             <Label htmlFor="r1">Venue</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="camera_provider" id="r2" />
-            <Label htmlFor="r2">Camera Provider</Label>
+            <RadioGroupItem value="player" id="r2" />
+            <Label htmlFor="r2">Player</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="league_organiser" id="r3" />
-            <Label htmlFor="r3">League Organiser</Label>
+            <RadioGroupItem value="camera_provider" id="r3" />
+            <Label htmlFor="r3">Camera Provider</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="ambassador" id="r4" />
-            <Label htmlFor="r4">Potential Ambassador</Label>
+            <RadioGroupItem value="league_organiser" id="r4" />
+            <Label htmlFor="r4">League Organiser</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="ambassador" id="r5" />
+            <Label htmlFor="r5">Potential Ambassador</Label>
           </div>
         </RadioGroup>
         <LabelInputContainer>
