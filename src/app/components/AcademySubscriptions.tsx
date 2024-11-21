@@ -27,6 +27,13 @@ export const teams = [
     logoUrl: '/partners/soccerelite.svg',
   },
   {
+    title: 'Maestros Academy',
+    description:
+      'Select Maestros Academy teams can now access the PLAYBACK services across both of their venues.',
+    link: 'https://buy.stripe.com/eVa8AbdjA5WQczCbIP',
+    logoUrl: '/partners/maestros.png',
+  },
+  {
     title: 'Soccer Elite FA Women',
     description:
       'With venue coverage at Star Meadow Sports Complex, SEFA Women players now have access to the PLAYBACK services.',

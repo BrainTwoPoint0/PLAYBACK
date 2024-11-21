@@ -7,8 +7,8 @@ export const Partners = () => {
       <SectionTitle title="Our Partners" />
       <div className="flex flex-wrap gap-10 justify-center">
         <Image
-          alt="SE FA Logo"
-          src="/partners/soccerelite.svg"
+          alt="Maestros Academy UAE Logo"
+          src="/partners/maestros.png"
           height={100}
           width={100}
           className="opacity-75 md:w-28"
@@ -20,10 +20,16 @@ export const Partners = () => {
           width={100}
           className="opacity-75 md:w-28"
         />
-        {/* <Image alt="FC Urban Logo" src="/partners/fcurban.svg" height={100} width={100} className='opacity-75 md:w-28' /> */}
         <Image
           alt="Maidstone United Logo"
           src="/partners/maidstone.svg"
+          height={100}
+          width={100}
+          className="opacity-75 md:w-28"
+        />
+        <Image
+          alt="Soccer Elite FA Logo"
+          src="/partners/soccerelite.svg"
           height={100}
           width={100}
           className="opacity-75 md:w-28"
