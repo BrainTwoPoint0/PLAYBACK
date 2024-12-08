@@ -190,7 +190,7 @@ export const SkeletonTwo = () => {
 export const SkeletonThree = () => {
   return (
     <Link
-      href="https://youtube.com/@playback-sports-ai?si=4JaGtxmbP2_gtT8c"
+      href="https://www.youtube.com/shorts/YxtmxB-BaT8"
       target="__blank"
       className="relative flex group/image"
     >
