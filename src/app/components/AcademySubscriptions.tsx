@@ -27,18 +27,18 @@ export const teams = [
     logoUrl: '/partners/soccerelite.svg',
   },
   {
+    title: 'Complete Football Academy',
+    description:
+      'JPL & Mezzie Youth teams can now access the PLAYBACK services across their venues.',
+    link: 'https://buy.stripe.com/28obMn1ASdpi1UY9AJ',
+    logoUrl: '/partners/cfa.png',
+  },
+  {
     title: 'Maestros Academy',
     description:
       'Select Maestros Academy teams can now access the PLAYBACK services across both of their venues.',
     link: 'https://buy.stripe.com/eVa8AbdjA5WQczCbIP',
     logoUrl: '/partners/maestros.png',
-  },
-  {
-    title: 'Soccer Elite FA Women',
-    description:
-      'With venue coverage at Star Meadow Sports Complex, SEFA Women players now have access to the PLAYBACK services.',
-    link: 'https://buy.stripe.com/cN26s393kgBuczC8wC',
-    logoUrl: '/partners/soccerelite.svg',
   },
   {
     title: 'Hollands & Blair',
@@ -55,12 +55,19 @@ export const teams = [
     logoUrl: '/partners/maidstone.svg',
   },
   {
-    title: 'Coming Soon',
+    title: 'Soccer Elite FA Women',
     description:
-      'The PLAYBACK team is continuously working on onboarding new venues and academies. If you would like to be part of the PLAYBACK ecosystem, REACH OUT!',
-    link: '/contact',
-    logoUrl: '/branding/PB-icon.png',
+      'With venue coverage at Star Meadow Sports Complex, SEFA Women players now have access to the PLAYBACK services.',
+    link: 'https://buy.stripe.com/cN26s393kgBuczC8wC',
+    logoUrl: '/partners/soccerelite.svg',
   },
+  // {
+  //   title: 'Coming Soon',
+  //   description:
+  //     'The PLAYBACK team is continuously working on onboarding new venues and academies. If you would like to be part of the PLAYBACK ecosystem, REACH OUT!',
+  //   link: '/contact',
+  //   logoUrl: '/branding/PB-icon.png',
+  // },
 ];
 
 const BottomGradient = () => {
