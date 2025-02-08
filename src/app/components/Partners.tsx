@@ -49,8 +49,8 @@ export const Partners = () => {
           className="opacity-75 md:w-28"
         />
         <Image
-          alt="Galatasaray Logo"
-          src="/partners/galatasaray.svg"
+          alt="Three Logo"
+          src="/partners/three.svg"
           height={100}
           width={100}
           className="opacity-75 md:w-28"
