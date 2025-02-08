@@ -15,8 +15,9 @@ import Image from 'next/image';
 
 const navItems = [
   { href: '/academy', label: 'Academy' },
-  { href: '/leagues', label: 'Leagues', disabled: true },
-  { href: '/events', label: 'Events', disabled: true },
+  { href: '/league', label: 'League', disabled: true },
+  { href: '/venue', label: 'Venues', disabled: true },
+  { href: '/event', label: 'Events', disabled: true },
   { href: '/players', label: 'Players', disabled: true },
   { href: '/foundation', label: 'Foundation', disabled: true },
 ];
