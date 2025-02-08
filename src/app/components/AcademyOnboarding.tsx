@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import React from 'react';
 import { Timeline } from './ui/timeline';
+import Link from 'next/link';
 
 export function AcademyOnboarding() {
   const data = [
@@ -37,8 +38,18 @@ export function AcademyOnboarding() {
       entryContent: (
         <div>
           <p className="text-neutral-200 text-xs md:text-sm font-normal mb-8">
-            Following succcessful onboarding to the PLAYBACK ClubHouse, you will
-            be able to access your team&apos;s data, content, and analytics.
+            Following successful onboarding to the PLAYBACK ClubHouse, you will
+            be able to access your team&apos;s data, content, and analytics by
+            signing in through{' '}
+            <Link
+              href="https://app.veo.co"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              app.veo.co
+            </Link>{' '}
+            using your chosen credentials.
           </p>
           <div className="grid grid-cols-2 gap-4">
             <Image
