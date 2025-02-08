@@ -14,7 +14,7 @@ export function AcademySubscriptions() {
         </button>
       </Link>
 
-      <div className="bg-gradient-to-r from-transparent via-neutral-700 to-transparent my-8 h-[1px] w-full" />
+      <div className="my-4 " />
     </div>
   );
 }

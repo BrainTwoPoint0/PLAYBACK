@@ -7,6 +7,7 @@ import { SportsList } from './components/SportsList';
 import Services from './components/Services';
 import { FlipWords } from './components/ui/flip-words';
 import Image from 'next/image';
+import { ContactForm } from './components/Contact';
 
 export default function Home() {
   const words = [
@@ -36,6 +37,7 @@ export default function Home() {
         </div>
       </section> */}
       <SportsList />
+      <ContactForm />
     </main>
   );
 }

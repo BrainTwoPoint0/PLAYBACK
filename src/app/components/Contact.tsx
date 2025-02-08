@@ -5,7 +5,14 @@ import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { cn } from '@/app/utils/cn';
 import { Textarea } from './ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/app/components/ui/radio-group';
+import SectionTitle from './ui/section-title';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/app/components/ui/select';
 
 type Status = 'pending' | 'ok' | 'error';
 
@@ -38,8 +45,8 @@ export function ContactForm() {
   };
 
   return (
-    <div className="md:border border-[var(--timberwolf)]  max-w-md w-full mx-auto rounded-none md:rounded-2xl p-4 md:p-8 shadow-input bg-[var(--night)] mb-8">
-      <h2 className="font-bold text-3xl text-neutral-200">Join us</h2>
+    <div className="container w-full rounded-none md:rounded-2xl p-4 md:p-8 shadow-input bg-[var(--night)] mb-8">
+      <SectionTitle title="Need Help?" />
       <form
         className="my-2 flex flex-col items-start space-y-6"
         name="contact"
@@ -52,53 +59,58 @@ export function ContactForm() {
           </label>
         </p>
         <input type="hidden" name="form-name" value="contact" />
-        <RadioGroup defaultValue="venue" className="mb-2" name="who">
-          <Label className="mb-2">Who am I?</Label>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="venue" id="r1" />
-            <Label htmlFor="r1">Venue</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="player" id="r2" />
-            <Label htmlFor="r2">Player</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="camera_provider" id="r3" />
-            <Label htmlFor="r3">Camera Provider</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="league_organiser" id="r4" />
-            <Label htmlFor="r4">League Organiser</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="ambassador" id="r5" />
-            <Label htmlFor="r5">Potential Ambassador</Label>
-          </div>
-        </RadioGroup>
-        <LabelInputContainer>
-          <Label htmlFor="name">Full Name</Label>
-          <Input id="name" placeholder="Tyler Adams" type="text" name="name" />
-        </LabelInputContainer>
-        <LabelInputContainer>
-          <Label htmlFor="email">Email Address</Label>
-          <Input
-            id="email"
-            placeholder="projectmayhem@fc.com"
-            type="email"
-            name="email"
-            required
-          />
-        </LabelInputContainer>
-        <LabelInputContainer>
-          <Label htmlFor="company">Company</Label>
-          <Input
-            id="company"
-            placeholder="Alphabet LTD"
-            type="text"
-            name="company"
-            required
-          />
-        </LabelInputContainer>
+        <div className="flex flex-col md:flex-row md:space-x-4 space-y-6 md:space-y-0 w-full">
+          <LabelInputContainer>
+            <Label htmlFor="name">Full Name</Label>
+            <Input
+              id="name"
+              placeholder="Tyler Adams"
+              type="text"
+              name="name"
+            />
+          </LabelInputContainer>
+          <LabelInputContainer>
+            <Label htmlFor="email">Email Address</Label>
+            <Input
+              id="email"
+              placeholder="projectmayhem@fc.com"
+              type="email"
+              name="email"
+              required
+            />
+          </LabelInputContainer>
+        </div>
+        <div className="flex flex-col md:flex-row md:space-x-4 space-y-6 md:space-y-0 w-full">
+          <LabelInputContainer>
+            <Label htmlFor="company">Company</Label>
+            <Input
+              id="company"
+              placeholder="Alphabet LTD"
+              type="text"
+              name="company"
+              required
+            />
+          </LabelInputContainer>
+          <LabelInputContainer>
+            <Label htmlFor="who">Who Am I?</Label>
+            <Select name="who">
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="I am a..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="venue">Venue</SelectItem>
+                <SelectItem value="player">Player</SelectItem>
+                <SelectItem value="equipment_provider">
+                  Equipment Provider
+                </SelectItem>
+                <SelectItem value="league_organiser">
+                  League Organiser
+                </SelectItem>
+                <SelectItem value="ambassador">Potential Ambassador</SelectItem>
+              </SelectContent>
+            </Select>
+          </LabelInputContainer>
+        </div>
         <LabelInputContainer>
           <Label htmlFor="message">Message (optional)</Label>
           <Textarea id="message" placeholder="Hi..." name="message" />

@@ -15,10 +15,10 @@ import Image from 'next/image';
 
 const navItems = [
   { href: '/academy', label: 'Academy' },
-  // { href: '/league', label: 'League' },
-  // { href: '/events', label: 'Events' },
-  // { href: '/players', label: 'Players' },
-  // { href: '/foundation', label: 'Foundation' },
+  { href: '/leagues', label: 'Leagues', disabled: true },
+  { href: '/events', label: 'Events', disabled: true },
+  { href: '/players', label: 'Players', disabled: true },
+  { href: '/foundation', label: 'Foundation', disabled: true },
 ];
 
 export default function NavBar() {
@@ -46,17 +46,19 @@ export default function NavBar() {
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
-              {navItems.map(({ href, label }) => (
-                <NavigationMenuItem key={label}>
-                  <Link href={href} legacyBehavior passHref>
-                    <NavigationMenuLink
-                      className={`${navigationMenuTriggerStyle()}`}
-                    >
-                      {label}
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-              ))}
+              {navItems
+                .filter((item) => !item.disabled)
+                .map(({ href, label }) => (
+                  <NavigationMenuItem key={label}>
+                    <Link href={href} legacyBehavior passHref>
+                      <NavigationMenuLink
+                        className={`${navigationMenuTriggerStyle()}`}
+                      >
+                        {label}
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                ))}
             </NavigationMenuContent>
           </NavigationMenuItem>
           <NavigationMenuItem>
@@ -71,13 +73,23 @@ export default function NavBar() {
             </Link>
           </NavigationMenuItem>
           <NavigationMenuList className="hidden md:flex mr-auto ml-4 py-1 pl-4 border-l border-[var(--timberwolf)] items-center text-lg justify-center">
-            {navItems.map(({ href, label }) => (
+            {navItems.map(({ href, label, disabled }) => (
               <NavigationMenuItem key={label}>
-                <Link href={href} legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                {disabled ? (
+                  <span
+                    className={`${navigationMenuTriggerStyle()} opacity-50 cursor-not-allowed`}
+                  >
                     {label}
-                  </NavigationMenuLink>
-                </Link>
+                  </span>
+                ) : (
+                  <Link href={href} legacyBehavior passHref>
+                    <NavigationMenuLink
+                      className={navigationMenuTriggerStyle()}
+                    >
+                      {label}
+                    </NavigationMenuLink>
+                  </Link>
+                )}
               </NavigationMenuItem>
             ))}
           </NavigationMenuList>
