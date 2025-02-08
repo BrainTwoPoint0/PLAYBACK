@@ -92,14 +92,14 @@ export function ContactForm() {
             />
           </LabelInputContainer>
           <LabelInputContainer>
-            <Label htmlFor="who">Who Am I?</Label>
+            <Label htmlFor="who">I am a...</Label>
             <Select name="who">
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="I am a..." />
+                <SelectValue placeholder="- Select -" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="venue">Venue</SelectItem>
                 <SelectItem value="player">Player</SelectItem>
+                <SelectItem value="venue">Venue</SelectItem>
                 <SelectItem value="equipment_provider">
                   Equipment Provider
                 </SelectItem>
