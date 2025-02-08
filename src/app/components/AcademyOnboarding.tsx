@@ -131,7 +131,7 @@ export function AcademyOnboarding() {
       entryTitle: 'Content',
       entryContent: (
         <div>
-          <p className="text-neutral-200 text-xs md:text-sm font-normal mb-6">
+          <p className="text-neutral-200 text-xs md:text-sm font-normal mb-6 w-full">
             Onboarded players & parents can access their team&apos;s footage,
             create clips, add highlights to the Player Profile, share content,
             and interact with the coaching staff via @ mentions to discuss plays

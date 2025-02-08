@@ -48,7 +48,7 @@ export function ContactForm() {
     <div className="container w-full rounded-none md:rounded-2xl p-4 md:p-8 shadow-input bg-[var(--night)] mb-8">
       <SectionTitle title="Need Help?" />
       <form
-        className="my-2 flex flex-col items-start space-y-6"
+        className="mb-2 mt-[-2rem] flex flex-col items-start space-y-6"
         name="contact"
         onSubmit={handleFormSubmit}
       >
