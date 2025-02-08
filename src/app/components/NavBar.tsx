@@ -12,30 +12,35 @@ import {
 import localFont from 'next/font/local';
 import * as React from 'react';
 import Link from 'next/link';
-
+import Image from 'next/image';
 const PLAYBACKFont = localFont({
   src: '../../../public/fonts/playbackfont.ttf',
 });
 
 const navItems = [
   { href: '/academy', label: 'Academy' },
-  // { href: "/tournaments", label: "Tournaments" },
+  // { href: '/league', label: 'League' },
+  // { href: '/events', label: 'Events' },
+  // { href: '/players', label: 'Players' },
+  // { href: '/foundation', label: 'Foundation' },
 ];
 
 export default function NavBar() {
   return (
-    <nav className="container mx-auto flex p-5 items-center justify-between">
+    <nav className="container mx-auto flex p-5 items-center justify-center">
       <NavigationMenu>
         <NavigationMenuList>
           <NavigationMenuItem className="md:hidden">
             <NavigationMenuTrigger className="px-3 py-6">
-              <span
-                className={`${PLAYBACKFont.className} text-[var(--ash-grey)] text-2xl`}
-              >
-                PLAYBACK
-              </span>
+              <Image
+                src="/branding/PLAYBACK-Text.png"
+                alt="Menu"
+                width={200}
+                height={200}
+                className="w-48 h-10"
+              />
             </NavigationMenuTrigger>
-            <NavigationMenuContent className="p-2 space-y-2 w-[10.25rem]">
+            <NavigationMenuContent className="p-2 space-y-2 w-[14.4rem]">
               <NavigationMenuItem>
                 <Link href="/">
                   <NavigationMenuLink
@@ -80,25 +85,6 @@ export default function NavBar() {
           </NavigationMenuList>
         </NavigationMenuList>
       </NavigationMenu>
-
-      <Link
-        href="/contact"
-        className="text-[var(--night)] inline-flex items-center bg-[var(--ash-grey)] border-0 py-3 px-3 focus:outline-none hover:bg-[var(--timberwolf)] rounded text-base "
-      >
-        REACH OUT
-        <svg
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          className="w-4 h-4 ml-1"
-          viewBox="0 0 24 24"
-        >
-          {' '}
-          <path d="M5 12h14M12 5l7 7-7 7"></path>
-        </svg>
-      </Link>
     </nav>
   );
 }
