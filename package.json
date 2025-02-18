@@ -22,6 +22,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cobe": "^0.6.3",
+    "decap-cms-app": "^3.6.2",
     "framer-motion": "^11.3.31",
     "lucide-react": "^0.475.0",
     "mini-svg-data-uri": "^1.4.4",
