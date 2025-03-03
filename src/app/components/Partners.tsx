@@ -35,6 +35,13 @@ export const Partners = () => {
           className="opacity-75 md:w-28"
         />
         <Image
+          alt="GOALS Logo"
+          src="/partners/goals-logo.svg"
+          height={100}
+          width={100}
+          className="opacity-75 md:w-28"
+        />
+        <Image
           alt="DAFL Logo"
           src="/partners/dafl.png"
           height={100}
