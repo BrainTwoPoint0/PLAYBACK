@@ -80,35 +80,35 @@ export function ServicesTabs() {
         />
       ),
     },
-    {
-      title: 'More',
-      value: 'more',
-      content: (
-        <Service
-          title="Coming Soon..."
-          images={[
-            '/branding/PLAYBACK-icon.png',
-            '/branding/simple-logo.png',
-            '/branding/PLAYBACK-icon.png',
-            '/branding/simple-logo.png',
-            '/branding/PLAYBACK-icon.png',
-            '/branding/simple-logo.png',
-            '/branding/PLAYBACK-icon.png',
-          ]}
-          features={[
-            { icon: TournamentIcon, text: 'Leagues & Tournaments' },
-            { icon: ContentIcon, text: 'Footage & Content' },
-            { icon: AIIcon, text: 'AI Detection' },
-            { icon: SocialMediaIcon, text: 'Social Media Sharing' },
-            { icon: CharityIcon, text: 'PLAYBACK Foundation' },
-          ]}
-          callToAction={{
-            text: 'Reach Out',
-            link: '/contact',
-          }}
-        />
-      ),
-    },
+    // {
+    //   title: 'More',
+    //   value: 'more',
+    //   content: (
+    //     <Service
+    //       title="Coming Soon..."
+    //       images={[
+    //         '/branding/PLAYBACK-icon.png',
+    //         '/branding/simple-logo.png',
+    //         '/branding/PLAYBACK-icon.png',
+    //         '/branding/simple-logo.png',
+    //         '/branding/PLAYBACK-icon.png',
+    //         '/branding/simple-logo.png',
+    //         '/branding/PLAYBACK-icon.png',
+    //       ]}
+    //       features={[
+    //         { icon: TournamentIcon, text: 'Leagues & Tournaments' },
+    //         { icon: ContentIcon, text: 'Footage & Content' },
+    //         { icon: AIIcon, text: 'AI Detection' },
+    //         { icon: SocialMediaIcon, text: 'Social Media Sharing' },
+    //         { icon: CharityIcon, text: 'PLAYBACK Foundation' },
+    //       ]}
+    //       callToAction={{
+    //         text: 'Reach Out',
+    //         link: '/contact',
+    //       }}
+    //     />
+    //   ),
+    // },
   ];
 
   return (
