@@ -48,6 +48,39 @@ export function ServicesTabs() {
       ),
     },
     {
+      title: 'Tournament',
+      value: 'tournament',
+      content: (
+        <Service
+          title="PLAYBACK Tournament Services"
+          images={[
+            '/showcase/pixellot/tournament-pixellot-content.png',
+            '/showcase/pixellot/tournament-pixellot-games.png',
+            '/showcase/pixellot/tournament-pixellot-content.png',
+            '/showcase/pixellot/tournament-pixellot-games.png',
+            '/showcase/pixellot/tournament-pixellot-content.png',
+            '/showcase/pixellot/tournament-pixellot-games.png',
+            '/showcase/pixellot/tournament-pixellot-content.png',
+            '/showcase/pixellot/tournament-pixellot-games.png',
+            '/showcase/pixellot/tournament-pixellot-content.png',
+            '/showcase/pixellot/tournament-pixellot-games.png',
+
+          ]}
+          features={[
+            { icon: ContentIcon, text: 'Tournament Match Footage' },
+            { icon: AIIcon, text: 'AI-Powered' },
+            { icon: SocialMediaIcon, text: 'Social Media Sharing' },
+            { icon: EcosystemIcon, text: 'Shared Ecosystem' },
+            { icon: AnalyticsIcon, text: 'Analytics' },
+          ]}
+          callToAction={{
+            text: 'Access',
+            link: '/tournament',
+          }}
+        />
+      ),
+    },
+    {
       title: 'More',
       value: 'more',
       content: (
