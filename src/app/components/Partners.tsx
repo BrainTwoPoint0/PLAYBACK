@@ -49,6 +49,13 @@ export const Partners = () => {
           className="opacity-75 md:w-24 md:h-24"
         />
         <Image
+          alt="Atomics Logo"
+          src="/partners/atomics.png"
+          height={100}
+          width={100}
+          className="opacity-75 md:w-28 md:h-24"
+        />
+        <Image
           alt="Three Logo"
           src="/partners/three.svg"
           height={100}

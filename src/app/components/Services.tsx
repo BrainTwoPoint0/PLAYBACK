@@ -64,7 +64,6 @@ export function ServicesTabs() {
             '/showcase/pixellot/tournament-pixellot-games.png',
             '/showcase/pixellot/tournament-pixellot-content.png',
             '/showcase/pixellot/tournament-pixellot-games.png',
-
           ]}
           features={[
             { icon: ContentIcon, text: 'Tournament Match Footage' },
