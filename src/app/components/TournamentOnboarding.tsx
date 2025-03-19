@@ -9,9 +9,10 @@ export function TournamentOnboarding() {
       entryContent: (
         <div>
           <p className="text-neutral-200 text-xs md:text-sm font-normal mb-8">
-            Select your academy from the PLAYBACK Academy Services list below
-            and sign up for a subscription. Upon successful sign up, you will be
-            invited to the ClubHouse via e-mail to access the platform.
+            Select your tournament from the PLAYBACK Tournament Services list
+            below and sign up for a subscription. Upon successful sign up, you
+            will receive an email with a link to the tournament folder/all games
+            within 24 hours.
           </p>
           <div className="grid grid-cols-2 gap-4">
             <Image
