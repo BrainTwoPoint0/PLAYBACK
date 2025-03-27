@@ -8,6 +8,7 @@ import Services from './components/Services';
 import { FlipWords } from './components/ui/flip-words';
 import Image from 'next/image';
 import { ContactForm } from './components/Contact';
+import Press from './components/Press';
 
 export default function Home() {
   const words = [
@@ -29,6 +30,7 @@ export default function Home() {
       </div>
       <Partners />
       <Services />
+      <Press />
       {/* <section className="container mt-36 text-4xl items-center justify-evenly hidden md:flex">
         <Image className='w-1/2' width={500} height={500} src={'/branding/PLAYBACK-Text.png'} alt='PLAYBACK Logo' />
         <div className="w-2/5">
