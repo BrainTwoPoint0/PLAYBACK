@@ -22,7 +22,7 @@ export function About() {
     {
       title: 'Premium Partners',
       description:
-        'PAYBACK leverages its network of partners to provide you with top of the line products and services within a business model promoting growth and development.',
+        'PLAYBACK leverages its network of partners to provide you with top of the line products and services within a business model promoting growth and development.',
       skeleton: <SkeletonTwo />,
       className: 'border-b col-span-1 lg:col-span-2 border-neutral-800',
     },
