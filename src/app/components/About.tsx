@@ -36,7 +36,7 @@ export function About() {
     {
       title: 'Scaling Worldwide',
       description:
-        'PLAYBACK is currently operational in the United Kingdom and United Arab Emirates, with partners pending onboarding in 12 more countries.',
+        'The PLAYBACK Network includes sports organisations in 6 countries, with partners pending onboarding in 12 more countries.',
       skeleton: <SkeletonFour />,
       className: 'col-span-1 lg:col-span-3 border-b lg:border-none',
     },
@@ -242,8 +242,12 @@ export const Globe = ({ className }: { className?: string }) => {
       markers: [
         // longitude latitude
         { location: [51.37178860433438, 0.561636584656944], size: 0.06 }, // Kent
-        // { location: [41.07904357011636, 29.022866484615545], size: 0.04 }, //TURKEY
+        { location: [41.07904357011636, 29.022866484615545], size: 0.04 }, //TURKEY
         { location: [24.39766023964695, 54.53680134963848], size: 0.04 }, // UAE
+        { location: [29.3117, 47.4818], size: 0.04 }, // KUWAIT
+        { location: [48.8575, 2.3514], size: 0.04 }, // PARIS
+        { location: [26.4207, 50.0888], size: 0.04 }, // DAMMAM
+        { location: [24.7136, 46.6753], size: 0.04 }, // RIYADH
       ],
       onRender: (state) => {
         // Called on every animation frame.
