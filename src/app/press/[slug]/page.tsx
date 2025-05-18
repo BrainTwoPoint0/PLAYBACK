@@ -116,7 +116,7 @@ export default async function PostPage({ params }: PageProps) {
                 src={urlForImage(post.coverImage)}
                 alt={post.title}
                 fill
-                className="object-cover"
+                className="object-contain"
                 priority
               />
             </div>

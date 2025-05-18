@@ -25,7 +25,7 @@ export function BlogCard({
 }: BlogCardProps) {
   return (
     <Link href={`/press/${slug}`}>
-      <motion.div className="group relative flex flex-col overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900 transition-all duration-300 hover:border-zinc-700">
+      <motion.div className="group relative flex flex-col overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900 transition-all duration-300 hover:border-zinc-700 h-80">
         <div className="relative h-48 overflow-hidden">
           {coverImage ? (
             <Image
