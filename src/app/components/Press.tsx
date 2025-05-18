@@ -3,7 +3,7 @@ import Image from 'next/image';
 export default function Press() {
   return (
     <section className="container mt-36">
-      <SectionTitle title="Recognised by:" />
+      <SectionTitle title="Global Recognition" />
       <div className="flex flex-wrap gap-x-10 md:gap-x-64 justify-center items-center">
         <Image
           alt="WebSummit Logo"

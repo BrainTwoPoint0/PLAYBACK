@@ -1,25 +1,37 @@
 'use client';
+
 import { ParallaxText } from './components/ParallaxText';
 import { Header } from './components/Header';
 import { Partners } from './components/Partners';
 import { About } from './components/About';
 import { SportsList } from './components/SportsList';
 import Services from './components/Services';
-import { FlipWords } from './components/ui/flip-words';
-import Image from 'next/image';
 import { ContactForm } from './components/Contact';
 import Press from './components/Press';
+import LatestNews from './components/LatestNews';
+import { Suspense, useEffect, useState } from 'react';
+import { Ambassadors } from './components/Ambassadors';
 
 export default function Home() {
-  const words = [
-    'PLAYERS',
-    'AGENTS',
-    'CLUBS',
-    'ACADEMIES',
-    'SCHOLARSHIPS',
-    'LEAGUES',
-    'TOURNAMENTS',
-  ];
+  const [latestPosts, setLatestPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchPosts() {
+      try {
+        const response = await fetch('/api/posts/latest');
+        const data = await response.json();
+        setLatestPosts(data);
+      } catch (error) {
+        console.error('Error fetching latest posts:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchPosts();
+  }, []);
+
   return (
     <main className="overflow-hidden">
       <Header />
@@ -31,13 +43,9 @@ export default function Home() {
       <Partners />
       <Services />
       <Press />
-      {/* <section className="container mt-36 text-4xl items-center justify-evenly hidden md:flex">
-        <Image className='w-1/2' width={500} height={500} src={'/branding/PLAYBACK-Text.png'} alt='PLAYBACK Logo' />
-        <div className="w-2/5">
-          AN ECOSYSTEM <br />
-          TO POWER<FlipWords words={words} />
-        </div>
-      </section> */}
+      <Suspense fallback={<div>Loading latest news...</div>}>
+        {!loading && <LatestNews posts={latestPosts} />}
+      </Suspense>
       <SportsList />
       <ContactForm />
     </main>
