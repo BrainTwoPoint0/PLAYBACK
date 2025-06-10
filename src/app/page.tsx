@@ -10,8 +10,7 @@ import { ContactForm } from './components/Contact';
 import Press from './components/Press';
 import LatestNews from './components/LatestNews';
 import { Suspense, useEffect, useState } from 'react';
-import { Ambassadors } from './components/Ambassadors';
-
+import { Network } from './components/Network';
 export default function Home() {
   const [latestPosts, setLatestPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,6 +35,7 @@ export default function Home() {
     <main className="overflow-hidden">
       <Header />
       <About />
+      <Network />
       <div className="mt-20">
         <ParallaxText baseVelocity={-3}>Access The Moment</ParallaxText>
         <ParallaxText baseVelocity={3}>Unlock your Potential</ParallaxText>

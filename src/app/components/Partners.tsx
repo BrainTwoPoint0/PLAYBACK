@@ -5,55 +5,27 @@ export const Partners = () => {
   return (
     <section className="container mt-20">
       <SectionTitle title="Our Partners" />
-      <div className="flex flex-wrap gap-10 justify-center items-center">
-        <Image
-          alt="Soccer Elite FA Logo"
-          src="/partners/soccerelite.svg"
-          height={100}
-          width={100}
-          className="opacity-75 md:w-24 md:h-24"
-        />
-        <Image
-          alt="Maestros Academy UAE Logo"
-          src="/partners/maestros.png"
-          height={100}
-          width={100}
-          className="opacity-75 md:w-24 md:h-24"
-        />
+      <div className="flex flex-wrap md:gap-36 gap-16 justify-center items-center">
         <Image
           alt="Forbes Logo"
           src="/partners/forbes.svg"
           height={100}
           width={100}
-          className="opacity-75 md:w-28 md:h-28"
+          className="opacity-75 w-32 h-32"
         />
         <Image
-          alt="City Group Logo"
-          src="/partners/city.svg"
-          height={100}
-          width={100}
-          className="opacity-75 md:w-32 md:h-32"
-        />
-        <Image
-          alt="GOALS Logo"
-          src="/partners/goals-logo.svg"
-          height={100}
-          width={100}
-          className="opacity-75 md:w-32 md:h-32"
-        />
-        <Image
-          alt="DAFL Logo"
-          src="/partners/dafl.png"
+          alt="AWS Logo"
+          src="/partners/aws.svg"
           height={100}
           width={100}
           className="opacity-75 md:w-24 md:h-24"
         />
         <Image
-          alt="Atomics Logo"
-          src="/partners/atomics.png"
+          alt="Locals Logo"
+          src="/partners/locals.svg"
           height={100}
           width={100}
-          className="opacity-75 md:w-28 md:h-24"
+          className="opacity-75 w-44 h-44"
         />
         <Image
           alt="Three Logo"
@@ -61,34 +33,6 @@ export const Partners = () => {
           height={100}
           width={100}
           className="opacity-75 md:w-24 md:h-24"
-        />
-        <Image
-          alt="Complete Football Academy Logo"
-          src="/partners/cfa.png"
-          height={100}
-          width={100}
-          className="opacity-75 md:w-24 md:h-24"
-        />
-        <Image
-          alt="Star Meadow Logo"
-          src="/partners/smsc.svg"
-          height={100}
-          width={100}
-          className="opacity-75 md:w-32 md:h-32"
-        />
-        <Image
-          alt="Hollands & Blair Logo"
-          src="/partners/hb.png"
-          height={100}
-          width={100}
-          className="opacity-75 md:w-28 md:h-28"
-        />
-        <Image
-          alt="Maidstone United Logo"
-          src="/partners/maidstone.svg"
-          height={100}
-          width={100}
-          className="opacity-75 md:w-28 md:h-28"
         />
       </div>
     </section>
