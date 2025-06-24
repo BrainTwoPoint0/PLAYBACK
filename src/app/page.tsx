@@ -1,16 +1,17 @@
 'use client';
 
-import { ParallaxText } from './components/ParallaxText';
-import { Header } from './components/Header';
-import { Partners } from './components/Partners';
-import { About } from './components/About';
-import { SportsList } from './components/SportsList';
-import Services from './components/Services';
-import { ContactForm } from './components/Contact';
-import Press from './components/Press';
-import LatestNews from './components/LatestNews';
+import { ParallaxText } from '@/components/ParallaxText';
+import { Header } from '@/components/Header';
+import { Partners } from '@/components/Partners';
+import { About } from '@/components/About';
+import { SportsList } from '@/components/SportsList';
+import Services from '@/components/Services';
+import { ContactForm } from '@/components/Contact';
+import Press from '@/components/Press';
+import LatestNews from '@/components/LatestNews';
 import { Suspense, useEffect, useState } from 'react';
-import { Network } from './components/Network';
+import { Network } from '@/components/Network';
+
 export default function Home() {
   const [latestPosts, setLatestPosts] = useState([]);
   const [loading, setLoading] = useState(true);

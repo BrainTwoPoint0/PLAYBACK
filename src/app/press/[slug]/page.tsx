@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { client } from '@/sanity/lib/client';
 import { urlForImage } from '@/sanity/lib/image';
 import { formatDate } from '@/lib/utils';
-import { PortableText } from '@/app/components/ui/portable-text';
+import { PortableText } from '@/components/ui/portable-text';
 
 interface PageProps {
   params: {

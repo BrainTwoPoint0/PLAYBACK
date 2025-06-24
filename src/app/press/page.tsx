@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { client } from '@/sanity/lib/client';
-import { BlogPostGrid } from '../components/ui/blog-post-grid';
+import { BlogPostGrid } from '@/components/ui/blog-post-grid';
 
 export const metadata: Metadata = {
   title: 'Press & News | PLAYBACK',

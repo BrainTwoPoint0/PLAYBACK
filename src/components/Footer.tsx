@@ -3,16 +3,16 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
 const BrainTwoPoint0Regular = localFont({
-  src: '../../../public/fonts/AvertaStd-Regular.ttf',
+  src: '../../public/fonts/AvertaStd-Regular.ttf',
 });
 const BrainTwoPoint0Black = localFont({
-  src: '../../../public/fonts/AvertaStd-Black.ttf',
+  src: '../../public/fonts/AvertaStd-Black.ttf',
 });
 const BrainTwoPoint0Semibold = localFont({
-  src: '../../../public/fonts/AvertaStd-Semibold.ttf',
+  src: '../../public/fonts/AvertaStd-Semibold.ttf',
 });
 const BrainTwoPoint0Thin = localFont({
-  src: '../../../public/fonts/AvertaStd-Thin.ttf',
+  src: '../../public/fonts/AvertaStd-Thin.ttf',
 });
 
 export default function Footer() {

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
-import { cn } from '@/app/utils/cn';
+import { cn } from '@/lib/utils';
 import { Textarea } from './ui/textarea';
 import SectionTitle from './ui/section-title';
 import {
@@ -12,7 +12,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/app/components/ui/select';
+} from '@/components/ui/select';
 
 type Status = 'pending' | 'ok' | 'error';
 
