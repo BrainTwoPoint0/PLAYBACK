@@ -4,6 +4,14 @@
 
 Building an advanced Player Portfolio platform that serves as the "LinkedIn for Sports" - a comprehensive social network and professional profile system for athletes, coaches, scouts, and sports enthusiasts.
 
+### Design System
+
+- **Color Palette**: Dark theme with `--night: #0a100d`, `--ash-grey: #b9baa3`, `--timberwolf: #d6d5c9`
+- **Typography**: Inter font family with bold, clean typography
+- **Animations**: Framer Motion for smooth, professional animations
+- **Components**: Shadcn UI for accessible, customizable components
+- **Layout**: Container-based responsive design with consistent spacing
+
 ## Core Technology Stack
 
 - **Frontend**: Next.js 14+ with TypeScript
