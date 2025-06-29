@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/context';
+import { createClient } from '@/lib/supabase/client';
 import {
   validateEmail,
   validatePassword,
@@ -14,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LoadingSpinner } from '@/components/ui/loading';
-import { AlertCircle, Mail, Lock } from 'lucide-react';
+import { AlertCircle, Mail, Lock, Check, X, Loader2 } from 'lucide-react';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -24,9 +25,42 @@ export default function RegisterPage() {
   const [fullName, setFullName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [usernameStatus, setUsernameStatus] = useState<
+    'idle' | 'checking' | 'available' | 'taken' | 'invalid'
+  >('idle');
 
   const { signUp, user } = useAuth();
   const router = useRouter();
+
+  // Check username availability function
+  const checkUsernameAvailability = async (
+    username: string
+  ): Promise<{ isAvailable: boolean; error?: any }> => {
+    const supabase = createClient();
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('username', username.trim().toLowerCase())
+        .single();
+
+      if (error && error.code === 'PGRST116') {
+        // No rows returned - username is available
+        return { isAvailable: true };
+      }
+
+      if (error) {
+        // Other database error
+        return { isAvailable: false, error };
+      }
+
+      // Username found - not available
+      return { isAvailable: false };
+    } catch (err) {
+      return { isAvailable: false, error: err };
+    }
+  };
 
   // If already authenticated, redirect
   useEffect(() => {
@@ -34,6 +68,35 @@ export default function RegisterPage() {
       router.push('/dashboard');
     }
   }, [user, router]);
+
+  // Username availability checking with debounce
+  useEffect(() => {
+    const checkUsername = async () => {
+      if (username.length < 3) {
+        setUsernameStatus('idle');
+        return;
+      }
+
+      const usernameValidation = validateUsername(username);
+      if (!usernameValidation.isValid) {
+        setUsernameStatus('invalid');
+        return;
+      }
+
+      setUsernameStatus('checking');
+
+      try {
+        const { isAvailable } = await checkUsernameAvailability(username);
+        setUsernameStatus(isAvailable ? 'available' : 'taken');
+      } catch (error) {
+        console.error('Username check error:', error);
+        setUsernameStatus('idle');
+      }
+    };
+
+    const timeoutId = setTimeout(checkUsername, 500);
+    return () => clearTimeout(timeoutId);
+  }, [username]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +116,11 @@ export default function RegisterPage() {
     const usernameValidation = validateUsername(username);
     if (!usernameValidation.isValid) {
       setError(usernameValidation.errors[0]);
+      return;
+    }
+
+    if (usernameStatus !== 'available') {
+      setError('Please choose an available username');
       return;
     }
 
@@ -79,12 +147,22 @@ export default function RegisterPage() {
         full_name: fullName.trim(),
       };
 
-      const { error } = await signUp(email, password, metadata);
+      const { data, error } = await signUp(email, password, metadata);
       if (error) {
         setError(getAuthErrorMessage(error));
+      } else if (data?.user) {
+        // Check if email already exists using identities array
+        // When email confirmation is enabled, existing emails return user with empty identities
+        if (data.user.identities && data.user.identities.length === 0) {
+          setError(
+            'An account with this email already exists. Please sign in instead.'
+          );
+        } else {
+          // Success -> show verify email instructions
+          router.push('/auth/verify-email');
+        }
       } else {
-        // Success -> show verify email instructions
-        router.push('/auth/verify-email');
+        setError('Failed to create account. Please try again.');
       }
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
@@ -175,21 +253,64 @@ export default function RegisterPage() {
               >
                 Username
               </Label>
-              <Input
-                id="username"
-                type="text"
-                placeholder="Choose a username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="h-12 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-xl"
-                style={{
-                  color: 'var(--timberwolf)',
-                  borderColor: 'var(--ash-grey)',
-                  paddingLeft: '12px',
-                }}
-                disabled={loading}
-                autoComplete="username"
-              />
+              <div className="relative">
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="Choose a username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className={`h-12 pr-12 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-xl ${
+                    usernameStatus === 'taken'
+                      ? 'border-red-500'
+                      : usernameStatus === 'available'
+                        ? 'border-green-500'
+                        : ''
+                  }`}
+                  style={{
+                    color: 'var(--timberwolf)',
+                    borderColor:
+                      usernameStatus === 'taken'
+                        ? '#ef4444'
+                        : usernameStatus === 'available'
+                          ? '#10b981'
+                          : 'var(--ash-grey)',
+                    paddingLeft: '12px',
+                  }}
+                  disabled={loading}
+                  autoComplete="username"
+                />
+                {/* Username status indicator */}
+                <div className="absolute right-4 top-3.5">
+                  {usernameStatus === 'checking' && (
+                    <Loader2 className="h-5 w-5 animate-spin text-blue-400" />
+                  )}
+                  {usernameStatus === 'available' && (
+                    <Check className="h-5 w-5 text-green-400" />
+                  )}
+                  {usernameStatus === 'taken' && (
+                    <X className="h-5 w-5 text-red-400" />
+                  )}
+                  {usernameStatus === 'invalid' && (
+                    <X className="h-5 w-5 text-red-400" />
+                  )}
+                </div>
+              </div>
+              {/* Username status message */}
+              {usernameStatus === 'taken' && (
+                <p className="text-sm text-red-400">
+                  This username is already taken
+                </p>
+              )}
+              {usernameStatus === 'available' && (
+                <p className="text-sm text-green-400">Username is available</p>
+              )}
+              {usernameStatus === 'invalid' && (
+                <p className="text-sm text-red-400">
+                  Username must be 3-30 characters, letters, numbers,
+                  underscore, and hyphens only
+                </p>
+              )}
             </div>
 
             {/* Email */}

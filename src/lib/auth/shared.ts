@@ -107,6 +107,8 @@ export function getAuthErrorMessage(error: any): string {
     'Invalid email': 'Please provide a valid email address.',
     'Email rate limit exceeded':
       'Too many emails sent. Please wait before requesting another.',
+    'duplicate key value violates unique constraint "profiles_username_key"':
+      'This username is already taken. Please choose a different username.',
   };
 
   return errorMappings[message] || message;

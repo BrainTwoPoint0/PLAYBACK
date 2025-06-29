@@ -587,38 +587,287 @@ Building an advanced Player Portfolio platform that serves as the "LinkedIn for 
 
 ## 📌 Next Step Implementation Plan – Registration & Onboarding (Sprint 1)
 
-Following the successful completion of the login flow and its brand-aligned UI overhaul, the next immediate priority is to enable **new user sign-up** and a **guided onboarding experience** that captures core profile data.
+Following the successful completion of the login flow and its brand-aligned UI overhaul, the next immediate priority is to complete the **password reset functionality** and implement a **guided onboarding experience** for new users.
 
-### Objectives
+### Current State Analysis
 
-1. Implement secure email/password **registration flow** using Supabase Auth.
-2. Add **initial profile setup wizard** (sport selection, basic info) shown on first login.
-3. Provide **password reset** support via email link.
-4. Ensure flows follow PLAYBACK UI/UX guidelines (mobile-first, dark theme, tokens).
+**✅ Already Implemented:**
 
-### Todo
+- [x] Registration page (`/auth/register`) with brand-aligned UI
+- [x] Login page (`/auth/login`) with dark theme styling
+- [x] Email verification page (`/auth/verify-email`)
+- [x] Auth context with `resetPassword` function
+- [x] Dashboard with protected routes
+- [x] Database schema with profiles, user_sports, sports tables
+- [x] Comprehensive validation utilities
+- [x] Error handling with user-friendly messages
 
-- [ ] Create `/auth/register` route with branded form (email, password, confirm password).
-- [ ] Validate inputs client-side using shared validators (`validateEmail`, `validatePassword`).
-- [ ] Call `supabase.auth.signUp` and handle errors (surface via `getAuthErrorMessage`).
-- [ ] Redirect to **Verify Email** screen with resend link & deep-link instructions.
-- [ ] Build password reset request page (`/auth/forgot-password`) and reset form (`/auth/reset/[token]`).
-- [ ] Add **middleware** to detect first-time login (`profile.completed = false`) and redirect to `/onboarding` wizard.
-- [ ] Scaffold onboarding wizard (multi-step):
-  1. Choose primary sport.
-  2. Pick playing position.
-  3. Enter display name & avatar.
-  4. Confirmation.
-- [ ] Persist onboarding data to `profiles` table (`update`).
-- [ ] Update RLS policies if needed for new inserts/updates.
-- [ ] Storybook stories for registration form & onboarding steps.
-- [ ] Update **docs/ui-ux-guidelines.md** with component variants if new ones created.
+**❌ Missing Components:**
+
+- [ ] Forgot password page (`/auth/forgot-password`)
+- [ ] Password reset form (`/auth/reset-password`)
+- [ ] User onboarding wizard (`/onboarding`)
+- [ ] Profile completion detection and redirect logic
+- [ ] Sports selection during onboarding
+- [ ] Position/role selection for each sport
+
+### Sprint 1 Tasks
+
+#### 🔐 Phase 1: Complete Password Reset Flow ✅
+
+- [x] ✅ **Create `/auth/forgot-password` page**
+
+  - Email input form with validation
+  - Call `resetPassword` from auth context
+  - Success/error messaging
+  - Link back to login
+  - Follow PLAYBACK dark theme design
+
+- [x] ✅ **Create `/auth/reset-password` page**
+
+  - Handle password reset token from URL
+  - New password + confirm password fields
+  - Password strength validation
+  - Call Supabase password update
+  - Redirect to login on success
+
+- [x] ✅ **Test password reset flow end-to-end**
+  - Verify email delivery
+  - Test reset link functionality
+  - Validate error handling
+
+#### 👋 Phase 2: Onboarding Wizard ✅
+
+- [x] ✅ **Create `/onboarding` route and layout**
+
+  - Multi-step wizard container with progress indicator
+  - Navigation between steps with proper state management
+  - Dark theme styling consistent with auth pages
+  - Loading states and error handling
+
+- [x] ✅ **Step 1: Welcome & Role Selection**
+
+  - Welcome message with PLAYBACK branding
+  - Role selection: Player, Coach, Scout, Fan with descriptions
+  - Hover animations and selection states
+  - Continue button with validation
+
+- [x] ✅ **Step 2: Multiple Sports Selection** 🔥
+
+  - Fetch sports from database with loading/error states
+  - Grid layout of available sports with icons
+  - **Multi-select functionality** with visual indicators
+  - Green checkmarks for selected sports
+  - Sports counter ("X sports selected")
+  - Search-friendly sport cards with fallback icons
+
+- [x] ✅ **Step 3: Sport-Specific Position & Experience Selection** 🔥
+
+  - **Dynamic position selection for each chosen sport**
+  - Pre-configured positions by sport (Football, Basketball, Tennis, etc.)
+  - **Sport navigation tabs with completion indicators**
+  - Experience level selection (Beginner → Professional)
+  - Multi-sport navigation with "Previous/Next Sport" buttons
+  - Validation that all sports have positions and experience set
+  - Progress tracking across all selected sports
+
+- [x] ✅ **Enhanced User Experience Features**
+
+  - Visual completion indicators (green checkmarks)
+  - Sport-by-sport navigation system
+  - Smart validation logic for multi-sport flow
+  - Responsive design for mobile and desktop
+  - Consistent PLAYBACK dark theme throughout
+
+- [x] ✅ **Step 4: Personal Details (Optional Fields)**
+
+  - [x] ✅ Bio, location input fields (full name already collected in registration)
+  - [x] ✅ Social media links (Instagram, Twitter, LinkedIn)
+  - [x] ✅ All fields optional to reduce friction
+  - [x] ✅ Character counting for bio field
+  - [x] ✅ PLAYBACK dark theme styling
+  - [x] ✅ No redundant information from registration flow
+  - [ ] Profile picture upload (coming in future sprint)
+  - [ ] Contact preferences and privacy settings (coming in future sprint)
+
+- [x] ✅ **Step 5: Completion & Welcome**
+  - [x] ✅ Summary of selected sports and positions with detailed cards
+  - [x] ✅ Welcome to PLAYBACK message with celebration elements
+  - [x] ✅ Trophy icon with sparkles animation
+  - [x] ✅ Comprehensive summary showing role, sports, positions, experience
+  - [x] ✅ Personal details summary (bio, location, social links)
+  - [x] ✅ "What's Next?" section with actionable next steps
+  - [x] ✅ Custom "Enter PLAYBACK" button with gradient styling
+  - [x] ✅ Redirect to personalized dashboard
+
+#### 🔄 Phase 3: Profile Completion Logic 🎯 NEXT
+
+- [ ] **Add profile completion detection**
+
+  - Create utility function to check if profile is complete
+  - Check for: role, selected sports, positions, basic profile info
+  - Return completion percentage and missing fields
+
+- [ ] **Update middleware for onboarding redirect**
+
+  - Add `/onboarding` to protected paths
+  - Redirect incomplete profiles to onboarding (except for already on onboarding)
+  - Maintain current redirect logic for login/auth paths
+
+- [ ] **Update auth context**
+  - Add profile completion status to auth context
+  - Provide method to refresh profile completion status
+  - Handle profile completion updates
+
+#### ✅ Phase 4: Database Integration (COMPLETED)
+
+- [x] ✅ **Create profile utilities**
+
+  - [x] ✅ Function to save profile data to profiles table
+  - [x] ✅ Function to save user-sports relationships with positions/experience
+  - [x] ✅ Function to check profile completion status
+  - [x] ✅ Error handling for database operations
+  - [x] ✅ TypeScript interfaces for type safety
+
+- [x] ✅ **Implement user_sports relationship management**
+
+  - [x] ✅ Save selected sports with positions and experience levels
+  - [x] ✅ Handle updates to existing user-sports relationships
+  - [x] ✅ Clear old relationships when user changes sports selection
+  - [x] ✅ Map UI enums to database enums (role, experience_level)
+
+- [x] ✅ **Complete onboarding integration**
+  - [x] ✅ Connect onboarding form to database save operations
+  - [x] ✅ Add comprehensive error handling with user feedback
+  - [x] ✅ Update profiles table with bio, location, social_links (JSONB)
+  - [x] ✅ Create multiple user_sports entries for multi-sport users
+  - [x] ✅ Transaction-like data consistency
+
+---
+
+## 📋 Current Status Summary
+
+### ✅ **COMPLETED - Authentication & Full Onboarding Flow**
+
+- [x] Password reset flow with PLAYBACK branding
+- [x] Registration and login with dark theme
+- [x] Complete 5-step onboarding wizard:
+  - [x] Step 1: Role selection (Player, Coach, Scout, Fan)
+  - [x] Step 2: Multi-sport selection with icons
+  - [x] Step 3: Position & experience for each sport
+  - [x] Step 4: Personal details (bio, location, social links)
+  - [x] Step 5: Welcome summary with celebration elements
+- [x] Database schema setup with RLS policies
+- [x] Protected route middleware for authentication
+- [x] Form validation and error handling
+- [x] Responsive design for mobile/desktop
+- [x] Progress indicator and step navigation
+- [x] PLAYBACK dark theme throughout
+
+### ✅ **COMPLETED - Database Integration**
+
+- [x] ✅ Database integration to save onboarding data
+- [x] ✅ Connect onboarding flow to Supabase database
+- [x] ✅ Create profile utilities and user-sports relationships
+- [x] ✅ Complete onboarding save function with error handling
+- [x] ✅ Profile and user-sports data mapping and validation
+
+### ✅ **COMPLETED - Profile Completion Logic & Middleware**
+
+- [x] ✅ Profile completion detection logic
+- [x] ✅ Middleware updates for onboarding redirects
+- [x] ✅ Auto-redirect incomplete profiles to onboarding
+- [x] ✅ Server-side onboarding status check for middleware
+- [x] ✅ Updated auth context with onboarding status
+- [x] ✅ Intelligent redirect logic (avoids infinite redirects)
+
+### 🎯 **NEXT UP - Testing & Polish**
+
+- [ ] Test complete onboarding flow end-to-end 🎯 **PRIORITY**
+- [ ] Verify middleware redirects work correctly
+- [ ] Test database save operations
+- [ ] Polish dashboard to show onboarding status
+
+### 🔮 **UPCOMING - Core Profile Features (Phase 2)**
+
+- [ ] Profile display pages and editing
+- [ ] Video highlight uploads and management
+- [ ] Statistics dashboard and data visualization
+- [ ] Social network features (connections, messaging)
+
+---
+
+## 🚀 Priority Implementation Order
+
+### **✅ Sprint 1: Complete Onboarding Flow (COMPLETED)**
+
+1. **✅ Complete Step 4: Personal Details** (DONE)
+
+   - ✅ Build form components for bio, location (removed redundant full name)
+   - ✅ Add social media link inputs (Instagram, Twitter, LinkedIn)
+   - ✅ All fields optional to reduce friction
+   - ✅ Character counting and validation
+
+2. **✅ Complete Step 5: Welcome & Summary** (DONE)
+
+   - ✅ Create comprehensive summary of all user selections
+   - ✅ Welcome message with celebration elements (Trophy + Sparkles)
+   - ✅ "What's Next?" section with actionable steps
+   - ✅ Custom "Enter PLAYBACK" button with gradient styling
+
+3. **✅ Database Integration for Onboarding** (COMPLETED)
+   - [x] ✅ Create profile utilities for saving data
+   - [x] ✅ Implement user-sports relationship saving
+   - [x] ✅ Update the onboarding `handleFinish` function
+   - [x] ✅ Add error handling and user feedback
+   - [x] ✅ Map UI data to database schema (roles, experience levels)
+
+### **✅ Sprint 2: Profile Completion Detection (COMPLETED)**
+
+4. **✅ Profile Completion Detection** (DONE)
+
+   - ✅ Create utility to check profile completeness
+   - ✅ Add completion status to user context
+   - ✅ Server-side and client-side onboarding status checks
+
+5. **✅ Middleware Updates** (DONE)
+
+   - ✅ Update middleware for onboarding redirects
+   - ✅ Intelligent redirect logic (avoids infinite loops)
+   - ✅ Protected path management for /onboarding
+
+6. **Database Testing & Polish** (NEXT PRIORITY)
+   - [ ] Test complete onboarding flow end-to-end
+   - [ ] Test all database operations
+   - [ ] Add error handling and edge cases
+   - [ ] Polish UX and animations
+
+### Technical Requirements
+
+- **UI/UX**: Follow established PLAYBACK dark theme design tokens
+- **Validation**: Client-side validation for all forms
+- **Accessibility**: Proper ARIA labels, keyboard navigation
+- **Performance**: Lazy load sports data, optimize images
+- **Error Handling**: Graceful error states with retry options
+- **Mobile**: Fully responsive design
 
 ### Definition of Done
 
-- New users can register, verify email, and complete onboarding without console errors.
-- All pages pass Lighthouse accessibility >90 and respect dark theme tokens.
-- Unit tests cover validation & redirect logic (>90% lines for new utils/components).
-- CI pipeline green.
+- [ ] New users can complete password reset flow without errors
+- [ ] First-time users are automatically redirected to onboarding
+- [ ] Onboarding wizard captures: role, primary sport, position, basic profile
+- [ ] Profile data is properly saved to database with relationships
+- [ ] All pages follow PLAYBACK design guidelines
+- [ ] Lighthouse accessibility score >90
+- [ ] All forms have proper validation and error handling
+- [ ] Mobile experience is fully functional
+
+### Success Metrics
+
+- Password reset completion rate >80%
+- Onboarding completion rate >75%
+- Time to complete onboarding <3 minutes
+- Zero console errors during flows
+- Profile data accuracy >95%
 
 ---

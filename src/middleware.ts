@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { checkOnboardingStatusServer } from '@/lib/onboarding/server-utils';
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -38,7 +39,7 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Protected routes that require authentication
-  const protectedPaths = ['/profile', '/settings', '/dashboard'];
+  const protectedPaths = ['/profile', '/settings', '/dashboard', '/onboarding'];
   const isProtectedPath = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );
@@ -46,6 +47,12 @@ export async function middleware(request: NextRequest) {
   // Auth routes that should redirect if user is already logged in
   const authPaths = ['/login', '/register', '/auth'];
   const isAuthPath = authPaths.some((path) =>
+    request.nextUrl.pathname.startsWith(path)
+  );
+
+  // Routes that don't require onboarding completion check
+  const onboardingExemptPaths = ['/auth', '/onboarding'];
+  const isOnboardingExempt = onboardingExemptPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );
 
@@ -60,6 +67,28 @@ export async function middleware(request: NextRequest) {
   if (isAuthPath && user) {
     // Redirect to dashboard if accessing auth routes while logged in
     return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  // Check onboarding completion for authenticated users
+  if (user && !isOnboardingExempt) {
+    try {
+      const { isComplete } = await checkOnboardingStatusServer(
+        user.id,
+        request
+      );
+
+      // If onboarding is not complete, redirect to onboarding
+      if (!isComplete) {
+        console.log(
+          `🔄 Redirecting user ${user.email} to onboarding (incomplete profile)`
+        );
+        return NextResponse.redirect(new URL('/onboarding', request.url));
+      }
+    } catch (error) {
+      // If onboarding check fails, log error but allow access
+      // This prevents broken middleware from blocking all access
+      console.error('Onboarding check failed in middleware:', error);
+    }
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
