@@ -1,22 +1,59 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+} from 'react';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { checkOnboardingStatus } from '@/lib/onboarding/utils';
 
-interface OnboardingStatus {
-  isComplete: boolean;
+// Unified user profile interface
+interface UserSport {
+  id: string;
+  role: string;
+  experience_level: string | null;
+  positions: string[] | null;
+  sport: {
+    id: string;
+    name: string;
+    description: string | null;
+  } | null;
+}
+
+interface UserProfile {
+  id: string;
+  username: string | null;
+  full_name: string | null;
+  bio: string | null;
+  location: string | null;
+  avatar_url: string | null;
+  social_links: any;
+  user_sports: UserSport[];
+}
+
+interface ProfileState {
+  data: UserProfile | null;
   loading: boolean;
   error: string | null;
+  lastFetched: number | null;
 }
 
 interface AuthContextType {
+  // Core auth
   user: User | null;
   session: Session | null;
   loading: boolean;
-  onboardingStatus: OnboardingStatus;
+
+  // Unified profile state
+  profile: ProfileState;
+  isOnboardingComplete: boolean;
+
+  // Actions
   signUp: (
     email: string,
     password: string,
@@ -28,91 +65,226 @@ interface AuthContextType {
   ) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<{ error: AuthError | null }>;
   resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
-  refreshOnboardingStatus: (sessionUser?: User) => Promise<void>;
+
+  // Profile actions
+  refreshProfile: (force?: boolean) => Promise<void>;
+  updateProfile: (updates: Partial<UserProfile>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Cache timeout: 5 minutes
+const CACHE_TIMEOUT = 5 * 60 * 1000;
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [onboardingStatus, setOnboardingStatus] = useState<OnboardingStatus>({
-    isComplete: false,
-    loading: true, // Start as loading so we don't show "incomplete" until we actually check
+  const [profile, setProfile] = useState<ProfileState>({
+    data: null,
+    loading: false,
     error: null,
+    lastFetched: null,
   });
+
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
-  useEffect(() => {
-    // Get initial session
-    const getSession = async () => {
-      console.log('🔄 Getting initial session...');
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
-      if (error) {
-        console.error('Error getting session:', error);
-      } else {
-        console.log(
-          '✅ Initial session loaded:',
-          session?.user ? 'User found' : 'No user'
-        );
-        setSession(session);
-        setUser(session?.user ?? null);
+  // Memoized computed values
+  const isOnboardingComplete = useMemo(() => {
+    if (!profile.data) return false;
+    const hasUserSports =
+      profile.data.user_sports && profile.data.user_sports.length > 0;
+    const hasRole = profile.data.user_sports?.some((us) => us.role);
+    return hasUserSports && hasRole;
+  }, [profile.data]);
 
-        // Check onboarding status for initial session
-        if (session?.user) {
-          console.log(
-            '🚀 Calling refreshOnboardingStatus from initial session'
-          );
-          await refreshOnboardingStatus(session.user);
-        } else {
-          // No user, so set onboarding to not loading
-          setOnboardingStatus({
-            isComplete: false,
-            loading: false,
-            error: null,
-          });
-        }
+  // Unified profile fetching function
+  const fetchProfile = useCallback(
+    async (userId: string) => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select(
+            `
+          id,
+          username,
+          full_name,
+          bio,
+          location,
+          avatar_url,
+          social_links,
+          user_sports (
+            id,
+            role,
+            experience_level,
+            positions,
+            sport:sports (
+              id,
+              name,
+              description
+            )
+          )
+        `
+          )
+          .eq('user_id', userId)
+          .single();
+
+        if (error) throw error;
+        return { data, error: null };
+      } catch (error) {
+        return {
+          data: null,
+          error:
+            error instanceof Error ? error.message : 'Failed to fetch profile',
+        };
       }
-      setLoading(false);
+    },
+    [supabase]
+  );
+
+  // Smart refresh with caching
+  const refreshProfile = useCallback(
+    async (force = false) => {
+      if (!user) {
+        setProfile({
+          data: null,
+          loading: false,
+          error: null,
+          lastFetched: null,
+        });
+        return;
+      }
+
+      // Check cache validity
+      const now = Date.now();
+      const isCacheValid =
+        profile.lastFetched && now - profile.lastFetched < CACHE_TIMEOUT;
+
+      if (!force && isCacheValid && profile.data) {
+        return; // Use cached data
+      }
+
+      setProfile((prev) => ({ ...prev, loading: true, error: null }));
+
+      try {
+        const result = await fetchProfile(user.id);
+        setProfile({
+          data: result.data,
+          loading: false,
+          error: result.error,
+          lastFetched: now,
+        });
+      } catch (error) {
+        setProfile((prev) => ({
+          ...prev,
+          loading: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        }));
+      }
+    },
+    [user, profile.lastFetched, profile.data, fetchProfile]
+  );
+
+  // Optimistic updates for better UX
+  const updateProfile = useCallback((updates: Partial<UserProfile>) => {
+    setProfile((prev) => ({
+      ...prev,
+      data: prev.data ? { ...prev.data, ...updates } : null,
+    }));
+  }, []);
+
+  // Initialize auth and profile
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
+
+        if (error) {
+          console.error('Error getting session:', error);
+        } else {
+          setSession(session);
+          setUser(session?.user ?? null);
+
+          // Initialize profile state for authenticated users
+          if (session?.user) {
+            // Don't fetch profile here to avoid circular dependencies
+            // Profile will be fetched via refreshProfile after auth is complete
+            setProfile({
+              data: null,
+              loading: false,
+              error: null,
+              lastFetched: null,
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Session initialization error:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    getSession();
+    initializeAuth();
+  }, []);
 
-    // Listen for auth changes
+  // Fetch profile after auth is initialized
+  useEffect(() => {
+    if (!loading && user && !profile.data && !profile.loading) {
+      // Call fetchProfile directly to avoid circular dependencies
+      const loadProfile = async () => {
+        setProfile((prev) => ({ ...prev, loading: true, error: null }));
+        try {
+          const result = await fetchProfile(user.id);
+          setProfile({
+            data: result.data,
+            loading: false,
+            error: result.error,
+            lastFetched: Date.now(),
+          });
+        } catch (error) {
+          setProfile((prev) => ({
+            ...prev,
+            loading: false,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          }));
+        }
+      };
+      loadProfile();
+    }
+  }, [loading, user, profile.data, profile.loading, fetchProfile]);
+
+  // Listen for auth changes
+  useEffect(() => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log(
-        '🔄 Auth state change:',
-        event,
-        session?.user ? 'User present' : 'No user'
-      );
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
 
-      // Check onboarding status when user changes
       if (session?.user) {
-        console.log(
-          '🚀 Calling refreshOnboardingStatus from auth state change'
-        );
-        // Don't await to avoid blocking auth state change
-        refreshOnboardingStatus(session.user);
-      } else {
-        // Clear onboarding status when user signs out
-        setOnboardingStatus({
-          isComplete: false,
+        // Reset profile state - will be fetched by the profile useEffect
+        setProfile({
+          data: null,
           loading: false,
           error: null,
+          lastFetched: null,
+        });
+      } else {
+        // Clear profile on sign out
+        setProfile({
+          data: null,
+          loading: false,
+          error: null,
+          lastFetched: null,
         });
       }
 
-      // Handle specific auth events
+      // Handle navigation
       if (event === 'SIGNED_IN') {
         router.refresh();
       } else if (event === 'SIGNED_OUT') {
@@ -124,39 +296,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, [supabase.auth, router]);
 
+  // Auth actions with loading states
   const signUp = async (
     email: string,
     password: string,
     metadata?: Record<string, any>
   ) => {
     setLoading(true);
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: metadata,
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    setLoading(false);
-    return { data, error };
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: metadata,
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      return { data, error };
+    } finally {
+      setLoading(false);
+    }
   };
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    setLoading(false);
-    return { error };
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      return { error };
+    } finally {
+      setLoading(false);
+    }
   };
 
   const signOut = async () => {
     setLoading(true);
-    const { error } = await supabase.auth.signOut();
-    setLoading(false);
-    return { error };
+    try {
+      const { error } = await supabase.auth.signOut();
+      return { error };
+    } finally {
+      setLoading(false);
+    }
   };
 
   const resetPassword = async (email: string) => {
@@ -166,63 +348,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error };
   };
 
-  const refreshOnboardingStatus = async (sessionUser?: User) => {
-    const userToCheck = sessionUser || user;
-
-    if (!userToCheck) {
-      console.log('⚠️ No user found for onboarding status check');
-      setOnboardingStatus({
-        isComplete: false,
-        loading: false,
-        error: null,
-      });
-      return;
-    }
-
-    console.log(
-      '🔄 Starting onboarding status refresh for user:',
-      userToCheck.id
-    );
-    setOnboardingStatus((prev) => ({ ...prev, loading: true, error: null }));
-
-    try {
-      console.log('🔍 Checking onboarding status for user:', userToCheck.id);
-      const result = await checkOnboardingStatus(userToCheck.id);
-      console.log('📊 Onboarding status result:', result);
-
-      setOnboardingStatus({
-        isComplete: result.isComplete || false,
-        loading: false,
-        error: result.error
-          ? typeof result.error === 'string'
-            ? result.error
-            : result.error.message
-          : null,
-      });
-    } catch (err) {
-      console.error('❌ Error in refreshOnboardingStatus:', err);
-      setOnboardingStatus({
-        isComplete: false,
-        loading: false,
-        error:
-          err instanceof Error
-            ? err.message
-            : 'Failed to check onboarding status',
-      });
-    }
-  };
-
-  const value = {
-    user,
-    session,
-    loading,
-    onboardingStatus,
-    signUp,
-    signIn,
-    signOut,
-    resetPassword,
-    refreshOnboardingStatus,
-  };
+  // Memoized context value to prevent unnecessary re-renders
+  const value = useMemo(
+    () => ({
+      user,
+      session,
+      loading,
+      profile,
+      isOnboardingComplete,
+      signUp,
+      signIn,
+      signOut,
+      resetPassword,
+      refreshProfile,
+      updateProfile,
+    }),
+    [
+      user,
+      session,
+      loading,
+      profile,
+      isOnboardingComplete,
+      refreshProfile,
+      updateProfile,
+    ]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
@@ -233,4 +383,19 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
+}
+
+// Convenience hooks for specific data
+export function useProfile() {
+  const { profile, refreshProfile, updateProfile } = useAuth();
+  return { profile, refreshProfile, updateProfile };
+}
+
+export function useOnboardingStatus() {
+  const { isOnboardingComplete, profile } = useAuth();
+  return {
+    isComplete: isOnboardingComplete,
+    loading: profile.loading,
+    error: profile.error,
+  };
 }

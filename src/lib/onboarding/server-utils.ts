@@ -60,7 +60,6 @@ export async function checkOnboardingStatusServer(
       sportsCount: profile.user_sports?.length || 0,
     };
   } catch (error) {
-    console.error('Error checking onboarding status in middleware:', error);
     return {
       isComplete: false,
       error: error instanceof Error ? error.message : 'Unknown error',

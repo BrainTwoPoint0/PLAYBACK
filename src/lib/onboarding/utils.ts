@@ -230,7 +230,6 @@ export async function saveOnboardingData(
 
     return { success: true, error: null };
   } catch (error) {
-    console.error('Error saving onboarding data:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -245,8 +244,6 @@ export async function checkOnboardingStatus(userId: string) {
   const supabase = createClient();
 
   try {
-    console.log('🔍 Checking onboarding for userId:', userId);
-
     // Get profile with user sports
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
@@ -269,31 +266,14 @@ export async function checkOnboardingStatus(userId: string) {
       .single();
 
     if (profileError) {
-      console.error('❌ Profile query error:', profileError);
       return { isComplete: false, error: profileError };
     }
-
-    console.log('📄 Raw profile data:', profile);
-    console.log('🏆 User sports data:', profile.user_sports);
 
     // Check if onboarding is complete
     const hasUserSports = profile.user_sports && profile.user_sports.length > 0;
     const hasRole = profile.user_sports?.some((us: any) => us.role);
 
-    console.log('✅ Completion checks:', {
-      hasUserSports,
-      hasRole,
-      sportsCount: profile.user_sports?.length || 0,
-      sports: profile.user_sports?.map((us: any) => ({
-        id: us.id,
-        sport_id: us.sport_id,
-        role: us.role,
-        experience_level: us.experience_level,
-      })),
-    });
-
     const isComplete = hasUserSports && hasRole;
-    console.log('🎯 Final completion status:', isComplete);
 
     return {
       isComplete,
@@ -306,7 +286,6 @@ export async function checkOnboardingStatus(userId: string) {
       },
     };
   } catch (error) {
-    console.error('❌ Error checking onboarding status:', error);
     return {
       isComplete: false,
       error: error instanceof Error ? error.message : 'Unknown error',

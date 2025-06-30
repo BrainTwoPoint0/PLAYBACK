@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth/context';
+import { useAuth, useProfile } from '@/lib/auth/context';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { Button } from '@/components/ui/button';
@@ -1202,6 +1202,7 @@ function OnboardingContent() {
   const [error, setError] = useState('');
 
   const { user } = useAuth();
+  const { refreshProfile } = useProfile();
   const router = useRouter();
 
   const totalSteps = 5;
@@ -1285,8 +1286,6 @@ function OnboardingContent() {
         profileInfo,
       };
 
-      console.log('Saving onboarding data:', onboardingData);
-
       // Save to database
       const { success, error: saveError } = await saveOnboardingData(
         user.id,
@@ -1297,7 +1296,8 @@ function OnboardingContent() {
         throw new Error(saveError || 'Failed to save onboarding data');
       }
 
-      console.log('✅ Onboarding data saved successfully!');
+      // Refresh profile data in context to reflect changes
+      await refreshProfile(true); // Force refresh
 
       // Small delay for UX (let user see success state)
       await new Promise((resolve) => setTimeout(resolve, 500));

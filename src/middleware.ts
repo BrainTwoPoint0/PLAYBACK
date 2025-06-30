@@ -30,74 +30,72 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // IMPORTANT: Avoid writing any logic between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
-
+  // This will refresh session if expired - required for Server Components
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protected routes that require authentication
-  const protectedPaths = ['/profile', '/settings', '/dashboard', '/onboarding'];
+  const { pathname } = request.nextUrl;
+
+  // Define paths that require authentication
+  const protectedPaths = ['/dashboard', '/onboarding'];
+
+  // Define paths that should redirect authenticated users
+  const authPaths = ['/auth/login', '/auth/register', '/auth/forgot-password'];
+
+  // Define paths that don't require onboarding completion
+  const onboardingExemptPaths = [
+    '/onboarding',
+    '/auth/logout',
+    '/auth/callback',
+    '/auth/verify-email',
+    '/auth/reset-password',
+    '/api/',
+  ];
+
   const isProtectedPath = protectedPaths.some((path) =>
-    request.nextUrl.pathname.startsWith(path)
+    pathname.startsWith(path)
+  );
+  const isAuthPath = authPaths.some((path) => pathname.startsWith(path));
+  const isOnboardingExempt = onboardingExemptPaths.some(
+    (path) => pathname.startsWith(path) || pathname === path
   );
 
-  // Auth routes that should redirect if user is already logged in
-  const authPaths = ['/login', '/register', '/auth'];
-  const isAuthPath = authPaths.some((path) =>
-    request.nextUrl.pathname.startsWith(path)
-  );
-
-  // Routes that don't require onboarding completion check
-  const onboardingExemptPaths = ['/auth', '/onboarding'];
-  const isOnboardingExempt = onboardingExemptPaths.some((path) =>
-    request.nextUrl.pathname.startsWith(path)
-  );
-
-  // Redirect logic
-  if (isProtectedPath && !user) {
-    // Redirect to login if accessing protected route without authentication
-    const redirectUrl = new URL('/auth/login', request.url);
-    redirectUrl.searchParams.set('redirectTo', request.nextUrl.pathname);
+  // If user is not authenticated and trying to access protected route
+  if (!user && isProtectedPath) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/auth/login';
+    redirectUrl.searchParams.set('redirectTo', pathname);
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (isAuthPath && user) {
-    // Redirect to dashboard if accessing auth routes while logged in
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+  // If user is authenticated and trying to access auth pages, redirect to dashboard
+  if (user && isAuthPath) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/dashboard';
+    return NextResponse.redirect(redirectUrl);
   }
 
-  // Check onboarding completion for authenticated users
+  // Check onboarding status for authenticated users accessing non-exempt paths
   if (user && !isOnboardingExempt) {
     try {
-      const { isComplete } = await checkOnboardingStatusServer(
+      const onboardingResult = await checkOnboardingStatusServer(
         user.id,
         request
       );
 
       // If onboarding is not complete, redirect to onboarding
-      if (!isComplete) {
-        console.log(
-          `🔄 Redirecting user ${user.email} to onboarding (incomplete profile)`
-        );
-        return NextResponse.redirect(new URL('/onboarding', request.url));
+      if (!onboardingResult.isComplete) {
+        const redirectUrl = request.nextUrl.clone();
+        redirectUrl.pathname = '/onboarding';
+        return NextResponse.redirect(redirectUrl);
       }
     } catch (error) {
-      // If onboarding check fails, log error but allow access
-      // This prevents broken middleware from blocking all access
-      console.error('Onboarding check failed in middleware:', error);
+      // If there's an error checking onboarding status, let the request proceed
+      // The client-side will handle the error appropriately
+      console.error('Middleware onboarding check error:', error);
     }
   }
-
-  // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
-  // creating a new response object with NextResponse.next() make sure to:
-  // 1. Pass the request in it, like so:
-  //    const myNewResponse = NextResponse.next({ request })
-  // 2. Copy over the cookies, like so:
-  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
-  // 3. Change the myNewResponse object instead of the supabaseResponse object
 
   return supabaseResponse;
 }
