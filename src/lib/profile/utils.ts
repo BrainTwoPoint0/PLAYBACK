@@ -181,3 +181,50 @@ export async function getUserProfileWithDetails(userId: string) {
     };
   }
 }
+
+/**
+ * Get public profile by username
+ */
+export async function getPublicProfileByUsername(username: string) {
+  const supabase = createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select(
+        `
+        id,
+        username,
+        full_name,
+        bio,
+        location,
+        avatar_url,
+        social_links,
+        is_public,
+        is_verified,
+        created_at,
+        updated_at,
+        user_sports (
+          id,
+          role,
+          experience_level,
+          positions,
+          sport:sports (
+            id,
+            name,
+            description
+          )
+        )
+      `
+      )
+      .eq('username', username)
+      .single();
+
+    return { data, error: null };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : 'Profile not found',
+    };
+  }
+}

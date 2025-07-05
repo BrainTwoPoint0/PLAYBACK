@@ -313,7 +313,7 @@ function SportSelectionStep({
         )}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
         {sports.map((sport) => {
           const isSelected = selectedSports.includes(sport.id);
 
@@ -662,6 +662,267 @@ function PositionExperienceStep({
           </Button>
         </div>
       )}
+    </div>
+  );
+}
+
+// Role-Specific Profile Step for Non-Players
+function NonPlayerProfileStep({
+  selectedRole,
+  profileInfo,
+  setProfileInfo,
+}: {
+  selectedRole: string;
+  profileInfo: ProfileInfo;
+  setProfileInfo: (info: ProfileInfo) => void;
+}) {
+  const handleInputChange = (field: string, value: string) => {
+    setProfileInfo({ ...profileInfo, [field]: value });
+  };
+
+  const handleSocialLinkChange = (platform: string, value: string) => {
+    setProfileInfo({
+      ...profileInfo,
+      socialLinks: {
+        ...profileInfo.socialLinks,
+        [platform]: value,
+      },
+    });
+  };
+
+  const getRoleSpecificContent = () => {
+    switch (selectedRole) {
+      case 'coach':
+        return {
+          title: 'Tell us about your coaching experience',
+          bioPlaceholder:
+            'Share your coaching philosophy, experience, specializations, and what you bring to athlete development...',
+          bioLabel: 'Coaching Background',
+        };
+      case 'scout':
+        return {
+          title: 'Tell us about your scouting focus',
+          bioPlaceholder:
+            'Share your scouting expertise, what sports you focus on, your evaluation criteria, and experience...',
+          bioLabel: 'Scouting Profile',
+        };
+      case 'fan':
+        return {
+          title: 'Tell us about your sports interests',
+          bioPlaceholder:
+            'Share your favorite sports, teams, players, and what makes you passionate about athletics...',
+          bioLabel: 'Sports Interests',
+        };
+      default:
+        return {
+          title: 'Tell us about yourself',
+          bioPlaceholder:
+            'Share something about yourself and your connection to sports...',
+          bioLabel: 'About You',
+        };
+    }
+  };
+
+  const content = getRoleSpecificContent();
+  const bioCharCount = profileInfo.bio.length;
+  const bioMaxLength = 500;
+
+  return (
+    <div className="space-y-8">
+      <div className="text-center">
+        <h2
+          className="text-2xl font-bold mb-4"
+          style={{ color: 'var(--timberwolf)' }}
+        >
+          {content.title}
+        </h2>
+        <p style={{ color: 'var(--ash-grey)' }}>
+          Help others understand your role in the sports community
+        </p>
+      </div>
+
+      <div className="space-y-6">
+        {/* Bio Section */}
+        <div className="space-y-3">
+          <Label
+            htmlFor="bio"
+            className="text-sm font-medium"
+            style={{ color: 'var(--ash-grey)' }}
+          >
+            {content.bioLabel}
+          </Label>
+          <Textarea
+            id="bio"
+            value={profileInfo.bio}
+            onChange={(e) => handleInputChange('bio', e.target.value)}
+            className="min-h-[120px] bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-lg resize-none"
+            style={{
+              color: 'var(--timberwolf)',
+              borderColor: 'var(--ash-grey)',
+            }}
+            placeholder={content.bioPlaceholder}
+            maxLength={bioMaxLength}
+          />
+          <div className="flex justify-between items-center">
+            <span className="text-xs" style={{ color: 'var(--ash-grey)' }}>
+              This will be displayed on your public profile
+            </span>
+            <span
+              className={`text-xs ${bioCharCount > bioMaxLength * 0.9 ? 'text-orange-400' : ''}`}
+              style={{
+                color:
+                  bioCharCount > bioMaxLength * 0.9
+                    ? undefined
+                    : 'var(--ash-grey)',
+              }}
+            >
+              {bioCharCount}/{bioMaxLength}
+            </span>
+          </div>
+        </div>
+
+        {/* Location */}
+        <div className="space-y-3">
+          <Label
+            htmlFor="location"
+            className="text-sm font-medium flex items-center gap-2"
+            style={{ color: 'var(--ash-grey)' }}
+          >
+            <MapPin className="h-4 w-4" />
+            Location
+          </Label>
+          <Input
+            id="location"
+            type="text"
+            placeholder="City, State/Country"
+            value={profileInfo.location}
+            onChange={(e) => handleInputChange('location', e.target.value)}
+            className="h-10 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-lg"
+            style={{
+              color: 'var(--timberwolf)',
+              borderColor: 'var(--ash-grey)',
+            }}
+          />
+        </div>
+
+        {/* Social Links */}
+        <div className="space-y-4">
+          <h3
+            className="text-lg font-semibold"
+            style={{ color: 'var(--timberwolf)' }}
+          >
+            Connect Your Social Media
+          </h3>
+          <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
+            All fields are optional. Add your social media to help others
+            connect with you.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+            {/* Instagram */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="instagram"
+                className="text-sm font-medium flex items-center gap-2"
+                style={{ color: 'var(--ash-grey)' }}
+              >
+                <Instagram className="h-4 w-4" />
+                Instagram
+              </Label>
+              <div className="relative">
+                <span
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm"
+                  style={{ color: 'var(--ash-grey)' }}
+                >
+                  @
+                </span>
+                <Input
+                  id="instagram"
+                  type="text"
+                  placeholder="username"
+                  value={profileInfo.socialLinks.instagram}
+                  onChange={(e) =>
+                    handleSocialLinkChange('instagram', e.target.value)
+                  }
+                  className="h-10 pl-8 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-lg"
+                  style={{
+                    color: 'var(--timberwolf)',
+                    borderColor: 'var(--ash-grey)',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Twitter */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="twitter"
+                className="text-sm font-medium flex items-center gap-2"
+                style={{ color: 'var(--ash-grey)' }}
+              >
+                <Twitter className="h-4 w-4" />
+                Twitter
+              </Label>
+              <div className="relative">
+                <span
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm"
+                  style={{ color: 'var(--ash-grey)' }}
+                >
+                  @
+                </span>
+                <Input
+                  id="twitter"
+                  type="text"
+                  placeholder="username"
+                  value={profileInfo.socialLinks.twitter}
+                  onChange={(e) =>
+                    handleSocialLinkChange('twitter', e.target.value)
+                  }
+                  className="h-10 pl-8 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-lg"
+                  style={{
+                    color: 'var(--timberwolf)',
+                    borderColor: 'var(--ash-grey)',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* LinkedIn */}
+            <div className="space-y-2 sm:col-span-2">
+              <Label
+                htmlFor="linkedin"
+                className="text-sm font-medium flex items-center gap-2"
+                style={{ color: 'var(--ash-grey)' }}
+              >
+                <Linkedin className="h-4 w-4" />
+                LinkedIn
+              </Label>
+              <div className="relative">
+                <span
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm"
+                  style={{ color: 'var(--ash-grey)' }}
+                >
+                  /in/
+                </span>
+                <Input
+                  id="linkedin"
+                  type="text"
+                  placeholder="username"
+                  value={profileInfo.socialLinks.linkedin}
+                  onChange={(e) =>
+                    handleSocialLinkChange('linkedin', e.target.value)
+                  }
+                  className="h-10 pl-12 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-lg"
+                  style={{
+                    color: 'var(--timberwolf)',
+                    borderColor: 'var(--ash-grey)',
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1205,7 +1466,8 @@ function OnboardingContent() {
   const { refreshProfile } = useProfile();
   const router = useRouter();
 
-  const totalSteps = 5;
+  // Dynamic total steps based on role
+  const totalSteps = selectedRole === 'player' ? 5 : 3;
 
   // Fetch sports for position step
   useEffect(() => {
@@ -1231,27 +1493,48 @@ function OnboardingContent() {
   }, [selectedSports]);
 
   const canGoNext = () => {
+    // General validation regardless of role
     switch (currentStep) {
       case 1:
         return selectedRole !== '';
-      case 2:
-        return selectedSports.length > 0;
-      case 3:
-        // Check if all selected sports have positions and experience
-        return selectedSports.every((sportId) => {
-          const sportPos = sportPositions[sportId];
-          return (
-            sportPos && sportPos.positions.length > 0 && sportPos.experience
-          );
-        });
-      case 4:
-        // All fields are optional in profile step
-        return true;
-      case 5:
-        // Final step - always ready to finish
-        return true;
       default:
-        return false;
+        break;
+    }
+
+    if (selectedRole === 'player') {
+      // Player-specific validation flow
+      switch (currentStep) {
+        case 2:
+          return selectedSports.length > 0;
+        case 3:
+          // Check if all selected sports have positions and experience
+          return selectedSports.every((sportId) => {
+            const sportPos = sportPositions[sportId];
+            return (
+              sportPos && sportPos.positions.length > 0 && sportPos.experience
+            );
+          });
+        case 4:
+          // All fields are optional in profile step
+          return true;
+        case 5:
+          // Final step - always ready to finish
+          return true;
+        default:
+          return false;
+      }
+    } else {
+      // Non-player validation flow (3 steps total)
+      switch (currentStep) {
+        case 2:
+          // All fields are optional for non-players
+          return true;
+        case 3:
+          // Final step - always ready to finish
+          return true;
+        default:
+          return false;
+      }
     }
   };
 
@@ -1317,58 +1600,96 @@ function OnboardingContent() {
   };
 
   const renderStep = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <WelcomeStep
-            selectedRole={selectedRole}
-            setSelectedRole={setSelectedRole}
-          />
-        );
-      case 2:
-        return (
-          <SportSelectionStep
-            selectedSports={selectedSports}
-            setSelectedSports={setSelectedSports}
-          />
-        );
-      case 3:
-        return (
-          <PositionExperienceStep
-            selectedSports={selectedSports}
-            sportPositions={sportPositions}
-            setSportPositions={setSportPositions}
-            allSports={allSports}
-          />
-        );
-      case 4:
-        return (
-          <ProfileInfoStep
-            profileInfo={profileInfo}
-            setProfileInfo={setProfileInfo}
-          />
-        );
-      case 5:
-        return (
-          <WelcomeSummaryStep
-            selectedRole={selectedRole}
-            selectedSports={selectedSports}
-            sportPositions={sportPositions}
-            profileInfo={profileInfo}
-            allSports={allSports}
-            onFinish={handleFinish}
-            loading={loading}
-            error={error}
-          />
-        );
-      default:
-        return null;
+    // Role-specific step flow
+    if (selectedRole === 'player') {
+      // Player flow: Role → Sports → Positions → Profile → Summary
+      switch (currentStep) {
+        case 1:
+          return (
+            <WelcomeStep
+              selectedRole={selectedRole}
+              setSelectedRole={setSelectedRole}
+            />
+          );
+        case 2:
+          return (
+            <SportSelectionStep
+              selectedSports={selectedSports}
+              setSelectedSports={setSelectedSports}
+            />
+          );
+        case 3:
+          return (
+            <PositionExperienceStep
+              selectedSports={selectedSports}
+              sportPositions={sportPositions}
+              setSportPositions={setSportPositions}
+              allSports={allSports}
+            />
+          );
+        case 4:
+          return (
+            <ProfileInfoStep
+              profileInfo={profileInfo}
+              setProfileInfo={setProfileInfo}
+            />
+          );
+        case 5:
+          return (
+            <WelcomeSummaryStep
+              selectedRole={selectedRole}
+              selectedSports={selectedSports}
+              sportPositions={sportPositions}
+              profileInfo={profileInfo}
+              allSports={allSports}
+              onFinish={handleFinish}
+              loading={loading}
+              error={error}
+            />
+          );
+        default:
+          return null;
+      }
+    } else {
+      // Non-player flow: Role → Profile → Summary (simplified)
+      switch (currentStep) {
+        case 1:
+          return (
+            <WelcomeStep
+              selectedRole={selectedRole}
+              setSelectedRole={setSelectedRole}
+            />
+          );
+        case 2:
+          return (
+            <NonPlayerProfileStep
+              selectedRole={selectedRole}
+              profileInfo={profileInfo}
+              setProfileInfo={setProfileInfo}
+            />
+          );
+        case 3:
+          return (
+            <WelcomeSummaryStep
+              selectedRole={selectedRole}
+              selectedSports={[]} // No sports for non-players
+              sportPositions={{}}
+              profileInfo={profileInfo}
+              allSports={allSports}
+              onFinish={handleFinish}
+              loading={loading}
+              error={error}
+            />
+          );
+        default:
+          return null;
+      }
     }
   };
 
   return (
     <div
-      className="min-h-screen p-4"
+      className="min-h-screen p-2 sm:p-4"
       style={{ backgroundColor: 'var(--night)' }}
     >
       <div className="max-w-2xl mx-auto">

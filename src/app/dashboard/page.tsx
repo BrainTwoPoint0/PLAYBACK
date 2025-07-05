@@ -4,6 +4,7 @@ import { useAuth, useProfile, useOnboardingStatus } from '@/lib/auth/context';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/loading';
+import { AvatarDisplay } from '@/components/avatar/avatar-upload';
 import {
   User,
   Mail,
@@ -17,6 +18,7 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
+  ExternalLink,
 } from 'lucide-react';
 
 function DashboardContent() {
@@ -70,17 +72,15 @@ function DashboardContent() {
         {/* User Info Card */}
         <div className="bg-card border rounded-lg p-6 mb-8">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center">
-              {user?.user_metadata?.avatar_url ? (
-                <img
-                  src={user.user_metadata.avatar_url}
-                  alt="Profile"
-                  className="w-16 h-16 rounded-full object-cover"
-                />
-              ) : (
-                <User className="h-8 w-8 text-primary-foreground" />
-              )}
-            </div>
+            <AvatarDisplay
+              avatarUrl={profile.data?.avatar_url}
+              fullName={
+                profile.data?.full_name ||
+                user?.user_metadata?.full_name ||
+                'User'
+              }
+              size="lg"
+            />
 
             <div className="flex-1">
               <h2 className="text-xl font-semibold text-foreground">
@@ -335,7 +335,7 @@ function DashboardContent() {
         )}
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-card border rounded-lg p-6">
             <div className="flex items-center gap-3 mb-3">
               <User className="h-6 w-6 text-blue-500" />
@@ -362,6 +362,27 @@ function DashboardContent() {
               {onboardingStatus.isComplete ? 'Edit Profile' : 'Complete Setup'}
             </Button>
           </div>
+
+          {onboardingStatus.isComplete && profile.data?.username && (
+            <div className="bg-card border rounded-lg p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <ExternalLink className="h-6 w-6 text-purple-500" />
+                <h3 className="font-semibold">View Public Profile</h3>
+              </div>
+              <p className="text-muted-foreground text-sm mb-4">
+                See how your profile appears to others
+              </p>
+              <Button
+                className="w-full"
+                variant="outline"
+                onClick={() =>
+                  (window.location.href = `/profile/${profile.data?.username}`)
+                }
+              >
+                View Profile
+              </Button>
+            </div>
+          )}
 
           <div className="bg-card border rounded-lg p-6">
             <div className="flex items-center gap-3 mb-3">

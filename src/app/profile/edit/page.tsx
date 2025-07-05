@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { LoadingSpinner } from '@/components/ui/loading';
+import { AvatarUpload, AvatarDisplay } from '@/components/avatar/avatar-upload';
 import {
   User,
   Trophy,
@@ -426,6 +427,93 @@ function SportsTab({
   );
 }
 
+// Avatar Tab Component
+function AvatarTab({
+  profile,
+  user,
+  onMarkChanged,
+}: {
+  profile: any;
+  user: any;
+  onMarkChanged: () => void;
+}) {
+  const { refreshProfile } = useProfile();
+
+  const handleAvatarUpdate = async (newAvatarUrl: string | null) => {
+    // Mark as changed to trigger save state
+    onMarkChanged();
+
+    // Refresh profile data to reflect the change
+    await refreshProfile(true);
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-8">
+      {/* Header */}
+      <div className="text-center">
+        <h2
+          className="text-2xl font-bold mb-2"
+          style={{ color: 'var(--timberwolf)' }}
+        >
+          Profile Avatar
+        </h2>
+        <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
+          Upload a profile picture to personalize your PLAYBACK profile
+        </p>
+      </div>
+
+      {/* Avatar Upload */}
+      <div className="bg-neutral-800/50 border border-neutral-600 rounded-xl p-6">
+        <AvatarUpload
+          userId={user.id}
+          currentAvatarUrl={profile?.avatar_url}
+          fullName={
+            profile?.full_name || user?.user_metadata?.full_name || 'User'
+          }
+          onAvatarUpdate={handleAvatarUpdate}
+          size="lg"
+        />
+      </div>
+
+      {/* Tips Section */}
+      <div className="bg-neutral-800/50 border border-neutral-600 rounded-xl p-6">
+        <h4
+          className="text-sm font-semibold mb-3 flex items-center gap-2"
+          style={{ color: 'var(--timberwolf)' }}
+        >
+          <Info className="h-4 w-4" />
+          Avatar Tips
+        </h4>
+        <ul className="text-sm space-y-2" style={{ color: 'var(--ash-grey)' }}>
+          <li className="flex items-start gap-2">
+            <span className="text-green-400 mt-0.5 text-xs">●</span>
+            <span>Use a clear, professional photo that shows your face</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-green-400 mt-0.5 text-xs">●</span>
+            <span>
+              Square images work best and will be automatically cropped
+            </span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-green-400 mt-0.5 text-xs">●</span>
+            <span>
+              Your avatar appears on your public profile and in connections
+            </span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-green-400 mt-0.5 text-xs">●</span>
+            <span>
+              If you don&apos;t upload a photo, we&apos;ll generate one with
+              your initials
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 // Social Tab Component
 function SocialTab({
   profile,
@@ -653,6 +741,7 @@ function ProfileEditContent() {
 
   const tabs = [
     { id: 'basic', label: 'Basic Info', icon: <User className="h-4 w-4" /> },
+    { id: 'avatar', label: 'Avatar', icon: <User className="h-4 w-4" /> },
     { id: 'sports', label: 'Sports', icon: <Trophy className="h-4 w-4" /> },
     { id: 'social', label: 'Social', icon: <Share2 className="h-4 w-4" /> },
   ];
@@ -877,6 +966,13 @@ function ProfileEditContent() {
                       onMarkChanged={markAsChanged}
                     />
                   )}
+                  {activeTab === 'avatar' && (
+                    <AvatarTab
+                      profile={profile.data}
+                      user={user}
+                      onMarkChanged={markAsChanged}
+                    />
+                  )}
                   {activeTab === 'sports' && (
                     <SportsTab
                       profile={profile.data}
@@ -907,9 +1003,15 @@ function ProfileEditContent() {
               </h3>
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
-                    <User className="h-6 w-6 text-white" />
-                  </div>
+                  <AvatarDisplay
+                    avatarUrl={profile.data.avatar_url}
+                    fullName={
+                      profile.data.full_name ||
+                      user?.user_metadata?.full_name ||
+                      'User'
+                    }
+                    size="lg"
+                  />
                   <div className="flex-1 min-w-0">
                     <h4
                       className="font-semibold truncate"
