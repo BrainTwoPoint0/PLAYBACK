@@ -34,18 +34,44 @@ export class PlaytomicProvider implements ProviderAdapter {
   async fetchAvailability(params: SearchParams): Promise<CourtSlot[]> {
     await this.rateLimiter.limit();
 
+    // Debug mode: bypass retry logic in production for testing
+    const debugMode = process.env.PLAYSCANNER_DEBUG === 'true';
+
+    if (debugMode) {
+      return this.fetchAvailabilityDirect(params);
+    }
+
     return this.withRetry(async () => {
-      const region = this.detectRegion(params.location);
-      const baseUrl = this.baseUrls[region] || this.baseUrls.uk;
+      return this.fetchAvailabilityDirect(params);
+    });
+  }
 
-      const venues = await this.searchVenues(baseUrl, params.location);
+  private async fetchAvailabilityDirect(params: SearchParams): Promise<CourtSlot[]> {
+    const region = this.detectRegion(params.location);
+    const baseUrl = this.baseUrls[region] || this.baseUrls.uk;
 
-      if (venues.length === 0) {
-        return [];
+    const venues = await this.searchVenues(baseUrl, params.location);
+
+    if (venues.length === 0) {
+      return [];
+    }
+
+    const allSlots: CourtSlot[] = [];
+
+    // Debug mode: process venues one by one instead of batches
+    const debugMode = process.env.PLAYSCANNER_DEBUG === 'true';
+
+    if (debugMode) {
+      // Process just the first venue for debugging
+      try {
+        const slots = await this.fetchRealAvailability(venues[0], params);
+        allSlots.push(...slots);
+      } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Debug mode venue failed:', error);
+        }
       }
-
-      const allSlots: CourtSlot[] = [];
-
+    } else {
       // Process venues in smaller batches to avoid overwhelming the API
       const batchSize = 3;
       for (let i = 0; i < venues.length; i += batchSize) {
@@ -73,11 +99,11 @@ export class PlaytomicProvider implements ProviderAdapter {
           await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       }
+    }
 
-      const filteredSlots = this.filterAndSortSlots(allSlots, params);
+    const filteredSlots = this.filterAndSortSlots(allSlots, params);
 
-      return filteredSlots;
-    });
+    return filteredSlots;
   }
 
   private async withRetry<T>(operation: () => Promise<T>): Promise<T> {
@@ -703,6 +729,10 @@ export class PlaytomicProvider implements ProviderAdapter {
       const tenant = (venue as any)._raw;
       const tenantId = tenant.tenant_id;
 
+      if (!tenantId) {
+        throw new Error(`No tenant_id found for venue ${venue.id}`);
+      }
+
       // Format date for Playtomic API (YYYY-MM-DDTHH:mm:ss)
       const startMin = `${params.date}T00:00:00`;
       const endMax = `${params.date}T23:59:59`;
@@ -750,95 +780,114 @@ export class PlaytomicProvider implements ProviderAdapter {
 
       const slots: CourtSlot[] = [];
 
-      response.forEach((resourceAvailability: any) => {
-        const resourceId = resourceAvailability.resource_id;
-        const resourceSlots = resourceAvailability.slots || [];
+      try {
+        response.forEach((resourceAvailability: any) => {
+          const resourceId = resourceAvailability.resource_id;
+          const resourceSlots = resourceAvailability.slots || [];
 
-        // Find the resource details from tenant data
-        const resource = tenant.resources?.find(
-          (r: any) => r.resource_id === resourceId
-        );
-
-        resourceSlots.forEach((slot: any) => {
-          // Playtomic times are in London time - parse them as local time
-          // Add 1 hour to compensate for timezone offset issue
-          const originalStartTime = new Date(
-            `${params.date}T${slot.start_time}`
-          );
-          const startTime = new Date(
-            originalStartTime.getTime() + 60 * 60 * 1000
-          ); // Add 1 hour
-          const endTime = new Date(
-            startTime.getTime() + slot.duration * 60 * 1000
+          // Find the resource details from tenant data
+          const resource = tenant.resources?.find(
+            (r: any) => r.resource_id === resourceId
           );
 
-          // Apply user time filters (user times are also in local time)
-          if (params.startTime) {
-            const userStartTime = new Date(
-              `${params.date}T${params.startTime}`
-            );
-            if (startTime < userStartTime) return;
-          }
+          resourceSlots.forEach((slot: any) => {
+            try {
+              // Playtomic times are in London time - parse them as local time
+              // Add 1 hour to compensate for timezone offset issue
+              const originalStartTime = new Date(
+                `${params.date}T${slot.start_time}`
+              );
+              const startTime = new Date(
+                originalStartTime.getTime() + 60 * 60 * 1000
+              ); // Add 1 hour
+              const endTime = new Date(
+                startTime.getTime() + slot.duration * 60 * 1000
+              );
 
-          if (params.endTime) {
-            const userEndTime = new Date(`${params.date}T${params.endTime}`);
-            if (endTime > userEndTime) return;
-          }
+              // Apply user time filters (user times are also in local time)
+              if (params.startTime) {
+                const userStartTime = new Date(
+                  `${params.date}T${params.startTime}`
+                );
+                if (startTime < userStartTime) return;
+              }
 
-          // Parse price (e.g., "48 GBP" -> 4800 pence)
-          const priceMatch = slot.price.match(/(\d+(?:\.\d+)?)/);
-          const price = priceMatch
-            ? Math.round(parseFloat(priceMatch[1]) * 100)
-            : 0;
+              if (params.endTime) {
+                const userEndTime = new Date(`${params.date}T${params.endTime}`);
+                if (endTime > userEndTime) return;
+              }
 
-          // Apply price filter
-          if (params.maxPrice && price > params.maxPrice) {
-            return;
-          }
+              // Parse price (e.g., "48 GBP" -> 4800 pence)
+              const priceMatch = slot.price.match(/(\d+(?:\.\d+)?)/);
+              const price = priceMatch
+                ? Math.round(parseFloat(priceMatch[1]) * 100)
+                : 0;
 
-          const courtSlot: CourtSlot = {
-            id: `${this.name}_${venue.id}_${resourceId}_${startTime.getTime()}`,
-            sport: 'padel',
-            provider: 'playtomic',
-            venue,
-            startTime: startTime.toISOString(),
-            endTime: endTime.toISOString(),
-            duration: slot.duration,
-            price,
-            currency: 'GBP',
-            bookingUrl: this.getBookingUrl(
-              tenant,
-              resourceId,
-              params.date,
-              startTime
-            ),
-            availability: {
-              spotsAvailable: 1, // If it's in the API response, it's available
-              totalSpots: 1,
-            },
-            features: {
-              indoor: resource?.properties?.resource_type === 'indoor' || true,
-              lights: true,
-              surface:
-                resource?.properties?.resource_feature === 'wall'
-                  ? 'turf'
-                  : 'concrete',
-            },
-            sportMeta: {
-              courtType: resource?.properties?.resource_type || 'indoor',
-              level: 'open',
-              doubles: resource?.properties?.resource_size === 'double',
-            } as PadelMeta,
-            lastUpdated: new Date().toISOString(),
-          };
+              // Apply price filter
+              if (params.maxPrice && price > params.maxPrice) {
+                return;
+              }
 
-          slots.push(courtSlot);
+              const courtSlot: CourtSlot = {
+                id: `${this.name}_${venue.id}_${resourceId}_${startTime.getTime()}`,
+                sport: 'padel',
+                provider: 'playtomic',
+                venue,
+                startTime: startTime.toISOString(),
+                endTime: endTime.toISOString(),
+                duration: slot.duration,
+                price,
+                currency: 'GBP',
+                bookingUrl: this.getBookingUrl(
+                  tenant,
+                  resourceId,
+                  params.date,
+                  startTime
+                ),
+                availability: {
+                  spotsAvailable: 1, // If it's in the API response, it's available
+                  totalSpots: 1,
+                },
+                features: {
+                  indoor: resource?.properties?.resource_type === 'indoor' || true,
+                  lights: true,
+                  surface:
+                    resource?.properties?.resource_feature === 'wall'
+                      ? 'turf'
+                      : 'concrete',
+                },
+                sportMeta: {
+                  courtType: resource?.properties?.resource_type || 'indoor',
+                  level: 'open',
+                  doubles: resource?.properties?.resource_size === 'double',
+                } as PadelMeta,
+                lastUpdated: new Date().toISOString(),
+              };
+
+              slots.push(courtSlot);
+            } catch (slotError) {
+              // Log individual slot processing errors in development
+              if (process.env.NODE_ENV === 'development') {
+                console.error('Error processing slot:', slotError, 'Slot data:', slot);
+              }
+              // Continue processing other slots
+            }
+          });
         });
-      });
+      } catch (processingError) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error processing availability response:', processingError);
+        }
+        throw new Error(`Failed to process availability data: ${(processingError as Error).message}`);
+      }
 
       return slots;
     } catch (error) {
-      return [];
+      const errorMessage = `Failed to fetch availability for venue ${venue.id}: ${(error as Error).message}`;
+      if (process.env.NODE_ENV === 'development') {
+        console.error(errorMessage, error);
+      }
+      throw new Error(errorMessage);
     }
   }
 

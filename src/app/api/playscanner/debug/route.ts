@@ -228,12 +228,125 @@ export async function GET(request: NextRequest) {
                     });
                 }
 
+            case 'full-search-debug':
+                try {
+                    // Test the EXACT same logic as the full search but with detailed logging
+                    const debugProvider = new PlaytomicProvider();
+                    const testParams = {
+                        sport: 'padel' as const,
+                        location: 'London',
+                        date: '2025-07-07',
+                    };
+
+                    const startTime = Date.now();
+                    const baseUrl = 'https://playtomic.com';
+
+                    // Step 1: Get venues (we know this works)
+                    const searchMethod = (debugProvider as any).searchVenues;
+                    const venues = await searchMethod.call(debugProvider, baseUrl, 'London');
+
+                    if (!venues || venues.length === 0) {
+                        return NextResponse.json({
+                            status: 'error',
+                            message: 'No venues found',
+                            step: 'venue-search',
+                            timestamp: new Date().toISOString(),
+                        });
+                    }
+
+                    // Step 2: Test with just the FIRST venue (reduce complexity)
+                    const firstVenue = venues[0];
+                    const fetchMethod = (debugProvider as any).fetchRealAvailability;
+
+                    try {
+                        const slots = await fetchMethod.call(debugProvider, firstVenue, testParams);
+
+                        return NextResponse.json({
+                            status: 'success',
+                            message: 'Full search debug successful',
+                            venue: {
+                                id: firstVenue.id,
+                                name: firstVenue.name,
+                                tenantId: firstVenue._raw?.tenant_id,
+                            },
+                            slotsCount: slots.length,
+                            sampleSlots: slots.slice(0, 3),
+                            searchTime: Date.now() - startTime,
+                            timestamp: new Date().toISOString(),
+                        });
+                    } catch (availabilityError) {
+                        return NextResponse.json({
+                            status: 'error',
+                            message: 'Availability fetch failed',
+                            step: 'availability-fetch',
+                            error: (availabilityError as Error).message,
+                            errorType: (availabilityError as Error).constructor.name,
+                            venue: {
+                                id: firstVenue.id,
+                                name: firstVenue.name,
+                                tenantId: firstVenue._raw?.tenant_id,
+                            },
+                            timestamp: new Date().toISOString(),
+                        });
+                    }
+                } catch (error) {
+                    return NextResponse.json({
+                        status: 'error',
+                        message: 'Full search debug failed',
+                        step: 'overall',
+                        error: (error as Error).message,
+                        errorType: (error as Error).constructor.name,
+                        timestamp: new Date().toISOString(),
+                    });
+                }
+
+            case 'debug-search':
+                try {
+                    // Enable debug mode and test full search
+                    process.env.PLAYSCANNER_DEBUG = 'true';
+
+                    const { searchService } = await import('@/lib/playscanner/search-service');
+                    const testParams = {
+                        sport: 'padel' as const,
+                        location: 'London',
+                        date: '2025-07-07',
+                    };
+
+                    const startTime = Date.now();
+                    const result = await searchService.search(testParams);
+
+                    // Reset debug mode
+                    delete process.env.PLAYSCANNER_DEBUG;
+
+                    return NextResponse.json({
+                        status: 'success',
+                        message: 'Debug search completed',
+                        results: result.results.slice(0, 5), // First 5 results
+                        totalResults: result.totalResults,
+                        providers: result.providers,
+                        searchTime: Date.now() - startTime,
+                        timestamp: new Date().toISOString(),
+                    });
+                } catch (error) {
+                    // Reset debug mode
+                    delete process.env.PLAYSCANNER_DEBUG;
+
+                    return NextResponse.json({
+                        status: 'error',
+                        message: 'Debug search failed',
+                        error: (error as Error).message,
+                        errorType: (error as Error).constructor.name,
+                        stack: process.env.NODE_ENV === 'development' ? (error as Error).stack : undefined,
+                        timestamp: new Date().toISOString(),
+                    });
+                }
+
             default:
                 return NextResponse.json(
                     {
                         status: 'error',
                         message: 'Unknown test type',
-                        availableTests: ['basic', 'provider', 'simple-search', 'venue-search', 'api-test', 'headers', 'availability-test'],
+                        availableTests: ['basic', 'provider', 'simple-search', 'venue-search', 'api-test', 'headers', 'availability-test', 'full-search-debug', 'debug-search'],
                     },
                     { status: 400 }
                 );
