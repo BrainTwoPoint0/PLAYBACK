@@ -462,7 +462,7 @@ export class PlaytomicProvider implements ProviderAdapter {
                 },
               } as Venue);
             }
-          } catch (e) {}
+          } catch (e) { }
         }
       }
 
@@ -568,7 +568,7 @@ export class PlaytomicProvider implements ProviderAdapter {
           };
 
           slots.push(slot);
-        } catch (parseError) {}
+        } catch (parseError) { }
       }
 
       return slots;
@@ -694,6 +694,11 @@ export class PlaytomicProvider implements ProviderAdapter {
   ): Promise<CourtSlot[]> {
     await this.rateLimiter.limit();
 
+    // Add small delay to look more human-like
+    if (process.env.NODE_ENV === 'production') {
+      await new Promise((resolve) => setTimeout(resolve, 500 + Math.random() * 1000));
+    }
+
     try {
       const tenant = (venue as any)._raw;
       const tenantId = tenant.tenant_id;
@@ -702,7 +707,7 @@ export class PlaytomicProvider implements ProviderAdapter {
       const startMin = `${params.date}T00:00:00`;
       const endMax = `${params.date}T23:59:59`;
 
-      const availabilityUrl = 'https://api.playtomic.io/v1/availability';
+      const availabilityUrl = 'https://playtomic.com/api/v1/availability';
       const queryParams = new URLSearchParams({
         sport_id: 'PADEL',
         start_min: startMin,
@@ -717,12 +722,21 @@ export class PlaytomicProvider implements ProviderAdapter {
         'X-Requested-With': 'XMLHttpRequest',
         Referer: `https://playtomic.com/tenant/${tenantId}`,
         Origin: 'https://playtomic.com',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"macOS"',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-origin', // Changed from same-site since we're using same domain now
+        'DNT': '1',
       };
 
       if (process.env.NODE_ENV === 'production') {
-        headers['Sec-Fetch-Site'] = 'same-site';
-        headers['Sec-Fetch-Mode'] = 'cors';
-        headers['Sec-Fetch-Dest'] = 'empty';
+        // Add production-specific headers to mimic real browser session
+        headers['Accept-Language'] = 'en-GB,en-US;q=0.9,en;q=0.8';
+        headers['Accept-Encoding'] = 'gzip, deflate, br';
       }
 
       const response = await this.client.fetchJson<any[]>(

@@ -162,7 +162,7 @@ export async function GET(request: NextRequest) {
                     const tenantId = '2ab75436-9bb0-4e9c-9a6f-b12931a9ca4a'; // Powerleague Shoreditch
                     const testDate = '2025-07-07';
 
-                    const availabilityUrl = 'https://api.playtomic.io/v1/availability';
+                    const availabilityUrl = 'https://playtomic.com/api/v1/availability';
                     const queryParams = new URLSearchParams({
                         sport_id: 'PADEL',
                         start_min: `${testDate}T00:00:00`,
