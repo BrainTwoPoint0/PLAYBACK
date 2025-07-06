@@ -51,6 +51,15 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
           ref={ref}
           {...props}
+          style={
+            type === 'date'
+              ? {
+                  WebkitAppearance: 'none',
+                  MozAppearance: 'textfield',
+                  appearance: 'none',
+                }
+              : undefined
+          }
         />
       </motion.div>
     );
