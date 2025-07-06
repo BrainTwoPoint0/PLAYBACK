@@ -341,12 +341,51 @@ export async function GET(request: NextRequest) {
                     });
                 }
 
+            case 'cached-search':
+                try {
+                    // Test cached search approach (Playskan-style)
+                    const { CachedSearchService } = await import('@/lib/playscanner/cached-service');
+
+                    // Initialize mock data
+                    CachedSearchService.initializeMockData();
+
+                    const testParams = {
+                        sport: 'padel' as const,
+                        location: 'London',
+                        date: new Date().toISOString().split('T')[0], // Today
+                    };
+
+                    const startTime = Date.now();
+                    const result = await CachedSearchService.search(testParams);
+
+                    return NextResponse.json({
+                        status: 'success',
+                        message: 'Cached search completed',
+                        results: result.results,
+                        totalResults: result.totalResults,
+                        searchTime: result.searchTime,
+                        source: result.source,
+                        cacheAge: result.cacheAge,
+                        cacheStats: CachedSearchService.getCacheStats(),
+                        apiCallTime: Date.now() - startTime,
+                        timestamp: new Date().toISOString(),
+                    });
+                } catch (error) {
+                    return NextResponse.json({
+                        status: 'error',
+                        message: 'Cached search failed',
+                        error: (error as Error).message,
+                        errorType: (error as Error).constructor.name,
+                        timestamp: new Date().toISOString(),
+                    });
+                }
+
             default:
                 return NextResponse.json(
                     {
                         status: 'error',
                         message: 'Unknown test type',
-                        availableTests: ['basic', 'provider', 'simple-search', 'venue-search', 'api-test', 'headers', 'availability-test', 'full-search-debug', 'debug-search'],
+                        availableTests: ['basic', 'provider', 'simple-search', 'venue-search', 'api-test', 'headers', 'availability-test', 'full-search-debug', 'debug-search', 'cached-search'],
                     },
                     { status: 400 }
                 );

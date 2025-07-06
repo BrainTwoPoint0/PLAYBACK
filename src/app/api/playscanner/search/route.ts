@@ -92,8 +92,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Perform search
-    const searchResult = await searchService.search(searchParams);
+    // Check for cached mode (Playskan-style approach)
+    const useCachedMode = process.env.PLAYSCANNER_USE_CACHED === 'true' || body.cached === true;
+
+    let searchResult;
+
+    if (useCachedMode) {
+      // Use cached data approach (faster, production-safe)
+      const { CachedSearchService } = await import('@/lib/playscanner/cached-service');
+
+      // Initialize mock data if cache is empty
+      const cacheStats = CachedSearchService.getCacheStats();
+      if (cacheStats.totalSlots === 0) {
+        CachedSearchService.initializeMockData();
+      }
+
+      searchResult = await CachedSearchService.search(searchParams);
+      searchResult.source = 'cached';
+    } else {
+      // Use live scraping approach (current implementation)
+      searchResult = await searchService.search(searchParams);
+      searchResult.source = 'live';
+    }
 
     // Add debugging information in production if enabled
     const debugInfo: any = {};
@@ -101,6 +121,7 @@ export async function POST(request: NextRequest) {
       debugInfo.searchParams = searchParams;
       debugInfo.cacheHit = !!searchService.getCacheStats();
       debugInfo.providers = searchService.getAvailableProviders();
+      debugInfo.searchMode = useCachedMode ? 'cached' : 'live';
     }
 
     return NextResponse.json(

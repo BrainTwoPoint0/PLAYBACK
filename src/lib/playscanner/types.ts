@@ -106,6 +106,8 @@ export interface SearchResult {
   searchTime: number; // milliseconds
   providers: Provider[];
   filters: SearchParams;
+  source?: 'live' | 'cached'; // Indicates if data is live scraped or cached
+  cacheAge?: string; // Age of cached data
 }
 
 // Booking types
