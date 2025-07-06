@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { DatePicker } from '@/components/ui/date-picker';
 import { SearchIcon, MapPinIcon, CalendarIcon } from 'lucide-react';
 import { SearchFormProps, SearchParams } from '@/lib/playscanner/types';
 
@@ -13,7 +14,10 @@ export default function SearchForm({
   isSearching,
 }: SearchFormProps) {
   const [location, setLocation] = useState('London');
-  const [date, setDate] = useState('');
+
+  // Get today's date in YYYY-MM-DD format
+  const today = new Date().toISOString().split('T')[0];
+  const [date, setDate] = useState(today);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,9 +35,6 @@ export default function SearchForm({
 
     onSearch(searchParams);
   };
-
-  // Get today's date for min date
-  const today = new Date().toISOString().split('T')[0];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -62,13 +63,13 @@ export default function SearchForm({
             <CalendarIcon className="h-4 w-4" />
             <span>Date</span>
           </Label>
-          <Input
+          <DatePicker
             id="date"
-            type="date"
             min={today}
             value={date}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={setDate}
             className="w-full sm:text-left text-center"
+            placeholder="Select date"
           />
         </div>
       </div>
