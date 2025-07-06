@@ -1,0 +1,53 @@
+name: PLAYScanner Background Data Collection
+
+on:
+  schedule:
+    # Run every 30 minutes
+    - cron: '0,30 * * * *'
+  workflow_dispatch: # Allow manual triggers
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Collect PLAYScanner Data
+        run: |
+          echo "🤖 Starting PLAYScanner background collection..."
+
+          # Make the collection request
+          response=$(curl -X POST ${{ secrets.NETLIFY_URL }}/api/playscanner/collect \
+            -H "Authorization: Bearer ${{ secrets.PLAYSCANNER_COLLECT_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -H "User-Agent: PLAYScanner-GitHub-Collector/1.0" \
+            --fail --silent --show-error \
+            --max-time 300)
+
+          echo "✅ Collection completed successfully"
+          echo "Response: $response"
+
+        env:
+          # These will be set as GitHub secrets
+          NETLIFY_URL: ${{ secrets.NETLIFY_URL }}
+          PLAYSCANNER_COLLECT_SECRET: ${{ secrets.PLAYSCANNER_COLLECT_SECRET }}
+
+      - name: Verify Cache Status
+        run: |
+          echo "🔍 Checking cache status..."
+
+          cache_status=$(curl ${{ secrets.NETLIFY_URL }}/api/playscanner/collect \
+            --silent --show-error \
+            --max-time 30)
+
+          echo "Cache Status: $cache_status"
+
+      - name: Test Search Functionality
+        run: |
+          echo "🔍 Testing search functionality..."
+
+          search_result=$(curl "${{ secrets.NETLIFY_URL }}/api/playscanner/search?location=London&date=$(date +%Y-%m-%d)&cached=true" \
+            --silent --show-error \
+            --max-time 30)
+
+          echo "Search Test: $search_result"
