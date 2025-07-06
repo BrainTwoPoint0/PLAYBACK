@@ -7,8 +7,11 @@ import { SearchParams } from '@/lib/playscanner/types';
  * POST /api/playscanner/search
  */
 export async function POST(request: NextRequest) {
+  let body: any;
+  let searchParams: SearchParams | undefined;
+
   try {
-    const body = await request.json();
+    body = await request.json();
 
     // Validate required fields
     const { sport, location, date } = body;
@@ -62,7 +65,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Build search parameters
-    const searchParams: SearchParams = {
+    searchParams = {
       sport,
       location,
       date,
@@ -92,8 +95,37 @@ export async function POST(request: NextRequest) {
     // Perform search
     const searchResult = await searchService.search(searchParams);
 
-    return NextResponse.json(searchResult, { status: 200 });
+    // Add debugging information in production if enabled
+    const debugInfo: any = {};
+    if (process.env.PLAYSCANNER_DEBUG === 'true') {
+      debugInfo.searchParams = searchParams;
+      debugInfo.cacheHit = !!searchService.getCacheStats();
+      debugInfo.providers = searchService.getAvailableProviders();
+    }
+
+    return NextResponse.json(
+      {
+        ...searchResult,
+        ...(Object.keys(debugInfo).length > 0 && { debug: debugInfo }),
+      },
+      { status: 200 }
+    );
   } catch (error) {
+    // Enhanced error logging for production
+    const errorDetails = {
+      message: (error as Error).message,
+      stack:
+        process.env.NODE_ENV === 'development'
+          ? (error as Error).stack
+          : undefined,
+      timestamp: new Date().toISOString(),
+      requestBody: body || 'Unable to parse request',
+      searchParams: searchParams || 'Not constructed',
+    };
+
+    // Log to console for now (in production, you'd send to monitoring service)
+    console.error('PLAYScanner search error:', errorDetails);
+
     return NextResponse.json(
       {
         error: 'Internal server error during search',
@@ -101,7 +133,10 @@ export async function POST(request: NextRequest) {
         message:
           process.env.NODE_ENV === 'development'
             ? (error as Error).message
-            : 'Something went wrong',
+            : 'Something went wrong. Please try again.',
+        ...(process.env.PLAYSCANNER_DEBUG === 'true' && {
+          details: errorDetails,
+        }),
       },
       { status: 500 }
     );

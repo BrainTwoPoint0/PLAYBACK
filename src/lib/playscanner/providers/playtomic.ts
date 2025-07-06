@@ -16,10 +16,12 @@ export class PlaytomicProvider implements ProviderAdapter {
   readonly name = 'playtomic';
   readonly sports = ['padel'];
   readonly regions = ['uk', 'es', 'fr', 'it'];
-  readonly rateLimit = 1; // 1 request per second to be respectful
+  readonly rateLimit = 0.5; // Slower rate limit for production - 1 request per 2 seconds
 
   private rateLimiter = new RateLimiter(this.rateLimit);
   private client = new ScrapingClient();
+  private maxRetries = 3;
+  private retryDelay = 2000; // 2 seconds
 
   // Playtomic uses different base URLs for different regions
   private baseUrls = {
@@ -32,7 +34,7 @@ export class PlaytomicProvider implements ProviderAdapter {
   async fetchAvailability(params: SearchParams): Promise<CourtSlot[]> {
     await this.rateLimiter.limit();
 
-    try {
+    return this.withRetry(async () => {
       const region = this.detectRegion(params.location);
       const baseUrl = this.baseUrls[region] || this.baseUrls.uk;
 
@@ -44,24 +46,64 @@ export class PlaytomicProvider implements ProviderAdapter {
 
       const allSlots: CourtSlot[] = [];
 
-      for (const venue of venues) {
-        try {
-          const slots = await this.fetchRealAvailability(venue, params);
-          allSlots.push(...slots);
-        } catch (error) {
-          // Continue with other venues
+      // Process venues in smaller batches to avoid overwhelming the API
+      const batchSize = 3;
+      for (let i = 0; i < venues.length; i += batchSize) {
+        const batch = venues.slice(i, i + batchSize);
+
+        const batchPromises = batch.map(async (venue) => {
+          try {
+            await this.rateLimiter.limit();
+            return await this.fetchRealAvailability(venue, params);
+          } catch (error) {
+            // Log error but continue with other venues
+            return [];
+          }
+        });
+
+        const batchResults = await Promise.allSettled(batchPromises);
+        batchResults.forEach((result) => {
+          if (result.status === 'fulfilled') {
+            allSlots.push(...result.value);
+          }
+        });
+
+        // Small delay between batches
+        if (i + batchSize < venues.length) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       }
 
       const filteredSlots = this.filterAndSortSlots(allSlots, params);
 
       return filteredSlots;
-    } catch (error) {
-      throw new ScrapingError(
-        `Failed to fetch Playtomic availability: ${(error as Error).message}`,
-        this.name
-      );
+    });
+  }
+
+  private async withRetry<T>(operation: () => Promise<T>): Promise<T> {
+    let lastError: Error | null = null;
+
+    for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
+      try {
+        return await operation();
+      } catch (error) {
+        lastError = error as Error;
+
+        if (attempt === this.maxRetries) {
+          break;
+        }
+
+        // Exponential backoff with jitter
+        const delay =
+          this.retryDelay * Math.pow(2, attempt - 1) + Math.random() * 1000;
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
     }
+
+    throw new ScrapingError(
+      `Failed after ${this.maxRetries} attempts: ${lastError?.message}`,
+      this.name
+    );
   }
 
   private detectRegion(location: string): keyof typeof this.baseUrls {
@@ -145,8 +187,27 @@ export class PlaytomicProvider implements ProviderAdapter {
         size: '50',
       });
 
+      // Add production-specific headers
+      const headers: Record<string, string> = {
+        Accept: 'application/json, text/plain, */*',
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        Referer: 'https://playtomic.com/venues/london',
+        Origin: 'https://playtomic.com',
+      };
+
+      // In production, add more realistic headers
+      if (process.env.NODE_ENV === 'production') {
+        headers['Sec-Fetch-Site'] = 'same-origin';
+        headers['Sec-Fetch-Mode'] = 'cors';
+        headers['Sec-Fetch-Dest'] = 'empty';
+        headers['Cache-Control'] = 'no-cache';
+        headers['Pragma'] = 'no-cache';
+      }
+
       const response = await this.client.fetchJson<any>(
-        `${searchUrl}?${params}`
+        `${searchUrl}?${params}`,
+        { headers }
       );
 
       if (Array.isArray(response)) {
@@ -188,6 +249,10 @@ export class PlaytomicProvider implements ProviderAdapter {
 
       return [];
     } catch (error) {
+      // Log error details in development
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Playtomic API search failed:', error);
+      }
       return [];
     }
   }
@@ -645,8 +710,24 @@ export class PlaytomicProvider implements ProviderAdapter {
         tenant_id: tenantId,
       });
 
+      // Add production-specific headers for availability API
+      const headers: Record<string, string> = {
+        Accept: 'application/json, text/plain, */*',
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        Referer: `https://playtomic.com/tenant/${tenantId}`,
+        Origin: 'https://playtomic.com',
+      };
+
+      if (process.env.NODE_ENV === 'production') {
+        headers['Sec-Fetch-Site'] = 'same-site';
+        headers['Sec-Fetch-Mode'] = 'cors';
+        headers['Sec-Fetch-Dest'] = 'empty';
+      }
+
       const response = await this.client.fetchJson<any[]>(
-        `${availabilityUrl}?${queryParams}`
+        `${availabilityUrl}?${queryParams}`,
+        { headers }
       );
 
       if (!Array.isArray(response)) {

@@ -55,11 +55,26 @@ export class SearchService {
       };
     }
 
-    // Fetch from all providers in parallel
+    // Fetch from all providers in parallel with timeout
+    const timeout = 25000; // 25 second timeout
     const providerResults = await Promise.allSettled(
       relevantProviders.map(async (provider) => {
         try {
-          const slots = await provider.fetchAvailability(params);
+          // Add timeout to each provider call
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+          const slots = await Promise.race([
+            provider.fetchAvailability(params),
+            new Promise<never>((_, reject) => {
+              controller.signal.addEventListener('abort', () => {
+                reject(new Error('Provider request timed out'));
+              });
+            }),
+          ]);
+
+          clearTimeout(timeoutId);
+
           return {
             provider: provider.name as Provider,
             slots,
@@ -78,11 +93,19 @@ export class SearchService {
     // Aggregate results
     const allSlots: CourtSlot[] = [];
     const successfulProviders: Provider[] = [];
+    const errors: string[] = [];
 
     providerResults.forEach((result) => {
-      if (result.status === 'fulfilled' && result.value.slots.length > 0) {
-        allSlots.push(...result.value.slots);
-        successfulProviders.push(result.value.provider);
+      if (result.status === 'fulfilled') {
+        if (result.value.slots.length > 0) {
+          allSlots.push(...result.value.slots);
+          successfulProviders.push(result.value.provider);
+        }
+        if (result.value.error) {
+          errors.push(`${result.value.provider}: ${result.value.error}`);
+        }
+      } else {
+        errors.push(`Provider failed: ${result.reason}`);
       }
     });
 
@@ -95,10 +118,15 @@ export class SearchService {
       searchTime: Date.now() - startTime,
       providers: successfulProviders,
       filters: params,
+      // Include error information for debugging
+      ...(errors.length > 0 &&
+        process.env.NODE_ENV === 'development' && { errors }),
     };
 
-    // Cache the result
-    this.cache.set(cacheKey, searchResult, CACHE_TTL.SEARCH_RESULTS);
+    // Only cache successful results (with at least some data or no errors)
+    if (sortedSlots.length > 0 || errors.length === 0) {
+      this.cache.set(cacheKey, searchResult, CACHE_TTL.SEARCH_RESULTS);
+    }
 
     return searchResult;
   }
