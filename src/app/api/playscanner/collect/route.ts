@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PlaytomicProvider } from '@/lib/playscanner/providers/playtomic';
+import { BackgroundCollector } from '@/lib/playscanner/collector';
+import { CachedSearchService } from '@/lib/playscanner/cached-service';
 
 /**
  * Background Data Collection Endpoint (Playskan-style)
@@ -12,79 +13,49 @@ export async function POST(request: NextRequest) {
     try {
         const startTime = Date.now();
 
-        // Authentication check (you'll want to secure this endpoint)
+        // Authentication check (secure this endpoint)
         const authHeader = request.headers.get('authorization');
         if (authHeader !== `Bearer ${process.env.PLAYSCANNER_COLLECT_SECRET}`) {
             return NextResponse.json({
-                error: 'Unauthorized',
+                error: 'Unauthorized - Valid API key required',
+                hint: 'Set PLAYSCANNER_COLLECT_SECRET environment variable',
             }, { status: 401 });
         }
 
-        const provider = new PlaytomicProvider();
-        const collectResults = [];
+        console.log('🚀 Starting background data collection...');
 
-        // Define collection parameters
-        const cities = ['London']; // Expand later
-        const daysAhead = 7; // Collect next 7 days
+        const collector = new BackgroundCollector();
+        const collectionResult = await collector.collectAll();
 
-        for (const city of cities) {
-            for (let dayOffset = 0; dayOffset < daysAhead; dayOffset++) {
-                const date = new Date();
-                date.setDate(date.getDate() + dayOffset);
-                const dateString = date.toISOString().split('T')[0];
-
-                try {
-                    // Collect availability for this city/date
-                    const params = {
-                        sport: 'padel' as const,
-                        location: city,
-                        date: dateString,
-                    };
-
-                    const slots = await provider.fetchAvailability(params);
-
-                    // Here you would store in your database (Supabase)
-                    // For now, we'll just collect the results
-                    collectResults.push({
-                        city,
-                        date: dateString,
-                        slotsCount: slots.length,
-                        venues: [...new Set(slots.map(slot => slot.venue.id))].length,
-                        priceRange: slots.length > 0 ? {
-                            min: Math.min(...slots.map(s => s.price)) / 100,
-                            max: Math.max(...slots.map(s => s.price)) / 100,
-                        } : null,
-                    });
-
-                    // Add delay between requests to avoid rate limiting
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-
-                } catch (error) {
-                    collectResults.push({
-                        city,
-                        date: dateString,
-                        error: (error as Error).message,
-                    });
-                }
+        // Store collected data in cache
+        let cacheUpdates = 0;
+        collectionResult.results.forEach(result => {
+            if (result.status === 'success' && result.slots) {
+                CachedSearchService.setCachedData(result.city, result.date, result.slots);
+                cacheUpdates++;
             }
-        }
+        });
 
-        const collectTime = Date.now() - startTime;
+        const totalTime = Date.now() - startTime;
+
+        console.log(`✅ Collection completed: ${cacheUpdates} cache updates, ${totalTime}ms`);
 
         return NextResponse.json({
             status: 'success',
-            message: 'Data collection completed',
-            results: collectResults,
-            totalCollected: collectResults.filter(r => !r.error).length,
-            errors: collectResults.filter(r => r.error).length,
-            collectionTime: collectTime,
+            message: 'Background collection completed',
+            collection: collectionResult,
+            cacheUpdates,
+            totalTime,
+            cacheStats: CachedSearchService.getCacheStats(),
             timestamp: new Date().toISOString(),
         });
 
     } catch (error) {
+        console.error('❌ Collection failed:', error);
+
         return NextResponse.json({
             status: 'error',
-            message: 'Collection failed',
+            message: 'Background collection failed',
             error: (error as Error).message,
             timestamp: new Date().toISOString(),
         }, { status: 500 });
@@ -96,10 +67,16 @@ export async function POST(request: NextRequest) {
  * GET /api/playscanner/collect
  */
 export async function GET() {
+    const cacheStats = CachedSearchService.getCacheStats();
+
     return NextResponse.json({
         status: 'ready',
         message: 'Background collection service ready',
-        instructions: 'POST with Authorization header to start collection',
+        instructions: {
+            collect: 'POST with Authorization: Bearer <secret> to start collection',
+            secret: 'Set PLAYSCANNER_COLLECT_SECRET environment variable',
+        },
+        currentCache: cacheStats,
         timestamp: new Date().toISOString(),
     });
 } 

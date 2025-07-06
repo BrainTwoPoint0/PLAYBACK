@@ -7,10 +7,28 @@ import { CourtSlot, SearchParams, SearchResult } from './types';
  * This is how Playskan avoids production scraping issues
  */
 
-// Simple in-memory cache (in production, this would be your database)
-const cache = new Map<string, CourtSlot[]>();
+interface CacheEntry {
+    data: CourtSlot[];
+    timestamp: number;
+    ttl: number; // Time to live in milliseconds
+}
+
+interface CacheStats {
+    totalEntries: number;
+    activeEntries: number;
+    expiredEntries: number;
+    oldestEntry: string | null;
+    newestEntry: string | null;
+    totalSlots: number;
+    uniqueVenues: number;
+    coverageDays: number;
+    memoryUsage: string;
+}
 
 export class CachedSearchService {
+    private static cache = new Map<string, CacheEntry>();
+    private static defaultTTL = 30 * 60 * 1000; // 30 minutes in milliseconds
+
     /**
      * Search cached data instead of live scraping
      */
@@ -19,7 +37,7 @@ export class CachedSearchService {
         const cacheKey = `${params.location}-${params.date}`;
 
         // Get cached slots for this location/date
-        const cachedSlots = cache.get(cacheKey) || [];
+        const cachedSlots = this.getCachedData(params.location, params.date) || [];
 
         // Apply filters to cached data
         let filteredSlots = cachedSlots;
@@ -68,21 +86,94 @@ export class CachedSearchService {
     }
 
     /**
+     * Get cached data if valid (not expired)
+     */
+    static getCachedData(city: string, date: string): CourtSlot[] | null {
+        const key = this.getCacheKey(city, date);
+        const entry = this.cache.get(key);
+
+        if (!entry) {
+            return null;
+        }
+
+        // Check if expired
+        const now = Date.now();
+        const isExpired = (now - entry.timestamp) > entry.ttl;
+
+        if (isExpired) {
+            this.cache.delete(key);
+            console.log(`🗑️ Expired cache entry removed: ${key}`);
+            return null;
+        }
+
+        console.log(`📚 Serving ${entry.data.length} slots from cache: ${key}`);
+        return entry.data;
+    }
+
+    /**
      * Store collected data in cache
      */
-    static setCachedData(location: string, date: string, slots: CourtSlot[]): void {
-        const cacheKey = `${location}-${date}`;
-        cache.set(cacheKey, slots);
+    static setCachedData(
+        city: string,
+        date: string,
+        slots: CourtSlot[],
+        ttl: number = this.defaultTTL
+    ): void {
+        const key = this.getCacheKey(city, date);
+
+        this.cache.set(key, {
+            data: slots,
+            timestamp: Date.now(),
+            ttl,
+        });
+
+        console.log(`💾 Cached ${slots.length} slots for ${city} ${date} (TTL: ${ttl / 1000 / 60}min)`);
+    }
+
+    /**
+     * Get cache key for city and date
+     */
+    private static getCacheKey(city: string, date: string): string {
+        return `${city.toLowerCase()}:${date}`;
     }
 
     /**
      * Get cache statistics
      */
-    static getCacheStats() {
+    static getCacheStats(): CacheStats {
+        const entries = Array.from(this.cache.entries());
+        const now = Date.now();
+
+        let totalSlots = 0;
+        let allVenues = new Set<string>();
+        let dates = new Set<string>();
+        let activeEntries = 0;
+        let expiredEntries = 0;
+
+        entries.forEach(([key, entry]) => {
+            const isExpired = (now - entry.timestamp) > entry.ttl;
+
+            if (isExpired) {
+                expiredEntries++;
+            } else {
+                activeEntries++;
+                totalSlots += entry.data.length;
+                entry.data.forEach((slot: CourtSlot) => allVenues.add(slot.venue.id));
+                const dateFromKey = key.split(':')[1];
+                if (dateFromKey) dates.add(dateFromKey);
+            }
+        });
+
         return {
-            totalKeys: cache.size,
-            totalSlots: Array.from(cache.values()).reduce((sum, slots) => sum + slots.length, 0),
-            cacheKeys: Array.from(cache.keys()),
+            totalEntries: entries.length,
+            activeEntries,
+            expiredEntries,
+            oldestEntry: null,
+            newestEntry: null,
+            totalSlots,
+            uniqueVenues: allVenues.size,
+            coverageDays: dates.size,
+            memoryUsage: '0 KB',
         };
     }
 
@@ -90,7 +181,7 @@ export class CachedSearchService {
      * Clear cache
      */
     static clearCache(): void {
-        cache.clear();
+        this.cache.clear();
     }
 
     /**

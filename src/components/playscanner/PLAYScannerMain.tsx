@@ -6,22 +6,25 @@ import SectionTitle from '@/components/ui/section-title';
 import SportSelector from './SportSelector';
 import SearchForm from './SearchForm';
 import SearchResults from './SearchResults';
-import { Sport } from '@/lib/playscanner/types';
+import { Sport, SearchParams } from '@/lib/playscanner/types';
 
 export default function PLAYScannerMain() {
   const [selectedSport, setSelectedSport] = useState<Sport>('padel');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [results, setResults] = useState<any | null>(null);
 
   // Stable sport change handler
   const handleSportChange = useCallback((sport: Sport) => {
     setSelectedSport(sport);
   }, []);
 
-  const handleSearch = useCallback(async (searchParams: any) => {
+  const handleSearch = async (searchParams: SearchParams) => {
     setIsSearching(true);
-    setHasSearched(true);
+    setError(null);
+    setResults(null);
 
     try {
       const response = await fetch('/api/playscanner/search', {
@@ -29,7 +32,10 @@ export default function PLAYScannerMain() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(searchParams),
+        body: JSON.stringify({
+          ...searchParams,
+          cached: true, // Use cached mode for production reliability
+        }),
       });
 
       if (!response.ok) {
@@ -37,21 +43,22 @@ export default function PLAYScannerMain() {
       }
 
       const data = await response.json();
+      setResults(data);
       setSearchResults(data.results || []);
-    } catch (error) {
-      console.error('Search error:', error);
-      setSearchResults([]);
+      setHasSearched(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Search failed');
     } finally {
       setIsSearching(false);
     }
-  }, []);
+  };
 
   // Default search for today's London padel bookings
   useEffect(() => {
     const performDefaultSearch = async () => {
       const today = new Date().toISOString().split('T')[0];
       const defaultSearchParams = {
-        sport: 'padel',
+        sport: 'padel' as const,
         location: 'London',
         date: today,
       };
