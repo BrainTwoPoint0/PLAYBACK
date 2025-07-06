@@ -152,20 +152,30 @@ export class ScrapingClient {
       ...options.headers,
     };
 
-    const response = await fetch(url, {
-      ...options,
-      headers,
-      // Add timeout to prevent hanging
-      signal: AbortSignal.timeout(30000), // 30 second timeout
-    });
+    // Create manual timeout using AbortController for compatibility
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-    if (!response.ok) {
-      throw new Error(
-        `HTTP ${response.status}: ${response.statusText} for ${url}`
-      );
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(
+          `HTTP ${response.status}: ${response.statusText} for ${url}`
+        );
+      }
+
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
     }
-
-    return response;
   }
 
   async fetchJson<T>(url: string, options: RequestInit = {}): Promise<T> {

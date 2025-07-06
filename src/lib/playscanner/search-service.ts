@@ -60,20 +60,18 @@ export class SearchService {
     const providerResults = await Promise.allSettled(
       relevantProviders.map(async (provider) => {
         try {
-          // Add timeout to each provider call
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), timeout);
+          // Add timeout to each provider call using manual timeout
+          const timeoutPromise = new Promise<never>((_, reject) => {
+            setTimeout(
+              () => reject(new Error('Provider request timed out')),
+              timeout
+            );
+          });
 
           const slots = await Promise.race([
             provider.fetchAvailability(params),
-            new Promise<never>((_, reject) => {
-              controller.signal.addEventListener('abort', () => {
-                reject(new Error('Provider request timed out'));
-              });
-            }),
+            timeoutPromise,
           ]);
-
-          clearTimeout(timeoutId);
 
           return {
             provider: provider.name as Provider,
