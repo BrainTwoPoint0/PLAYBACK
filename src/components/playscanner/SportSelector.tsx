@@ -1,7 +1,7 @@
 'use client';
 
+import React from 'react';
 import { Sport, SportSelectorProps } from '@/lib/playscanner/types';
-import { motion } from 'framer-motion';
 
 const sports = [
   {
@@ -22,10 +22,7 @@ const sports = [
   },
 ] as const;
 
-export default function SportSelector({
-  selectedSport,
-  onSportChange,
-}: SportSelectorProps) {
+function SportSelector({ selectedSport, onSportChange }: SportSelectorProps) {
   return (
     <div className="flex flex-col items-center space-y-8">
       <div className="text-center">
@@ -39,15 +36,8 @@ export default function SportSelector({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
         {sports.map((sport, index) => (
-          <motion.div
+          <div
             key={sport.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.4,
-              delay: index * 0.1,
-              ease: [0.4, 0, 0.2, 1],
-            }}
             className={`relative cursor-pointer transition-all duration-200 group ${
               !sport.enabled ? 'cursor-not-allowed' : ''
             }`}
@@ -110,17 +100,12 @@ export default function SportSelector({
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
 
       {!sports.find((s) => s.id === selectedSport)?.enabled && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-          className="text-center p-6 bg-amber-500/10 rounded-lg border border-amber-500/20 max-w-md"
-        >
+        <div className="text-center p-6 bg-amber-500/10 rounded-lg border border-amber-500/20 max-w-md">
           <p className="text-amber-400 font-medium mb-2">
             {selectedSport === 'football' ? 'Football' : 'This sport'} booking
             is coming soon!
@@ -129,8 +114,10 @@ export default function SportSelector({
             We&apos;re working on integrating with top providers to bring you
             the best booking experience.
           </p>
-        </motion.div>
+        </div>
       )}
     </div>
   );
 }
+
+export default React.memo(SportSelector);

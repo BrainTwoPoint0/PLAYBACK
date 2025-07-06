@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import SectionTitle from '@/components/ui/section-title';
 import SportSelector from './SportSelector';
@@ -14,7 +14,12 @@ export default function PLAYScannerMain() {
   const [searchResults, setSearchResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const handleSearch = async (searchParams: any) => {
+  // Stable sport change handler
+  const handleSportChange = useCallback((sport: Sport) => {
+    setSelectedSport(sport);
+  }, []);
+
+  const handleSearch = useCallback(async (searchParams: any) => {
     setIsSearching(true);
     setHasSearched(true);
 
@@ -39,7 +44,7 @@ export default function PLAYScannerMain() {
     } finally {
       setIsSearching(false);
     }
-  };
+  }, []);
 
   // Default search for today's London padel bookings
   useEffect(() => {
@@ -84,7 +89,7 @@ export default function PLAYScannerMain() {
       >
         <SportSelector
           selectedSport={selectedSport}
-          onSportChange={setSelectedSport}
+          onSportChange={handleSportChange}
         />
       </motion.div>
 
