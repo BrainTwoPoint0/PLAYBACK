@@ -155,12 +155,85 @@ export async function GET(request: NextRequest) {
                     timestamp: new Date().toISOString(),
                 });
 
+            case 'availability-test':
+                try {
+                    // Test the specific availability API that's failing
+                    // Using real venue data from our working venue search
+                    const tenantId = '2ab75436-9bb0-4e9c-9a6f-b12931a9ca4a'; // Powerleague Shoreditch
+                    const testDate = '2025-07-07';
+
+                    const availabilityUrl = 'https://api.playtomic.io/v1/availability';
+                    const queryParams = new URLSearchParams({
+                        sport_id: 'PADEL',
+                        start_min: `${testDate}T00:00:00`,
+                        start_max: `${testDate}T23:59:59`,
+                        tenant_id: tenantId,
+                    });
+
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+                    const response = await fetch(`${availabilityUrl}?${queryParams}`, {
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                            'Accept': 'application/json, text/plain, */*',
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Referer': `https://playtomic.com/tenant/${tenantId}`,
+                            'Origin': 'https://playtomic.com',
+                            'Sec-Fetch-Site': 'same-site',
+                            'Sec-Fetch-Mode': 'cors',
+                            'Sec-Fetch-Dest': 'empty',
+                        },
+                        signal: controller.signal,
+                    });
+
+                    clearTimeout(timeoutId);
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        return NextResponse.json({
+                            status: 'success',
+                            message: 'Availability API test successful',
+                            responseStatus: response.status,
+                            dataType: Array.isArray(data) ? 'array' : typeof data,
+                            itemCount: Array.isArray(data) ? data.length : 'N/A',
+                            sampleData: Array.isArray(data) ? data.slice(0, 2) : data,
+                            tenantId,
+                            testDate,
+                            apiUrl: `${availabilityUrl}?${queryParams}`,
+                            timestamp: new Date().toISOString(),
+                        });
+                    } else {
+                        const errorText = await response.text();
+                        return NextResponse.json({
+                            status: 'error',
+                            message: 'Availability API test failed',
+                            responseStatus: response.status,
+                            responseHeaders: Object.fromEntries(response.headers.entries()),
+                            responseText: errorText,
+                            tenantId,
+                            testDate,
+                            apiUrl: `${availabilityUrl}?${queryParams}`,
+                            timestamp: new Date().toISOString(),
+                        });
+                    }
+                } catch (error) {
+                    return NextResponse.json({
+                        status: 'error',
+                        message: 'Availability API test error',
+                        error: (error as Error).message,
+                        errorType: (error as Error).constructor.name,
+                        timestamp: new Date().toISOString(),
+                    });
+                }
+
             default:
                 return NextResponse.json(
                     {
                         status: 'error',
                         message: 'Unknown test type',
-                        availableTests: ['basic', 'provider', 'simple-search', 'venue-search', 'api-test', 'headers'],
+                        availableTests: ['basic', 'provider', 'simple-search', 'venue-search', 'api-test', 'headers', 'availability-test'],
                     },
                     { status: 400 }
                 );
