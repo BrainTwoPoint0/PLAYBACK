@@ -102,10 +102,13 @@ export default function SearchResults({
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-2xl font-semibold">
-                {results.length} {results.length === 1 ? 'Court' : 'Courts'} Found
+                {results.length} {results.length === 1 ? 'Court' : 'Courts'}{' '}
+                Found
               </h3>
               <p className="text-neutral-400">
-                Showing {sport === 'padel' ? 'padel courts' : 'football pitches'} in London
+                Showing{' '}
+                {sport === 'padel' ? 'padel courts' : 'football pitches'} in
+                London
               </p>
             </div>
 

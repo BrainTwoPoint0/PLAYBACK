@@ -93,13 +93,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Check for cached mode (Playskan-style approach)
-    const useCachedMode = process.env.PLAYSCANNER_USE_CACHED === 'true' || body.cached === true;
+    const useCachedMode =
+      process.env.PLAYSCANNER_USE_CACHED === 'true' || body.cached === true;
 
     let searchResult;
 
     if (useCachedMode) {
       // Use cached data approach (faster, production-safe)
-      const { CachedSearchService } = await import('@/lib/playscanner/cached-service');
+      const { CachedSearchService } = await import(
+        '@/lib/playscanner/cached-service'
+      );
 
       // Initialize mock data if cache is empty
       const cacheStats = CachedSearchService.getCacheStats();

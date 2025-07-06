@@ -46,7 +46,9 @@ export class PlaytomicProvider implements ProviderAdapter {
     });
   }
 
-  private async fetchAvailabilityDirect(params: SearchParams): Promise<CourtSlot[]> {
+  private async fetchAvailabilityDirect(
+    params: SearchParams
+  ): Promise<CourtSlot[]> {
     const region = this.detectRegion(params.location);
     const baseUrl = this.baseUrls[region] || this.baseUrls.uk;
 
@@ -488,7 +490,7 @@ export class PlaytomicProvider implements ProviderAdapter {
                 },
               } as Venue);
             }
-          } catch (e) { }
+          } catch (e) {}
         }
       }
 
@@ -594,7 +596,7 @@ export class PlaytomicProvider implements ProviderAdapter {
           };
 
           slots.push(slot);
-        } catch (parseError) { }
+        } catch (parseError) {}
       }
 
       return slots;
@@ -722,7 +724,9 @@ export class PlaytomicProvider implements ProviderAdapter {
 
     // Add small delay to look more human-like
     if (process.env.NODE_ENV === 'production') {
-      await new Promise((resolve) => setTimeout(resolve, 500 + Math.random() * 1000));
+      await new Promise((resolve) =>
+        setTimeout(resolve, 500 + Math.random() * 1000)
+      );
     }
 
     try {
@@ -753,14 +757,15 @@ export class PlaytomicProvider implements ProviderAdapter {
         Referer: `https://playtomic.com/tenant/${tenantId}`,
         Origin: 'https://playtomic.com',
         'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
-        'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+        Pragma: 'no-cache',
+        'Sec-Ch-Ua':
+          '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
         'Sec-Ch-Ua-Mobile': '?0',
         'Sec-Ch-Ua-Platform': '"macOS"',
         'Sec-Fetch-Dest': 'empty',
         'Sec-Fetch-Mode': 'cors',
         'Sec-Fetch-Site': 'same-origin', // Changed from same-site since we're using same domain now
-        'DNT': '1',
+        DNT: '1',
       };
 
       if (process.env.NODE_ENV === 'production') {
@@ -813,7 +818,9 @@ export class PlaytomicProvider implements ProviderAdapter {
               }
 
               if (params.endTime) {
-                const userEndTime = new Date(`${params.date}T${params.endTime}`);
+                const userEndTime = new Date(
+                  `${params.date}T${params.endTime}`
+                );
                 if (endTime > userEndTime) return;
               }
 
@@ -849,7 +856,8 @@ export class PlaytomicProvider implements ProviderAdapter {
                   totalSpots: 1,
                 },
                 features: {
-                  indoor: resource?.properties?.resource_type === 'indoor' || true,
+                  indoor:
+                    resource?.properties?.resource_type === 'indoor' || true,
                   lights: true,
                   surface:
                     resource?.properties?.resource_feature === 'wall'
@@ -868,7 +876,12 @@ export class PlaytomicProvider implements ProviderAdapter {
             } catch (slotError) {
               // Log individual slot processing errors in development
               if (process.env.NODE_ENV === 'development') {
-                console.error('Error processing slot:', slotError, 'Slot data:', slot);
+                console.error(
+                  'Error processing slot:',
+                  slotError,
+                  'Slot data:',
+                  slot
+                );
               }
               // Continue processing other slots
             }
@@ -876,9 +889,14 @@ export class PlaytomicProvider implements ProviderAdapter {
         });
       } catch (processingError) {
         if (process.env.NODE_ENV === 'development') {
-          console.error('Error processing availability response:', processingError);
+          console.error(
+            'Error processing availability response:',
+            processingError
+          );
         }
-        throw new Error(`Failed to process availability data: ${(processingError as Error).message}`);
+        throw new Error(
+          `Failed to process availability data: ${(processingError as Error).message}`
+        );
       }
 
       return slots;
