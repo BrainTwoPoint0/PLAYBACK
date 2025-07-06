@@ -21,9 +21,9 @@ export class BackgroundCollector {
     const startTime = Date.now();
     const results: CollectionItem[] = [];
 
-    // Configuration - expand as needed
+    // Conservative configuration for Netlify's timeout limits
     const cities = ['London']; // Add Manchester, Birmingham, etc. later
-    const daysAhead = 3; // Collect next 3 days (reduced from 7)
+    const daysAhead = 1; // Collect only next 1 day to stay within timeout limits
 
     console.log(
       `🤖 Starting background collection for ${cities.length} cities, ${daysAhead} days`
@@ -36,7 +36,11 @@ export class BackgroundCollector {
         const dateString = date.toISOString().split('T')[0];
 
         try {
-          const slots = await this.collectCityDate(city, dateString);
+          // Add timeout for individual collection
+          const slots = await Promise.race([
+            this.collectCityDate(city, dateString),
+            this.timeout<CourtSlot[]>(20000, `Collection timeout for ${city} ${dateString}`)
+          ]);
 
           results.push({
             city,
@@ -53,8 +57,8 @@ export class BackgroundCollector {
             `✅ ${city} ${dateString}: ${slots.length} slots from ${this.getUniqueVenues(slots).length} venues`
           );
 
-          // Respectful delay between collections (increased from 2s to 5s)
-          await this.sleep(5000);
+          // Shorter delay to stay within timeout limits (2s instead of 5s)
+          await this.sleep(2000);
         } catch (error) {
           results.push({
             city,
@@ -144,6 +148,12 @@ export class BackgroundCollector {
 
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private timeout<T>(ms: number, message: string): Promise<T> {
+    return new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(message)), ms);
+    });
   }
 }
 
