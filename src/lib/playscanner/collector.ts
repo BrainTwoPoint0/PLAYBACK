@@ -23,9 +23,9 @@ export class BackgroundCollector {
     const results: CollectionItem[] = [];
     const collectionId = `collection_${Date.now()}`;
 
-    // Production-ready configuration
+    // Production-ready configuration (optimized for serverless)
     const cities = ['London']; // Add Manchester, Birmingham, etc. later
-    const daysAhead = 7; // Collect 7 days ahead for better user experience
+    const daysAhead = 3; // Collect 3 days ahead for faster execution
 
     console.log(
       `🤖 Starting background collection ${collectionId} for ${cities.length} cities, ${daysAhead} days`
@@ -39,11 +39,11 @@ export class BackgroundCollector {
         const itemStartTime = Date.now();
 
         try {
-          // Add timeout for individual collection
+          // Add timeout for individual collection (reduced for serverless)
           const slots = await Promise.race([
             this.collectCityDate(city, dateString),
             this.timeout<CourtSlot[]>(
-              30000,
+              8000,
               `Collection timeout for ${city} ${dateString}`
             ),
           ]);

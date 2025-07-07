@@ -28,7 +28,13 @@ export async function POST(request: NextRequest) {
     console.log('🚀 Starting background data collection...');
 
     const collector = new BackgroundCollector();
-    const collectionResult = await collector.collectAll();
+    // Add overall timeout for serverless environment
+    const collectionResult = await Promise.race([
+      collector.collectAll(),
+      new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Collection timeout - serverless function limit')), 25000)
+      )
+    ]);
 
     // Cache updates are handled within the collector now
     const cacheUpdates = collectionResult.results.filter(
