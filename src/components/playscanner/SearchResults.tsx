@@ -175,32 +175,16 @@ export default function SearchResults({
 
                 {/* Court/Pitch Details */}
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {slot.features.indoor && (
-                    <Badge variant="secondary" className="text-xs">
-                      Indoor
-                    </Badge>
-                  )}
-                  {slot.features.lights && (
-                    <Badge variant="secondary" className="text-xs">
-                      Lights
-                    </Badge>
-                  )}
                   {slot.features.surface && (
                     <Badge variant="secondary" className="text-xs">
-                      {slot.features.surface}
+                      {slot.features.surface.toUpperCase()}
                     </Badge>
                   )}
 
                   {/* Sport-specific metadata */}
                   {sport === 'padel' && 'courtType' in slot.sportMeta && (
                     <Badge variant="secondary" className="text-xs">
-                      {slot.sportMeta.courtType}
-                    </Badge>
-                  )}
-
-                  {sport === 'football' && 'format' in slot.sportMeta && (
-                    <Badge variant="secondary" className="text-xs">
-                      {slot.sportMeta.format}
+                      {slot.sportMeta.courtType.toUpperCase()}
                     </Badge>
                   )}
                 </div>
