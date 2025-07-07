@@ -798,13 +798,9 @@ export class PlaytomicProvider implements ProviderAdapter {
           resourceSlots.forEach((slot: any) => {
             try {
               // Playtomic times are in London time - parse them as local time
-              // Add 1 hour to compensate for timezone offset issue
-              const originalStartTime = new Date(
+              const startTime = new Date(
                 `${params.date}T${slot.start_time}`
               );
-              const startTime = new Date(
-                originalStartTime.getTime() + 60 * 60 * 1000
-              ); // Add 1 hour
               const endTime = new Date(
                 startTime.getTime() + slot.duration * 60 * 1000
               );

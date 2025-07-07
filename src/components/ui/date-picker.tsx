@@ -31,11 +31,11 @@ export function DatePicker({
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
 
-  // Convert string value to Date object
-  const selectedDate = value ? new Date(value) : undefined;
+  // Convert string value to Date object (ensure consistent timezone handling)
+  const selectedDate = value ? new Date(value + 'T00:00:00') : undefined;
 
-  // Convert min string to Date object
-  const minDate = min ? new Date(min) : undefined;
+  // Convert min string to Date object (ensure consistent timezone handling)
+  const minDate = min ? new Date(min + 'T00:00:00') : undefined;
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-GB', {
@@ -79,7 +79,13 @@ export function DatePicker({
           mode="single"
           selected={selectedDate}
           onSelect={handleDateSelect}
-          disabled={(date) => (minDate ? date < minDate : false)}
+          disabled={(date) => {
+            if (!minDate) return false;
+            // Compare dates by normalizing to start of day
+            const dateAtMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            const minDateAtMidnight = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate());
+            return dateAtMidnight < minDateAtMidnight;
+          }}
           initialFocus
         />
       </PopoverContent>
