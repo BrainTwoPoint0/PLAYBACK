@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { BackgroundCollector } from '@/lib/playscanner/collector';
+import { ProductionCollector } from '@/lib/playscanner/production-collector';
 import { persistentCache } from '@/lib/playscanner/persistent-cache';
 
 /**
@@ -25,12 +26,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('🚀 Starting background data collection...');
+    console.log('🚀 Starting production data collection...');
 
-    const collector = new BackgroundCollector();
-    // Add overall timeout for serverless environment
+    // Use production collector for sophisticated collection
+    const productionCollector = new ProductionCollector();
     const collectionResult = await Promise.race([
-      collector.collectAll(),
+      productionCollector.collectWithIntelligence(),
       new Promise<never>((_, reject) => 
         setTimeout(() => reject(new Error('Collection timeout - serverless function limit')), 25000)
       )

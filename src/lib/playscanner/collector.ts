@@ -23,9 +23,9 @@ export class BackgroundCollector {
     const results: CollectionItem[] = [];
     const collectionId = `collection_${Date.now()}`;
 
-    // Production-ready configuration (optimized for serverless)
+    // Production-ready configuration
     const cities = ['London']; // Add Manchester, Birmingham, etc. later
-    const daysAhead = 3; // Collect 3 days ahead for faster execution
+    const daysAhead = 7; // Collect 7 days ahead for comprehensive coverage
 
     console.log(
       `🤖 Starting background collection ${collectionId} for ${cities.length} cities, ${daysAhead} days`
@@ -164,10 +164,8 @@ export class BackgroundCollector {
       date,
     };
 
-    // Use debug mode to avoid retry complexity during collection
-    process.env.PLAYSCANNER_DEBUG = 'true';
+    // Production mode - collect from all venues
     const slots = await this.provider.fetchAvailability(params);
-    delete process.env.PLAYSCANNER_DEBUG;
 
     return slots;
   }
