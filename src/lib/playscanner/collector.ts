@@ -1,4 +1,5 @@
 import { PlaytomicProvider } from './providers/playtomic';
+import { persistentCache } from './persistent-cache';
 import { CourtSlot } from './types';
 
 /**
@@ -20,13 +21,14 @@ export class BackgroundCollector {
   async collectAll(): Promise<CollectionResult> {
     const startTime = Date.now();
     const results: CollectionItem[] = [];
+    const collectionId = `collection_${Date.now()}`;
 
-    // Conservative configuration for Netlify's timeout limits
+    // Production-ready configuration
     const cities = ['London']; // Add Manchester, Birmingham, etc. later
-    const daysAhead = 1; // Collect only next 1 day to stay within timeout limits
+    const daysAhead = 7; // Collect 7 days ahead for better user experience
 
     console.log(
-      `🤖 Starting background collection for ${cities.length} cities, ${daysAhead} days`
+      `🤖 Starting background collection ${collectionId} for ${cities.length} cities, ${daysAhead} days`
     );
 
     for (const city of cities) {
@@ -34,43 +36,93 @@ export class BackgroundCollector {
         const date = new Date();
         date.setDate(date.getDate() + dayOffset);
         const dateString = date.toISOString().split('T')[0];
+        const itemStartTime = Date.now();
 
         try {
           // Add timeout for individual collection
           const slots = await Promise.race([
             this.collectCityDate(city, dateString),
-            this.timeout<CourtSlot[]>(20000, `Collection timeout for ${city} ${dateString}`)
+            this.timeout<CourtSlot[]>(30000, `Collection timeout for ${city} ${dateString}`)
           ]);
+
+          const executionTime = Date.now() - itemStartTime;
+          const uniqueVenues = this.getUniqueVenues(slots);
+
+          // Store in persistent cache
+          await persistentCache.setCachedData(city, dateString, slots);
+
+          // Store venue metadata
+          const venues = [...new Set(slots.map(slot => slot.venue))];
+          for (const venue of venues) {
+            try {
+              await persistentCache.storeVenue(venue, city);
+            } catch (venueError) {
+              console.warn(`Failed to store venue ${venue.id}:`, venueError);
+            }
+          }
+
+          // Log successful collection
+          await persistentCache.logCollection({
+            collection_id: collectionId,
+            city,
+            date: dateString,
+            status: 'success',
+            slots_collected: slots.length,
+            venues_processed: uniqueVenues.length,
+            execution_time_ms: executionTime,
+            provider: 'playtomic',
+          });
 
           results.push({
             city,
             date: dateString,
             status: 'success',
             slotsCount: slots.length,
-            venuesCount: this.getUniqueVenues(slots).length,
+            venuesCount: uniqueVenues.length,
             priceRange: this.getPriceRange(slots),
             collectedAt: new Date().toISOString(),
-            slots, // Store the actual slots for caching
+            executionTime,
+            slots, // Store the actual slots for response
           });
 
           console.log(
-            `✅ ${city} ${dateString}: ${slots.length} slots from ${this.getUniqueVenues(slots).length} venues`
+            `✅ ${city} ${dateString}: ${slots.length} slots from ${uniqueVenues.length} venues (${executionTime}ms)`
           );
 
-          // Shorter delay to stay within timeout limits (2s instead of 5s)
-          await this.sleep(2000);
+          // Adaptive delay based on success
+          await this.sleep(1000 + Math.random() * 2000); // 1-3s random delay
         } catch (error) {
+          const executionTime = Date.now() - itemStartTime;
+          const errorMessage = (error as Error).message;
+
+          // Log failed collection
+          await persistentCache.logCollection({
+            collection_id: collectionId,
+            city,
+            date: dateString,
+            status: 'error',
+            slots_collected: 0,
+            venues_processed: 0,
+            error_message: errorMessage,
+            execution_time_ms: executionTime,
+            provider: 'playtomic',
+          });
+
           results.push({
             city,
             date: dateString,
             status: 'error',
-            error: (error as Error).message,
+            error: errorMessage,
             collectedAt: new Date().toISOString(),
+            executionTime,
           });
 
           console.error(
-            `❌ ${city} ${dateString}: ${(error as Error).message}`
+            `❌ ${city} ${dateString}: ${errorMessage} (${executionTime}ms)`
           );
+
+          // Longer delay after errors
+          await this.sleep(3000);
         }
       }
     }
@@ -169,6 +221,7 @@ export interface CollectionItem {
   priceRange?: { min: number; max: number } | null;
   error?: string;
   collectedAt: string;
+  executionTime?: number;
   slots?: CourtSlot[]; // Store actual slot data
 }
 

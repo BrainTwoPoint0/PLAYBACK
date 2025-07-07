@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { searchService } from '@/lib/playscanner/search-service';
+import { persistentCache } from '@/lib/playscanner/persistent-cache';
 import { SearchParams } from '@/lib/playscanner/types';
 
 /**
@@ -99,19 +100,9 @@ export async function POST(request: NextRequest) {
     let searchResult;
 
     if (useCachedMode) {
-      // Use cached data approach (faster, production-safe)
-      const { CachedSearchService } = await import(
-        '@/lib/playscanner/cached-service'
-      );
-
-      // Initialize mock data if cache is empty
-      const cacheStats = CachedSearchService.getCacheStats();
-      if (cacheStats.totalSlots === 0) {
-        CachedSearchService.initializeMockData();
-      }
-
-      searchResult = await CachedSearchService.search(searchParams);
-      searchResult.source = 'cached';
+      // Use persistent cache approach (production-ready)
+      searchResult = await persistentCache.search(searchParams);
+      searchResult.source = 'persistent_cache';
     } else {
       // Use live scraping approach (current implementation)
       searchResult = await searchService.search(searchParams);
@@ -175,16 +166,18 @@ export async function GET() {
   try {
     // Get provider health status
     const providerHealth = await searchService.getProviderHealth();
-    const cacheStats = searchService.getCacheStats();
+    const cacheStats = await persistentCache.getCacheStats();
     const availableProviders = searchService.getAvailableProviders();
+    const persistentCacheHealth = await persistentCache.healthCheck();
 
     return NextResponse.json({
       status: 'healthy',
       timestamp: new Date().toISOString(),
       providers: providerHealth,
       cache: cacheStats,
+      persistentCache: persistentCacheHealth,
       availableProviders,
-      version: '1.0.0',
+      version: '2.0.0',
     });
   } catch (error) {
     return NextResponse.json(

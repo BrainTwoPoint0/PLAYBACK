@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { BackgroundCollector } from '@/lib/playscanner/collector';
-import { CachedSearchService } from '@/lib/playscanner/cached-service';
+import { persistentCache } from '@/lib/playscanner/persistent-cache';
 
 /**
  * Background Data Collection Endpoint (Playskan-style)
@@ -30,18 +30,10 @@ export async function POST(request: NextRequest) {
     const collector = new BackgroundCollector();
     const collectionResult = await collector.collectAll();
 
-    // Store collected data in cache
-    let cacheUpdates = 0;
-    collectionResult.results.forEach((result) => {
-      if (result.status === 'success' && result.slots) {
-        CachedSearchService.setCachedData(
-          result.city,
-          result.date,
-          result.slots
-        );
-        cacheUpdates++;
-      }
-    });
+    // Cache updates are handled within the collector now
+    const cacheUpdates = collectionResult.results.filter(
+      (result) => result.status === 'success'
+    ).length;
 
     const totalTime = Date.now() - startTime;
 
@@ -55,7 +47,7 @@ export async function POST(request: NextRequest) {
       collection: collectionResult,
       cacheUpdates,
       totalTime,
-      cacheStats: CachedSearchService.getCacheStats(),
+      cacheStats: await persistentCache.getCacheStats(),
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
@@ -78,16 +70,34 @@ export async function POST(request: NextRequest) {
  * GET /api/playscanner/collect
  */
 export async function GET() {
-  const cacheStats = CachedSearchService.getCacheStats();
+  try {
+    const cacheStats = await persistentCache.getCacheStats();
+    const healthCheck = await persistentCache.healthCheck();
+    const recentCollections = await persistentCache.getRecentCollections(5);
+    const successRate = await persistentCache.getCollectionSuccessRate(24);
 
-  return NextResponse.json({
-    status: 'ready',
-    message: 'Background collection service ready',
-    instructions: {
-      collect: 'POST with Authorization: Bearer <secret> to start collection',
-      secret: 'Set PLAYSCANNER_COLLECT_SECRET environment variable',
-    },
-    currentCache: cacheStats,
-    timestamp: new Date().toISOString(),
-  });
+    return NextResponse.json({
+      status: 'ready',
+      message: 'Background collection service ready',
+      instructions: {
+        collect: 'POST with Authorization: Bearer <secret> to start collection',
+        secret: 'Set PLAYSCANNER_COLLECT_SECRET environment variable',
+      },
+      currentCache: cacheStats,
+      healthCheck,
+      recentCollections,
+      successRate: `${successRate.toFixed(1)}%`,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        status: 'error',
+        message: 'Failed to get collection service status',
+        error: (error as Error).message,
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    );
+  }
 }
