@@ -1,0 +1,23 @@
+name: PLAYScanner Background Collection
+
+on:
+  schedule:
+    # Every 15 minutes
+    - cron: '*/15 * * * *'
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Collect PLAYScanner Data
+        run: |
+          curl -X POST ${{ secrets.DEPLOYMENT_URL }}/api/playscanner/collect \
+            -H "Authorization: Bearer ${{ secrets.PLAYSCANNER_COLLECT_SECRET }}" \
+            -H "Content-Type: application/json" \
+            --fail --silent --show-error
+
+      - name: Health Check
+        run: |
+          curl ${{ secrets.DEPLOYMENT_URL }}/api/playscanner/health \
+            --fail --silent
