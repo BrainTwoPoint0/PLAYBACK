@@ -42,7 +42,10 @@ export class BackgroundCollector {
           // Add timeout for individual collection
           const slots = await Promise.race([
             this.collectCityDate(city, dateString),
-            this.timeout<CourtSlot[]>(30000, `Collection timeout for ${city} ${dateString}`)
+            this.timeout<CourtSlot[]>(
+              30000,
+              `Collection timeout for ${city} ${dateString}`
+            ),
           ]);
 
           const executionTime = Date.now() - itemStartTime;
@@ -52,7 +55,7 @@ export class BackgroundCollector {
           await persistentCache.setCachedData(city, dateString, slots);
 
           // Store venue metadata
-          const venues = [...new Set(slots.map(slot => slot.venue))];
+          const venues = [...new Set(slots.map((slot) => slot.venue))];
           for (const venue of venues) {
             try {
               await persistentCache.storeVenue(venue, city);

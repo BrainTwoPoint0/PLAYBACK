@@ -229,7 +229,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     initializeAuth();
-  }, []);
+  }, [supabase.auth]);
 
   // Fetch profile after auth is initialized
   useEffect(() => {
@@ -371,6 +371,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isOnboardingComplete,
       refreshProfile,
       updateProfile,
+      signIn,
+      signOut,
+      resetPassword,
+      signUp,
     ]
   );
 

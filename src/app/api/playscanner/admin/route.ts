@@ -4,7 +4,7 @@ import { persistentCache } from '@/lib/playscanner/persistent-cache';
 /**
  * PLAYScanner Admin Dashboard API
  * GET /api/playscanner/admin
- * 
+ *
  * Provides admin-level insights and controls for PLAYScanner
  */
 export async function GET(request: NextRequest) {
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(dashboardData);
   } catch (error) {
     console.error('❌ Admin dashboard error:', error);
-    
+
     return NextResponse.json(
       {
         error: 'Admin dashboard failed',
@@ -113,12 +113,15 @@ export async function POST(request: NextRequest) {
       case 'health_check':
         const healthCheck = await persistentCache.healthCheck();
         result.health = healthCheck;
-        result.message = healthCheck.healthy ? 'System healthy' : 'System issues detected';
+        result.message = healthCheck.healthy
+          ? 'System healthy'
+          : 'System issues detected';
         break;
 
       case 'force_collection':
         // This would trigger a manual collection
-        result.message = 'Manual collection triggered (implement via /api/playscanner/collect)';
+        result.message =
+          'Manual collection triggered (implement via /api/playscanner/collect)';
         result.endpoint = '/api/playscanner/collect';
         break;
 
@@ -138,7 +141,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     console.error('❌ Admin action error:', error);
-    
+
     return NextResponse.json(
       {
         error: 'Admin action failed',
@@ -155,10 +158,10 @@ export async function POST(request: NextRequest) {
  */
 function getDataFreshness(lastCollection: string | null): string {
   if (!lastCollection) return 'unknown';
-  
+
   const ageMs = Date.now() - new Date(lastCollection).getTime();
   const ageMinutes = Math.floor(ageMs / 60000);
-  
+
   if (ageMinutes < 30) return 'fresh';
   if (ageMinutes < 120) return 'recent';
   if (ageMinutes < 360) return 'stale';
@@ -166,28 +169,37 @@ function getDataFreshness(lastCollection: string | null): string {
 }
 
 function getCollectionSummary(collections: any[]) {
-  const last24h = collections.filter(c => {
-    const ageHours = (Date.now() - new Date(c.created_at).getTime()) / (1000 * 60 * 60);
+  const last24h = collections.filter((c) => {
+    const ageHours =
+      (Date.now() - new Date(c.created_at).getTime()) / (1000 * 60 * 60);
     return ageHours <= 24;
   });
 
-  const successful = last24h.filter(c => c.status === 'success');
-  const failed = last24h.filter(c => c.status === 'error');
+  const successful = last24h.filter((c) => c.status === 'success');
+  const failed = last24h.filter((c) => c.status === 'error');
 
   return {
     total: last24h.length,
     successful: successful.length,
     failed: failed.length,
-    totalSlots: successful.reduce((sum, c) => sum + (c.slots_collected || 0), 0),
-    avgExecutionTime: successful.length > 0 
-      ? Math.round(successful.reduce((sum, c) => sum + (c.execution_time_ms || 0), 0) / successful.length)
-      : 0,
+    totalSlots: successful.reduce(
+      (sum, c) => sum + (c.slots_collected || 0),
+      0
+    ),
+    avgExecutionTime:
+      successful.length > 0
+        ? Math.round(
+            successful.reduce((sum, c) => sum + (c.execution_time_ms || 0), 0) /
+              successful.length
+          )
+        : 0,
   };
 }
 
 function getCollectionTrends(collections: any[]) {
-  const last24h = collections.filter(c => {
-    const ageHours = (Date.now() - new Date(c.created_at).getTime()) / (1000 * 60 * 60);
+  const last24h = collections.filter((c) => {
+    const ageHours =
+      (Date.now() - new Date(c.created_at).getTime()) / (1000 * 60 * 60);
     return ageHours <= 24;
   });
 
@@ -196,8 +208,8 @@ function getCollectionTrends(collections: any[]) {
   for (let i = 0; i < 6; i++) {
     const periodStart = Date.now() - (i + 1) * 4 * 60 * 60 * 1000;
     const periodEnd = Date.now() - i * 4 * 60 * 60 * 1000;
-    
-    const periodCollections = last24h.filter(c => {
+
+    const periodCollections = last24h.filter((c) => {
       const time = new Date(c.created_at).getTime();
       return time >= periodStart && time < periodEnd;
     });
@@ -205,10 +217,17 @@ function getCollectionTrends(collections: any[]) {
     periods.unshift({
       period: `${4 * (6 - i - 1)}-${4 * (6 - i)}h ago`,
       collections: periodCollections.length,
-      successful: periodCollections.filter(c => c.status === 'success').length,
-      avgSlots: periodCollections.length > 0 
-        ? Math.round(periodCollections.reduce((sum, c) => sum + (c.slots_collected || 0), 0) / periodCollections.length)
-        : 0,
+      successful: periodCollections.filter((c) => c.status === 'success')
+        .length,
+      avgSlots:
+        periodCollections.length > 0
+          ? Math.round(
+              periodCollections.reduce(
+                (sum, c) => sum + (c.slots_collected || 0),
+                0
+              ) / periodCollections.length
+            )
+          : 0,
     });
   }
 

@@ -2,10 +2,10 @@
 
 /**
  * Migration Script: In-Memory Cache → Persistent Cache
- * 
+ *
  * This script helps migrate existing PLAYScanner data from the old
  * in-memory cache system to the new Supabase-based persistent cache.
- * 
+ *
  * Usage:
  *   node scripts/migrate-to-persistent-cache.js
  */
@@ -16,7 +16,9 @@ require('dotenv').config({ path: '.env.local' });
 class CacheMigrationService {
   constructor() {
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
-      throw new Error('Missing Supabase environment variables. Check .env.local');
+      throw new Error(
+        'Missing Supabase environment variables. Check .env.local'
+      );
     }
 
     this.supabase = createClient(
@@ -36,13 +38,11 @@ class CacheMigrationService {
    */
   async testConnection() {
     console.log('🔗 Testing Supabase connection...');
-    
+
     try {
       // Test basic connection
-      const { data: connectionTest, error: connectionError } = await this.supabase
-        .from('playscanner_cache')
-        .select('count')
-        .limit(1);
+      const { data: connectionTest, error: connectionError } =
+        await this.supabase.from('playscanner_cache').select('count').limit(1);
 
       if (connectionError) {
         throw new Error(`Connection failed: ${connectionError.message}`);
@@ -55,7 +55,7 @@ class CacheMigrationService {
         'playscanner_cache',
         'playscanner_collection_log',
         'playscanner_venues',
-        'playscanner_health'
+        'playscanner_health',
       ];
 
       for (const table of requiredTables) {
@@ -65,7 +65,9 @@ class CacheMigrationService {
           .limit(1);
 
         if (error) {
-          throw new Error(`Table ${table} not found or accessible: ${error.message}`);
+          throw new Error(
+            `Table ${table} not found or accessible: ${error.message}`
+          );
         }
       }
 
@@ -155,21 +157,19 @@ class CacheMigrationService {
         const cacheKey = `london:${date}`;
         const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour TTL
 
-        const { error } = await this.supabase
-          .from('playscanner_cache')
-          .upsert({
-            cache_key: cacheKey,
-            city: 'london',
-            date,
-            slots: testSlots,
-            metadata: {
-              totalSlots: testSlots.length,
-              uniqueVenues: 2,
-              collectedAt: new Date().toISOString(),
-              provider: 'playtomic',
-            },
-            expires_at: expiresAt.toISOString(),
-          });
+        const { error } = await this.supabase.from('playscanner_cache').upsert({
+          cache_key: cacheKey,
+          city: 'london',
+          date,
+          slots: testSlots,
+          metadata: {
+            totalSlots: testSlots.length,
+            uniqueVenues: 2,
+            collectedAt: new Date().toISOString(),
+            provider: 'playtomic',
+          },
+          expires_at: expiresAt.toISOString(),
+        });
 
         if (error) {
           throw error;
@@ -179,7 +179,7 @@ class CacheMigrationService {
       }
 
       // Store test venues
-      const uniqueVenues = [...new Set(testSlots.map(slot => slot.venue))];
+      const uniqueVenues = [...new Set(testSlots.map((slot) => slot.venue))];
       for (const venue of uniqueVenues) {
         const { error } = await this.supabase
           .from('playscanner_venues')
@@ -193,7 +193,10 @@ class CacheMigrationService {
           });
 
         if (error) {
-          console.warn(`Warning: Failed to store venue ${venue.id}:`, error.message);
+          console.warn(
+            `Warning: Failed to store venue ${venue.id}:`,
+            error.message
+          );
         } else {
           console.log(`✅ Created test venue: ${venue.name}`);
         }
@@ -214,7 +217,10 @@ class CacheMigrationService {
         });
 
       if (logError) {
-        console.warn('Warning: Failed to create collection log:', logError.message);
+        console.warn(
+          'Warning: Failed to create collection log:',
+          logError.message
+        );
       } else {
         console.log('✅ Created test collection log');
       }
@@ -271,8 +277,7 @@ class CacheMigrationService {
     console.log('📊 Testing cache statistics...');
 
     try {
-      const { data, error } = await this.supabase
-        .rpc('get_cache_stats');
+      const { data, error } = await this.supabase.rpc('get_cache_stats');
 
       if (error) {
         throw error;
@@ -363,16 +368,18 @@ class CacheMigrationService {
     if (allPassed) {
       console.log('\n🎉 Migration test completed successfully!');
       console.log('\n✅ Next steps:');
-      console.log('   1. Deploy to production with PLAYSCANNER_USE_CACHED=true');
+      console.log(
+        '   1. Deploy to production with PLAYSCANNER_USE_CACHED=true'
+      );
       console.log('   2. Set up your collection cron job');
       console.log('   3. Test the collection endpoint manually');
       console.log('   4. Monitor the cache performance');
-      
+
       // Ask about cleanup
       const readline = require('readline');
       const rl = readline.createInterface({
         input: process.stdin,
-        output: process.stdout
+        output: process.stdout,
       });
 
       rl.question('\n🗑️ Clean up test data? (y/N): ', async (answer) => {

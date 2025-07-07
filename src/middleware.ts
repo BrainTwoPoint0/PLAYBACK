@@ -43,22 +43,15 @@ export async function middleware(request: NextRequest) {
   // Define paths that should redirect authenticated users
   const authPaths = ['/auth/login', '/auth/register', '/auth/forgot-password'];
 
-  // Define paths that don't require onboarding completion
-  const onboardingExemptPaths = [
-    '/onboarding',
-    '/auth/logout',
-    '/auth/callback',
-    '/auth/verify-email',
-    '/auth/reset-password',
-    '/api/',
-  ];
+  // Define paths that require onboarding completion (subset of protected paths)
+  const onboardingRequiredPaths = ['/dashboard', '/profile'];
 
   const isProtectedPath = protectedPaths.some((path) =>
     pathname.startsWith(path)
   );
   const isAuthPath = authPaths.some((path) => pathname.startsWith(path));
-  const isOnboardingExempt = onboardingExemptPaths.some(
-    (path) => pathname.startsWith(path) || pathname === path
+  const requiresOnboarding = onboardingRequiredPaths.some((path) =>
+    pathname.startsWith(path)
   );
 
   // If user is not authenticated and trying to access protected route
@@ -76,8 +69,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Check onboarding status for authenticated users accessing non-exempt paths
-  if (user && !isOnboardingExempt) {
+  // Check onboarding status only for routes that require onboarding completion
+  if (user && requiresOnboarding) {
     try {
       const onboardingResult = await checkOnboardingStatusServer(
         user.id,

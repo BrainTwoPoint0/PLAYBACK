@@ -5,12 +5,12 @@ import { searchService } from '@/lib/playscanner/search-service';
 /**
  * PLAYScanner Health Check and Monitoring Endpoint
  * GET /api/playscanner/health
- * 
+ *
  * Comprehensive health check for all PLAYScanner components
  */
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
-  
+
   try {
     const searchParams = request.nextUrl.searchParams;
     const detailed = searchParams.get('detailed') === 'true';
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     if (!component || component === 'cache') {
       const cacheHealth = await checkCacheHealth(detailed);
       healthData.cache = cacheHealth;
-      
+
       if (cacheHealth.status !== 'healthy') {
         healthData.status = 'degraded';
       }
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     if (!component || component === 'providers') {
       const providerHealth = await checkProviderHealth(detailed);
       healthData.providers = providerHealth;
-      
+
       if (providerHealth.status !== 'healthy') {
         healthData.status = 'degraded';
       }
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     if (!component || component === 'collection') {
       const collectionHealth = await checkCollectionHealth(detailed);
       healthData.collection = collectionHealth;
-      
+
       if (collectionHealth.status !== 'healthy') {
         healthData.status = 'degraded';
       }
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('❌ Health check failed:', error);
-    
+
     return NextResponse.json(
       {
         status: 'unhealthy',
@@ -97,8 +97,8 @@ async function checkCacheHealth(detailed: boolean = false) {
   try {
     const cacheHealthCheck = await persistentCache.healthCheck();
     const cacheStats = await persistentCache.getCacheStats();
-    
-    const health = {
+
+    const health: any = {
       status: cacheHealthCheck.healthy ? 'healthy' : 'unhealthy',
       connection: cacheHealthCheck.healthy,
       activeEntries: cacheStats.activeEntries,
@@ -136,8 +136,8 @@ async function checkProviderHealth(detailed: boolean = false) {
   try {
     const providerHealth = await searchService.getProviderHealth();
     const availableProviders = searchService.getAvailableProviders();
-    
-    const health = {
+
+    const health: any = {
       status: 'healthy',
       availableProviders: availableProviders.length,
       providers: availableProviders,
@@ -151,7 +151,7 @@ async function checkProviderHealth(detailed: boolean = false) {
     const unhealthyProviders = Object.values(providerHealth).filter(
       (status: any) => !status
     );
-    
+
     if (unhealthyProviders.length > 0) {
       health.status = 'degraded';
       health.warning = `${unhealthyProviders.length} providers unhealthy`;
@@ -178,8 +178,8 @@ async function checkCollectionHealth(detailed: boolean = false) {
   try {
     const successRate = await persistentCache.getCollectionSuccessRate(24);
     const recentCollections = await persistentCache.getRecentCollections(5);
-    
-    const health = {
+
+    const health: any = {
       status: 'healthy',
       successRate: `${successRate.toFixed(1)}%`,
       recentCollections: recentCollections.length,
@@ -188,7 +188,9 @@ async function checkCollectionHealth(detailed: boolean = false) {
     if (detailed) {
       health.details = {
         recentCollections,
-        lastSuccessfulCollection: recentCollections.find(c => c.status === 'success')?.created_at,
+        lastSuccessfulCollection: recentCollections.find(
+          (c) => c.status === 'success'
+        )?.created_at,
       };
     }
 
@@ -203,10 +205,10 @@ async function checkCollectionHealth(detailed: boolean = false) {
 
     // Check if collections are recent (within last 2 hours)
     const lastCollection = recentCollections[0];
-    if (lastCollection) {
+    if (lastCollection && lastCollection.created_at) {
       const lastCollectionTime = new Date(lastCollection.created_at).getTime();
-      const twoHoursAgo = Date.now() - (2 * 60 * 60 * 1000);
-      
+      const twoHoursAgo = Date.now() - 2 * 60 * 60 * 1000;
+
       if (lastCollectionTime < twoHoursAgo) {
         health.status = 'degraded';
         health.warning = 'No recent collections (>2h)';
@@ -235,8 +237,10 @@ async function checkEnvironment() {
     'PLAYSCANNER_COLLECT_SECRET',
   ];
 
-  const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
-  
+  const missingVars = requiredEnvVars.filter(
+    (varName) => !process.env[varName]
+  );
+
   return {
     nodeVersion: process.version,
     environment: process.env.NODE_ENV,

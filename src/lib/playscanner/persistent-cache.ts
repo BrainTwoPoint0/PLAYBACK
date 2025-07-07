@@ -32,6 +32,7 @@ interface CollectionLogEntry {
   error_message?: string;
   execution_time_ms: number;
   provider: string;
+  created_at?: string;
 }
 
 interface CacheStats {
@@ -77,7 +78,10 @@ export class PersistentCacheService {
 
     try {
       // Get cached slots for this location/date
-      const cachedSlots = await this.getCachedData(params.location, params.date);
+      const cachedSlots = await this.getCachedData(
+        params.location,
+        params.date
+      );
       if (!cachedSlots || cachedSlots.length === 0) {
         return {
           results: [],
@@ -85,7 +89,7 @@ export class PersistentCacheService {
           searchTime: Date.now() - startTime,
           providers: [],
           filters: params,
-          source: 'cache',
+          source: 'cached',
           cacheAge: 'empty',
         };
       }
@@ -134,7 +138,9 @@ export class PersistentCacheService {
         return a.price - b.price;
       });
 
-      const providers = [...new Set(filteredSlots.map((slot) => slot.provider))];
+      const providers = [
+        ...new Set(filteredSlots.map((slot) => slot.provider)),
+      ];
       const cacheAge = await this.getCacheAge(params.location, params.date);
 
       return {
@@ -143,7 +149,7 @@ export class PersistentCacheService {
         searchTime: Date.now() - startTime,
         providers,
         filters: params,
-        source: 'cache',
+        source: 'cached',
         cacheAge,
       };
     } catch (error) {
@@ -154,9 +160,8 @@ export class PersistentCacheService {
         searchTime: Date.now() - startTime,
         providers: [],
         filters: params,
-        source: 'cache',
+        source: 'cached',
         cacheAge: 'error',
-        error: (error as Error).message,
       };
     }
   }
@@ -167,7 +172,7 @@ export class PersistentCacheService {
   async getCachedData(city: string, date: string): Promise<CourtSlot[] | null> {
     try {
       const cacheKey = this.getCacheKey(city, date);
-      
+
       const { data, error } = await this.supabase
         .from('playscanner_cache')
         .select('*')
@@ -188,7 +193,9 @@ export class PersistentCacheService {
         return null;
       }
 
-      console.log(`📚 Serving ${data.slots.length} slots from persistent cache: ${cacheKey}`);
+      console.log(
+        `📚 Serving ${data.slots.length} slots from persistent cache: ${cacheKey}`
+      );
       return data.slots;
     } catch (error) {
       console.error('getCachedData error:', error);
@@ -208,9 +215,9 @@ export class PersistentCacheService {
     try {
       const cacheKey = this.getCacheKey(city, date);
       const expiresAt = new Date(Date.now() + ttl);
-      
+
       // Calculate metadata
-      const uniqueVenues = new Set(slots.map(slot => slot.venue.id)).size;
+      const uniqueVenues = new Set(slots.map((slot) => slot.venue.id)).size;
       const metadata = {
         totalSlots: slots.length,
         uniqueVenues,
@@ -218,16 +225,14 @@ export class PersistentCacheService {
         provider: 'playtomic',
       };
 
-      const { error } = await this.supabase
-        .from('playscanner_cache')
-        .upsert({
-          cache_key: cacheKey,
-          city: city.toLowerCase(),
-          date,
-          slots,
-          metadata,
-          expires_at: expiresAt.toISOString(),
-        });
+      const { error } = await this.supabase.from('playscanner_cache').upsert({
+        cache_key: cacheKey,
+        city: city.toLowerCase(),
+        date,
+        slots,
+        metadata,
+        expires_at: expiresAt.toISOString(),
+      });
 
       if (error) {
         console.error('Error storing cached data:', error);
@@ -275,16 +280,14 @@ export class PersistentCacheService {
    */
   async storeVenue(venue: Venue, city: string): Promise<void> {
     try {
-      const { error } = await this.supabase
-        .from('playscanner_venues')
-        .upsert({
-          venue_id: venue.id,
-          provider: venue.provider,
-          city: city.toLowerCase(),
-          venue_data: venue,
-          is_active: true,
-          last_seen: new Date().toISOString(),
-        });
+      const { error } = await this.supabase.from('playscanner_venues').upsert({
+        venue_id: venue.id,
+        provider: venue.provider,
+        city: city.toLowerCase(),
+        venue_data: venue,
+        is_active: true,
+        last_seen: new Date().toISOString(),
+      });
 
       if (error) {
         console.error('Error storing venue:', error);
@@ -299,8 +302,7 @@ export class PersistentCacheService {
    */
   async getCacheStats(): Promise<CacheStats> {
     try {
-      const { data, error } = await this.supabase
-        .rpc('get_cache_stats');
+      const { data, error } = await this.supabase.rpc('get_cache_stats');
 
       if (error) {
         console.error('Error getting cache stats:', error);
@@ -344,7 +346,7 @@ export class PersistentCacheService {
       }
 
       const stats = await this.getCacheStats();
-      
+
       return {
         healthy: true,
         details: {
@@ -367,8 +369,7 @@ export class PersistentCacheService {
    */
   async cleanup(): Promise<number> {
     try {
-      const { data, error } = await this.supabase
-        .rpc('cleanup_expired_cache');
+      const { data, error } = await this.supabase.rpc('cleanup_expired_cache');
 
       if (error) {
         console.error('Error during cleanup:', error);
@@ -396,7 +397,7 @@ export class PersistentCacheService {
   private async getCacheAge(city: string, date: string): Promise<string> {
     try {
       const cacheKey = this.getCacheKey(city, date);
-      
+
       const { data, error } = await this.supabase
         .from('playscanner_cache')
         .select('created_at')
@@ -409,11 +410,11 @@ export class PersistentCacheService {
 
       const ageMs = Date.now() - new Date(data.created_at).getTime();
       const ageMinutes = Math.floor(ageMs / 60000);
-      
+
       if (ageMinutes < 1) return 'fresh';
       if (ageMinutes < 15) return `${ageMinutes}m old`;
       if (ageMinutes < 60) return `${ageMinutes}m old`;
-      
+
       const ageHours = Math.floor(ageMinutes / 60);
       return `${ageHours}h old`;
     } catch (error) {
@@ -440,7 +441,9 @@ export class PersistentCacheService {
   /**
    * Get recent collection logs
    */
-  async getRecentCollections(limit: number = 10): Promise<CollectionLogEntry[]> {
+  async getRecentCollections(
+    limit: number = 10
+  ): Promise<CollectionLogEntry[]> {
     try {
       const { data, error } = await this.supabase
         .from('playscanner_collection_log')
@@ -466,7 +469,7 @@ export class PersistentCacheService {
   async getCollectionSuccessRate(hours: number = 24): Promise<number> {
     try {
       const since = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
-      
+
       const { data, error } = await this.supabase
         .from('playscanner_collection_log')
         .select('status')
@@ -477,8 +480,10 @@ export class PersistentCacheService {
       }
 
       const total = data.length;
-      const successful = data.filter(entry => entry.status === 'success').length;
-      
+      const successful = data.filter(
+        (entry) => entry.status === 'success'
+      ).length;
+
       return total > 0 ? (successful / total) * 100 : 0;
     } catch (error) {
       console.error('getCollectionSuccessRate error:', error);
