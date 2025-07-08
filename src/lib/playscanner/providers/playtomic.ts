@@ -798,9 +798,7 @@ export class PlaytomicProvider implements ProviderAdapter {
           resourceSlots.forEach((slot: any) => {
             try {
               // Playtomic times are in London time - parse them as local time
-              const startTime = new Date(
-                `${params.date}T${slot.start_time}`
-              );
+              const startTime = new Date(`${params.date}T${slot.start_time}`);
               const endTime = new Date(
                 startTime.getTime() + slot.duration * 60 * 1000
               );

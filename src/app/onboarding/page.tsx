@@ -192,9 +192,11 @@ function WelcomeStep({
 function SportSelectionStep({
   selectedSports,
   setSelectedSports,
+  isNonPlayer = false,
 }: {
   selectedSports: string[];
   setSelectedSports: (sportIds: string[]) => void;
+  isNonPlayer?: boolean;
 }) {
   const [sports, setSports] = useState<Sport[]>([]);
   const [loading, setLoading] = useState(true);
@@ -242,10 +244,12 @@ function SportSelectionStep({
             className="text-2xl font-bold mb-4"
             style={{ color: 'var(--timberwolf)' }}
           >
-            Choose Your Sports
+            {isNonPlayer ? 'Sports You Follow' : 'Choose Your Sports'}
           </h2>
           <p style={{ color: 'var(--ash-grey)' }}>
-            Select all the sports you want to showcase on your profile.
+            {isNonPlayer
+              ? "Select the sports you're interested in following and supporting."
+              : 'Select all the sports you want to showcase on your profile.'}
           </p>
         </div>
 
@@ -267,10 +271,12 @@ function SportSelectionStep({
             className="text-2xl font-bold mb-4"
             style={{ color: 'var(--timberwolf)' }}
           >
-            Choose Your Sports
+            {isNonPlayer ? 'Sports You Follow' : 'Choose Your Sports'}
           </h2>
           <p style={{ color: 'var(--ash-grey)' }}>
-            Select all the sports you want to showcase on your profile.
+            {isNonPlayer
+              ? "Select the sports you're interested in following and supporting."
+              : 'Select all the sports you want to showcase on your profile.'}
           </p>
         </div>
 
@@ -299,11 +305,12 @@ function SportSelectionStep({
           className="text-2xl font-bold mb-4"
           style={{ color: 'var(--timberwolf)' }}
         >
-          Choose Your Sports
+          {isNonPlayer ? 'Sports You Follow' : 'Choose Your Sports'}
         </h2>
         <p style={{ color: 'var(--ash-grey)' }}>
-          Select all the sports you want to showcase on your profile.
-          You&apos;ll set positions for each sport next.
+          {isNonPlayer
+            ? "Select the sports you're interested in following and supporting."
+            : "Select all the sports you want to showcase on your profile. You'll set positions for each sport next."}
         </p>
         {selectedSports.length > 0 && (
           <p className="text-sm mt-2" style={{ color: 'var(--ash-grey)' }}>
@@ -1467,7 +1474,7 @@ function OnboardingContent() {
   const router = useRouter();
 
   // Dynamic total steps based on role
-  const totalSteps = selectedRole === 'player' ? 5 : 3;
+  const totalSteps = selectedRole === 'player' ? 5 : 4;
 
   // Fetch sports for position step
   useEffect(() => {
@@ -1582,11 +1589,11 @@ function OnboardingContent() {
       // Refresh profile data in context to reflect changes
       await refreshProfile(true); // Force refresh
 
-      // Small delay for UX (let user see success state)
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Longer delay to ensure database changes propagate
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Redirect to dashboard
-      router.push('/dashboard');
+      // Redirect to dashboard with replace to prevent back navigation
+      router.replace('/dashboard');
     } catch (error) {
       console.error('Error completing onboarding:', error);
       setError(
@@ -1651,7 +1658,7 @@ function OnboardingContent() {
           return null;
       }
     } else {
-      // Non-player flow: Role → Profile → Summary (simplified)
+      // Non-player flow: Role → Sports Interests → Profile → Summary
       switch (currentStep) {
         case 1:
           return (
@@ -1662,18 +1669,26 @@ function OnboardingContent() {
           );
         case 2:
           return (
+            <SportSelectionStep
+              selectedSports={selectedSports}
+              setSelectedSports={setSelectedSports}
+              isNonPlayer={true} // Flag to customize UI for non-players
+            />
+          );
+        case 3:
+          return (
             <NonPlayerProfileStep
               selectedRole={selectedRole}
               profileInfo={profileInfo}
               setProfileInfo={setProfileInfo}
             />
           );
-        case 3:
+        case 4:
           return (
             <WelcomeSummaryStep
               selectedRole={selectedRole}
-              selectedSports={[]} // No sports for non-players
-              sportPositions={{}}
+              selectedSports={selectedSports}
+              sportPositions={{}} // No positions for non-players
               profileInfo={profileInfo}
               allSports={allSports}
               onFinish={handleFinish}

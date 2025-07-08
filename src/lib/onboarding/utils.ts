@@ -33,7 +33,7 @@ export interface ProfileUpdateData {
 
 export interface UserSportData {
   user_id: string;
-  sport_id: string;
+  sport_id: string | null; // Allow null for role-only entries
   role: 'player' | 'coach' | 'scout' | 'fan';
   experience_level: 'beginner' | 'intermediate' | 'advanced' | 'professional';
   positions: string[];
@@ -208,16 +208,22 @@ export async function saveOnboardingData(
 
     // 4. Create new user-sports relationships
     if (onboardingData.selectedSports.length > 0) {
+      // Create entries for each selected sport
       const userSportsData: UserSportData[] = onboardingData.selectedSports.map(
         (sportId, index) => {
           const sportPositions = onboardingData.sportPositions[sportId];
+          const isPlayer = mapRole(onboardingData.role) === 'player';
 
           return {
             user_id: profileId,
             sport_id: sportId,
             role: mapRole(onboardingData.role),
-            experience_level: mapExperienceLevel(sportPositions.experience),
-            positions: sportPositions.positions,
+            experience_level:
+              isPlayer && sportPositions
+                ? mapExperienceLevel(sportPositions.experience)
+                : 'beginner', // Default for non-players
+            positions:
+              isPlayer && sportPositions ? sportPositions.positions : [], // No positions for non-players
           };
         }
       );
@@ -225,6 +231,22 @@ export async function saveOnboardingData(
       const { error: sportsError } = await createUserSports(userSportsData);
       if (sportsError) {
         throw new Error(`Failed to create user sports: ${sportsError.message}`);
+      }
+    } else {
+      // For users with no sports, still create an entry with just role
+      const roleOnlyData: UserSportData[] = [
+        {
+          user_id: profileId,
+          sport_id: null, // No specific sport
+          role: mapRole(onboardingData.role),
+          experience_level: 'beginner', // Default level
+          positions: [], // No positions
+        },
+      ];
+
+      const { error: roleError } = await createUserSports(roleOnlyData);
+      if (roleError) {
+        throw new Error(`Failed to create user role: ${roleError.message}`);
       }
     }
 

@@ -15,20 +15,20 @@ jobs:
   collect:
     runs-on: ubuntu-latest
     timeout-minutes: 8
-    
+
     steps:
       - name: Pre-Collection Health Check
         id: health_check
         run: |
           echo "🔍 Checking system health before collection..."
-          
+
           health_response=$(curl -s https://playbacksports.ai/api/playscanner/health)
           echo "health_response=$health_response" >> $GITHUB_OUTPUT
-          
+
           # Parse health status
           status=$(echo "$health_response" | jq -r '.status // "unknown"')
           echo "System status: $status"
-          
+
           if [ "$status" != "healthy" ] && [ "$status" != "degraded" ]; then
             echo "❌ System not ready for collection"
             exit 1
@@ -39,7 +39,7 @@ jobs:
         continue-on-error: true
         run: |
           echo "🚀 Starting intelligent data collection..."
-          
+
           # Attempt collection with sophisticated error handling
           collection_response=$(curl -X POST https://playbacksports.ai/api/playscanner/collect \
             -H "Authorization: Bearer ${{ secrets.PLAYSCANNER_COLLECT_SECRET }}" \
@@ -51,9 +51,9 @@ jobs:
             --retry-max-time 180 \
             -w "Status: %{http_code} | Time: %{time_total}s | Size: %{size_download} bytes\n" \
             -s)
-          
+
           echo "collection_response=$collection_response" >> $GITHUB_OUTPUT
-          
+
           # Check if collection was successful
           if echo "$collection_response" | grep -q "success\|partial_failure"; then
             echo "✅ Collection completed successfully"
@@ -66,22 +66,22 @@ jobs:
       - name: Verify Data Quality
         run: |
           echo "🔬 Verifying collected data quality..."
-          
+
           # Test search functionality
           search_response=$(curl -s -X POST https://playbacksports.ai/api/playscanner/search \
             -H "Content-Type: application/json" \
             -d '{"sport":"padel","location":"London","date":"'$(date -d "+1 day" +%Y-%m-%d)'","cached":true}' \
             --max-time 30)
-          
+
           # Parse results count
           results_count=$(echo "$search_response" | jq -r '.totalResults // 0')
           venues_count=$(echo "$search_response" | jq -r '.results | map(.venue.id) | unique | length // 0')
-          
+
           echo "📊 Data Quality Metrics:"
           echo "  - Total slots: $results_count"
           echo "  - Unique venues: $venues_count"
           echo "  - Search response time: $(echo "$search_response" | jq -r '.searchTime // "unknown"')ms"
-          
+
           # Quality thresholds
           if [ "$results_count" -gt 0 ]; then
             echo "✅ Data quality check passed"
@@ -93,16 +93,16 @@ jobs:
         if: always()
         run: |
           echo "📈 Collection Performance Analysis:"
-          
+
           # Get detailed health status
           detailed_health=$(curl -s "https://playbacksports.ai/api/playscanner/health?detailed=true")
-          
+
           echo "Cache Statistics:"
           echo "$detailed_health" | jq -r '.cache.details // "No cache details available"'
-          
+
           echo "Collection Statistics:"
           echo "$detailed_health" | jq -r '.collection.details.recentCollections[0:3] // "No recent collections"'
-          
+
           success_rate=$(echo "$detailed_health" | jq -r '.collection.successRate // "unknown"')
           echo "Success Rate: $success_rate"
 

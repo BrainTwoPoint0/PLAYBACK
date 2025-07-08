@@ -4,10 +4,10 @@ import { CourtSlot } from './types';
 
 /**
  * Production-Grade PLAYScanner Data Collector
- * 
+ *
  * Features:
  * - Intelligent retry logic with exponential backoff
- * - Parallel processing with concurrency limits  
+ * - Parallel processing with concurrency limits
  * - Comprehensive error handling and recovery
  * - Performance monitoring and metrics
  * - Circuit breaker pattern for fault tolerance
@@ -17,7 +17,7 @@ export class ProductionCollector {
   private provider: PlaytomicProvider;
   private metrics: CollectionMetrics;
   private circuitBreaker: CircuitBreaker;
-  
+
   constructor() {
     this.provider = new PlaytomicProvider();
     this.metrics = new CollectionMetrics();
@@ -30,24 +30,24 @@ export class ProductionCollector {
   async collectWithIntelligence(): Promise<ProductionCollectionResult> {
     const startTime = Date.now();
     const collectionId = `prod_${Date.now()}`;
-    
+
     console.log(`🚀 Starting production collection ${collectionId}`);
-    
+
     try {
       // Pre-collection health checks
       await this.performHealthChecks();
-      
+
       // Intelligent workload planning
       const workPlan = await this.createWorkPlan();
-      
+
       // Execute collection with fault tolerance
       const results = await this.executeWorkPlan(workPlan, collectionId);
-      
+
       // Post-collection analysis and optimization
       const analysis = await this.analyzeResults(results);
-      
+
       const totalTime = Date.now() - startTime;
-      
+
       return {
         status: 'success',
         collectionId,
@@ -55,15 +55,14 @@ export class ProductionCollector {
         analysis,
         metrics: this.metrics.getSnapshot(),
         totalTime,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
-      
     } catch (error) {
       console.error(`❌ Production collection ${collectionId} failed:`, error);
-      
+
       // Graceful degradation
       const fallbackResults = await this.attemptGracefulDegradation();
-      
+
       return {
         status: 'partial_failure',
         collectionId,
@@ -71,7 +70,7 @@ export class ProductionCollector {
         error: (error as Error).message,
         metrics: this.metrics.getSnapshot(),
         totalTime: Date.now() - startTime,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
   }
@@ -83,39 +82,43 @@ export class ProductionCollector {
     const cities = ['London']; // Expandable
     const daysAhead = 7;
     const currentTime = new Date();
-    
+
     // Check cache freshness to prioritize outdated data
     const cacheAnalysis = await persistentCache.getCacheStats();
-    
+
     const tasks: CollectionTask[] = [];
-    
+
     for (const city of cities) {
       for (let i = 0; i < daysAhead; i++) {
         const date = new Date(currentTime);
         date.setDate(date.getDate() + i);
         const dateString = date.toISOString().split('T')[0];
-        
+
         // Priority based on cache age and demand patterns
-        const priority = this.calculateTaskPriority(city, dateString, cacheAnalysis);
-        
+        const priority = this.calculateTaskPriority(
+          city,
+          dateString,
+          cacheAnalysis
+        );
+
         tasks.push({
           city: city.toLowerCase(),
           date: dateString,
           priority,
           attempts: 0,
-          status: 'pending'
+          status: 'pending',
         });
       }
     }
-    
+
     // Sort by priority (high priority first)
     tasks.sort((a, b) => b.priority - a.priority);
-    
+
     return {
       tasks,
       maxConcurrency: 2, // Respect rate limits
       timeoutPerTask: 45000, // 45 seconds per task
-      maxRetries: 2
+      maxRetries: 2,
     };
   }
 
@@ -123,25 +126,25 @@ export class ProductionCollector {
    * Execute work plan with sophisticated error handling
    */
   private async executeWorkPlan(
-    plan: WorkPlan, 
+    plan: WorkPlan,
     collectionId: string
   ): Promise<ProductionCollectionItem[]> {
     const results: ProductionCollectionItem[] = [];
     const semaphore = new Semaphore(plan.maxConcurrency);
-    
+
     // Process tasks in parallel with concurrency control
     const promises = plan.tasks.map(async (task) => {
       return semaphore.acquire(async () => {
         return this.executeTaskWithRetry(task, plan, collectionId);
       });
     });
-    
+
     const taskResults = await Promise.allSettled(promises);
-    
+
     // Process results
     taskResults.forEach((result, index) => {
       const task = plan.tasks[index];
-      
+
       if (result.status === 'fulfilled') {
         results.push(result.value);
       } else {
@@ -153,11 +156,11 @@ export class ProductionCollector {
           slotsCollected: 0,
           venuesProcessed: 0,
           executionTime: 0,
-          attempts: task.attempts
+          attempts: task.attempts,
         });
       }
     });
-    
+
     return results;
   }
 
@@ -170,38 +173,41 @@ export class ProductionCollector {
     collectionId: string
   ): Promise<ProductionCollectionItem> {
     let lastError: Error | null = null;
-    
+
     for (let attempt = 1; attempt <= plan.maxRetries + 1; attempt++) {
       task.attempts = attempt;
-      
+
       // Circuit breaker check
       if (this.circuitBreaker.isOpen()) {
         throw new Error('Circuit breaker open - service degraded');
       }
-      
+
       try {
         const startTime = Date.now();
-        
+
         // Execute with timeout
         const slots = await Promise.race([
           this.collectCityDateProduction(task.city, task.date),
-          this.createTimeoutPromise<CourtSlot[]>(plan.timeoutPerTask, `${task.city}:${task.date}`)
+          this.createTimeoutPromise<CourtSlot[]>(
+            plan.timeoutPerTask,
+            `${task.city}:${task.date}`
+          ),
         ]);
-        
+
         const executionTime = Date.now() - startTime;
-        const uniqueVenues = [...new Set(slots.map(s => s.venue.id))];
-        
+        const uniqueVenues = [...new Set(slots.map((s) => s.venue.id))];
+
         // Store in cache
         await persistentCache.setCachedData(task.city, task.date, slots);
-        
+
         // Store venues
         for (const venue of uniqueVenues) {
-          const venueObj = slots.find(s => s.venue.id === venue)?.venue;
+          const venueObj = slots.find((s) => s.venue.id === venue)?.venue;
           if (venueObj) {
             await persistentCache.storeVenue(venueObj, task.city);
           }
         }
-        
+
         // Log success
         await persistentCache.logCollection({
           collection_id: collectionId,
@@ -211,12 +217,12 @@ export class ProductionCollector {
           slots_collected: slots.length,
           venues_processed: uniqueVenues.length,
           execution_time_ms: executionTime,
-          provider: 'playtomic'
+          provider: 'playtomic',
         });
-        
+
         this.metrics.recordSuccess(executionTime);
         this.circuitBreaker.recordSuccess();
-        
+
         return {
           city: task.city,
           date: task.date,
@@ -224,14 +230,13 @@ export class ProductionCollector {
           slotsCollected: slots.length,
           venuesProcessed: uniqueVenues.length,
           executionTime,
-          attempts: attempt
+          attempts: attempt,
         };
-        
       } catch (error) {
         lastError = error as Error;
         this.metrics.recordFailure();
         this.circuitBreaker.recordFailure();
-        
+
         // Log failed attempt
         await persistentCache.logCollection({
           collection_id: collectionId,
@@ -242,31 +247,36 @@ export class ProductionCollector {
           venues_processed: 0,
           execution_time_ms: Date.now() - Date.now(),
           provider: 'playtomic',
-          error_message: lastError.message
+          error_message: lastError.message,
         });
-        
+
         if (attempt < plan.maxRetries + 1) {
           // Exponential backoff
           const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
-          console.warn(`Retrying ${task.city}:${task.date} in ${delay}ms (attempt ${attempt}/${plan.maxRetries + 1})`);
+          console.warn(
+            `Retrying ${task.city}:${task.date} in ${delay}ms (attempt ${attempt}/${plan.maxRetries + 1})`
+          );
           await this.sleep(delay);
         }
       }
     }
-    
+
     throw lastError || new Error('Max retries exceeded');
   }
 
   /**
    * Production collection method
    */
-  private async collectCityDateProduction(city: string, date: string): Promise<CourtSlot[]> {
+  private async collectCityDateProduction(
+    city: string,
+    date: string
+  ): Promise<CourtSlot[]> {
     const params = {
       sport: 'padel' as const,
       location: city,
       date,
     };
-    
+
     // Production mode - collect from ALL venues
     return await this.provider.fetchAvailability(params);
   }
@@ -274,24 +284,31 @@ export class ProductionCollector {
   /**
    * Calculate task priority based on cache freshness and demand
    */
-  private calculateTaskPriority(city: string, date: string, cacheStats: any): number {
+  private calculateTaskPriority(
+    city: string,
+    date: string,
+    cacheStats: any
+  ): number {
     let priority = 50; // Base priority
-    
+
     // Higher priority for sooner dates
-    const daysFromNow = Math.floor((new Date(date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    const daysFromNow = Math.floor(
+      (new Date(date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+    );
     priority += Math.max(0, 10 - daysFromNow * 2);
-    
+
     // Higher priority for weekends
     const dayOfWeek = new Date(date).getDay();
-    if (dayOfWeek === 0 || dayOfWeek === 6) { // Sunday or Saturday
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      // Sunday or Saturday
       priority += 20;
     }
-    
+
     // Higher priority for peak times (Friday/Saturday)
     if (dayOfWeek === 5 || dayOfWeek === 6) {
       priority += 10;
     }
-    
+
     return priority;
   }
 
@@ -302,10 +319,12 @@ export class ProductionCollector {
     }
   }
 
-  private async analyzeResults(results: ProductionCollectionItem[]): Promise<CollectionAnalysis> {
-    const successful = results.filter(r => r.status === 'success');
-    const failed = results.filter(r => r.status === 'failed');
-    
+  private async analyzeResults(
+    results: ProductionCollectionItem[]
+  ): Promise<CollectionAnalysis> {
+    const successful = results.filter((r) => r.status === 'success');
+    const failed = results.filter((r) => r.status === 'failed');
+
     return {
       totalTasks: results.length,
       successful: successful.length,
@@ -313,25 +332,31 @@ export class ProductionCollector {
       successRate: (successful.length / results.length) * 100,
       totalSlots: successful.reduce((sum, r) => sum + r.slotsCollected, 0),
       totalVenues: successful.reduce((sum, r) => sum + r.venuesProcessed, 0),
-      averageExecutionTime: successful.reduce((sum, r) => sum + r.executionTime, 0) / successful.length || 0
+      averageExecutionTime:
+        successful.reduce((sum, r) => sum + r.executionTime, 0) /
+          successful.length || 0,
     };
   }
 
-  private async attemptGracefulDegradation(): Promise<ProductionCollectionItem[]> {
+  private async attemptGracefulDegradation(): Promise<
+    ProductionCollectionItem[]
+  > {
     // Try to collect at least today's data
     try {
       const today = new Date().toISOString().split('T')[0];
       const slots = await this.collectCityDateProduction('london', today);
-      
-      return [{
-        city: 'london',
-        date: today,
-        status: 'success',
-        slotsCollected: slots.length,
-        venuesProcessed: [...new Set(slots.map(s => s.venue.id))].length,
-        executionTime: 0,
-        attempts: 1
-      }];
+
+      return [
+        {
+          city: 'london',
+          date: today,
+          status: 'success',
+          slotsCollected: slots.length,
+          venuesProcessed: [...new Set(slots.map((s) => s.venue.id))].length,
+          executionTime: 0,
+          attempts: 1,
+        },
+      ];
     } catch {
       return [];
     }
@@ -339,12 +364,15 @@ export class ProductionCollector {
 
   private createTimeoutPromise<T>(ms: number, context: string): Promise<T> {
     return new Promise((_, reject) => {
-      setTimeout(() => reject(new Error(`Timeout after ${ms}ms for ${context}`)), ms);
+      setTimeout(
+        () => reject(new Error(`Timeout after ${ms}ms for ${context}`)),
+        ms
+      );
     });
   }
 
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
 
@@ -355,24 +383,24 @@ class CircuitBreaker {
   private failures = 0;
   private lastFailureTime = 0;
   private state: 'closed' | 'open' | 'half-open' = 'closed';
-  
+
   private readonly failureThreshold = 5;
   private readonly recoveryTimeout = 60000; // 1 minute
-  
+
   recordSuccess(): void {
     this.failures = 0;
     this.state = 'closed';
   }
-  
+
   recordFailure(): void {
     this.failures++;
     this.lastFailureTime = Date.now();
-    
+
     if (this.failures >= this.failureThreshold) {
       this.state = 'open';
     }
   }
-  
+
   isOpen(): boolean {
     if (this.state === 'open') {
       if (Date.now() - this.lastFailureTime > this.recoveryTimeout) {
@@ -391,11 +419,11 @@ class CircuitBreaker {
 class Semaphore {
   private permits: number;
   private waiting: Array<() => void> = [];
-  
+
   constructor(permits: number) {
     this.permits = permits;
   }
-  
+
   async acquire<T>(fn: () => Promise<T>): Promise<T> {
     await this.waitForPermit();
     try {
@@ -404,18 +432,18 @@ class Semaphore {
       this.release();
     }
   }
-  
+
   private async waitForPermit(): Promise<void> {
     if (this.permits > 0) {
       this.permits--;
       return;
     }
-    
-    return new Promise(resolve => {
+
+    return new Promise((resolve) => {
       this.waiting.push(resolve);
     });
   }
-  
+
   private release(): void {
     if (this.waiting.length > 0) {
       const next = this.waiting.shift()!;
@@ -433,16 +461,16 @@ class CollectionMetrics {
   private successes = 0;
   private failures = 0;
   private totalExecutionTime = 0;
-  
+
   recordSuccess(executionTime: number): void {
     this.successes++;
     this.totalExecutionTime += executionTime;
   }
-  
+
   recordFailure(): void {
     this.failures++;
   }
-  
+
   getSnapshot(): MetricsSnapshot {
     const total = this.successes + this.failures;
     return {
@@ -450,7 +478,8 @@ class CollectionMetrics {
       successes: this.successes,
       failures: this.failures,
       successRate: total > 0 ? (this.successes / total) * 100 : 0,
-      averageExecutionTime: this.successes > 0 ? this.totalExecutionTime / this.successes : 0
+      averageExecutionTime:
+        this.successes > 0 ? this.totalExecutionTime / this.successes : 0,
     };
   }
 }

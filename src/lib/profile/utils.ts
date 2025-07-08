@@ -159,6 +159,7 @@ export async function getUserProfileWithDetails(userId: string) {
         updated_at,
         user_sports (
           id,
+          sport_id,
           role,
           experience_level,
           positions,
@@ -206,6 +207,7 @@ export async function getPublicProfileByUsername(username: string) {
         updated_at,
         user_sports (
           id,
+          sport_id,
           role,
           experience_level,
           positions,
@@ -225,6 +227,87 @@ export async function getPublicProfileByUsername(username: string) {
     return {
       data: null,
       error: error instanceof Error ? error.message : 'Profile not found',
+    };
+  }
+}
+
+export interface SportSelection {
+  sport_id: number;
+  sport_name: string;
+  role: 'player' | 'coach' | 'scout' | 'fan';
+  position: string;
+  experience_level: 'beginner' | 'intermediate' | 'advanced' | 'professional';
+}
+
+/**
+ * Update user sports and positions
+ */
+export async function updateUserSports(
+  userId: string,
+  userSports: SportSelection[]
+) {
+  const supabase = createClient();
+
+  try {
+    // First, get the user's profile ID
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('user_id', userId)
+      .single();
+
+    if (profileError || !profile) {
+      return {
+        data: null,
+        error: 'Profile not found',
+      };
+    }
+
+    const profileId = profile.id;
+
+    // Delete existing user_sports entries
+    const { error: deleteError } = await supabase
+      .from('user_sports')
+      .delete()
+      .eq('user_id', profileId);
+
+    if (deleteError) {
+      return {
+        data: null,
+        error: 'Failed to clear existing sports',
+      };
+    }
+
+    // Insert new user_sports entries if any
+    if (userSports.length > 0) {
+      const userSportsData = userSports.map((sport) => ({
+        user_id: profileId,
+        sport_id: sport.sport_id.toString(),
+        role: sport.role,
+        experience_level: sport.experience_level,
+        positions: sport.position ? [sport.position] : [],
+        is_primary: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }));
+
+      const { error: insertError } = await supabase
+        .from('user_sports')
+        .insert(userSportsData);
+
+      if (insertError) {
+        return {
+          data: null,
+          error: 'Failed to save sports',
+        };
+      }
+    }
+
+    return { data: true, error: null };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : 'Failed to update sports',
     };
   }
 }

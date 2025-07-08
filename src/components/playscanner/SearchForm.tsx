@@ -23,7 +23,7 @@ export default function SearchForm({
     const day = String(now.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
-  
+
   const today = getToday();
   const [date, setDate] = useState(today);
 

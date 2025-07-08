@@ -33,6 +33,7 @@ interface UserProfile {
   location: string | null;
   avatar_url: string | null;
   social_links: any;
+  is_verified: boolean | null;
   user_sports: UserSport[];
 }
 
@@ -114,8 +115,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           location,
           avatar_url,
           social_links,
+          is_verified,
           user_sports (
             id,
+            sport_id,
             role,
             experience_level,
             positions,
@@ -297,39 +300,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase.auth, router]);
 
   // Auth actions with loading states
-  const signUp = useCallback(async (
-    email: string,
-    password: string,
-    metadata?: Record<string, any>
-  ) => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: metadata,
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-      return { data, error };
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase.auth]);
+  const signUp = useCallback(
+    async (email: string, password: string, metadata?: Record<string, any>) => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: metadata,
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
+        });
+        return { data, error };
+      } finally {
+        setLoading(false);
+      }
+    },
+    [supabase.auth]
+  );
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      return { error };
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase.auth]);
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      setLoading(true);
+      try {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        return { error };
+      } finally {
+        setLoading(false);
+      }
+    },
+    [supabase.auth]
+  );
 
   const signOut = useCallback(async () => {
     setLoading(true);
@@ -341,12 +346,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [supabase.auth]);
 
-  const resetPassword = useCallback(async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
-    });
-    return { error };
-  }, [supabase.auth]);
+  const resetPassword = useCallback(
+    async (email: string) => {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+      return { error };
+    },
+    [supabase.auth]
+  );
 
   // Memoized context value to prevent unnecessary re-renders
   const value = useMemo(

@@ -82,8 +82,16 @@ export function DatePicker({
           disabled={(date) => {
             if (!minDate) return false;
             // Compare dates by normalizing to start of day
-            const dateAtMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-            const minDateAtMidnight = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate());
+            const dateAtMidnight = new Date(
+              date.getFullYear(),
+              date.getMonth(),
+              date.getDate()
+            );
+            const minDateAtMidnight = new Date(
+              minDate.getFullYear(),
+              minDate.getMonth(),
+              minDate.getDate()
+            );
             return dateAtMidnight < minDateAtMidnight;
           }}
           initialFocus

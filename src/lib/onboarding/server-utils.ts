@@ -27,12 +27,13 @@ export async function checkOnboardingStatusServer(
 
   try {
     // Get profile with user sports to check onboarding completion
+    // Use left join to allow profiles without sports (for fans/coaches)
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select(
         `
         id,
-        user_sports!inner (
+        user_sports (
           id,
           role,
           sport_id
@@ -47,12 +48,17 @@ export async function checkOnboardingStatusServer(
       return { isComplete: false, error: profileError };
     }
 
-    // Check if onboarding is complete
-    // User must have at least one sport with a role
+    // Check if onboarding is complete based on role
+    // Roles are stored in user_sports table, not profiles table
     const hasUserSports = profile.user_sports && profile.user_sports.length > 0;
     const hasRole = profile.user_sports?.some((us: any) => us.role);
 
-    const isComplete = hasUserSports && hasRole;
+    // Role-based completion logic:
+    // - Players: need role AND at least one sport (current logic is correct)
+    // - Others (fans/coaches/scouts): just need role (any user_sports entry with role)
+    const userRole = profile.user_sports?.find((us: any) => us.role)?.role;
+    const isComplete =
+      hasRole && (userRole === 'player' ? hasUserSports : true);
 
     return {
       isComplete,

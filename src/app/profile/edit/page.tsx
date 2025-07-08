@@ -29,17 +29,12 @@ import {
 import { useRouter } from 'next/navigation';
 import {
   updateProfileBasicInfo,
+  updateUserSports,
   checkUsernameAvailability as checkUsernameAPI,
+  SportSelection,
 } from '@/lib/profile/utils';
 
 // Types
-interface SportSelection {
-  sport_id: number;
-  sport_name: string;
-  position: string;
-  experience_level: 'beginner' | 'intermediate' | 'advanced' | 'professional';
-}
-
 interface SocialLinks {
   instagram: string;
   twitter: string;
@@ -106,14 +101,16 @@ function BasicInfoTab({
     <div className="max-w-2xl mx-auto space-y-8">
       {/* Header */}
       <div className="text-center">
-        <h2
-          className="text-2xl font-bold mb-2"
-          style={{ color: 'var(--timberwolf)' }}
-        >
-          Basic Information
-        </h2>
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <div className="p-2 bg-green-400/10 rounded-xl">
+            <User className="h-6 w-6 text-green-400" />
+          </div>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+            Basic Information
+          </h2>
+        </div>
         <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
-          Update your core profile information
+          Update your core profile information to build your athletic identity
         </p>
       </div>
 
@@ -264,12 +261,14 @@ function BasicInfoTab({
       </div>
 
       {/* Tips Section */}
-      <div className="bg-neutral-800/50 border border-neutral-600 rounded-xl p-6">
+      <div className="bg-gradient-to-br from-neutral-800/40 to-neutral-700/30 backdrop-blur-xl border border-neutral-700/50 rounded-xl p-6">
         <h4
           className="text-sm font-semibold mb-3 flex items-center gap-2"
           style={{ color: 'var(--timberwolf)' }}
         >
-          <Info className="h-4 w-4" />
+          <div className="p-1 bg-green-400/10 rounded-lg">
+            <Info className="h-4 w-4 text-green-400" />
+          </div>
           Profile Tips
         </h4>
         <ul className="text-sm space-y-2" style={{ color: 'var(--ash-grey)' }}>
@@ -297,6 +296,293 @@ function BasicInfoTab({
   );
 }
 
+// Sport Edit Form Component
+function SportEditForm({
+  sport,
+  sportName,
+  onSave,
+  onCancel,
+}: {
+  sport: SportSelection;
+  sportName: string;
+  onSave: (updates: Partial<SportSelection>) => void;
+  onCancel: () => void;
+}) {
+  const [role, setRole] = useState(sport.role);
+  const [position, setPosition] = useState(sport.position);
+  const [experienceLevel, setExperienceLevel] = useState(
+    sport.experience_level
+  );
+
+  const getPositionsForSport = (sportName: string): string[] => {
+    const positionMap: Record<string, string[]> = {
+      Football: [
+        'Goalkeeper',
+        'Defender',
+        'Midfielder',
+        'Forward',
+        'Striker',
+        'Winger',
+      ], // European Football
+      'American Football': [
+        'Quarterback',
+        'Running Back',
+        'Wide Receiver',
+        'Tight End',
+        'Offensive Line',
+        'Defensive Line',
+        'Linebacker',
+        'Cornerback',
+        'Safety',
+        'Kicker',
+        'Punter',
+      ],
+      Basketball: [
+        'Point Guard',
+        'Shooting Guard',
+        'Small Forward',
+        'Power Forward',
+        'Center',
+      ],
+      Soccer: [
+        'Goalkeeper',
+        'Defender',
+        'Midfielder',
+        'Forward',
+        'Striker',
+        'Winger',
+      ], // Alias for Football
+      Baseball: [
+        'Pitcher',
+        'Catcher',
+        'First Base',
+        'Second Base',
+        'Third Base',
+        'Shortstop',
+        'Left Field',
+        'Center Field',
+        'Right Field',
+        'Designated Hitter',
+      ],
+      Tennis: ['Singles', 'Doubles'],
+      Volleyball: [
+        'Setter',
+        'Outside Hitter',
+        'Middle Blocker',
+        'Opposite Hitter',
+        'Libero',
+        'Defensive Specialist',
+      ],
+      Hockey: ['Goaltender', 'Defenseman', 'Left Wing', 'Right Wing', 'Center'],
+    };
+
+    return positionMap[sportName] || ['Player'];
+  };
+
+  const positions = getPositionsForSport(sportName);
+
+  const handleSave = () => {
+    onSave({
+      role: role as 'player' | 'coach' | 'scout' | 'fan',
+      position,
+      experience_level: experienceLevel as
+        | 'beginner'
+        | 'intermediate'
+        | 'advanced'
+        | 'professional',
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 mb-4">
+        <Trophy className="h-5 w-5 text-yellow-400" />
+        <h4 className="font-medium" style={{ color: 'var(--timberwolf)' }}>
+          Edit {sportName}
+        </h4>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <Label
+            htmlFor="role"
+            className="text-sm font-medium"
+            style={{ color: 'var(--ash-grey)' }}
+          >
+            Role
+          </Label>
+          <select
+            id="role"
+            value={role}
+            onChange={(e) => {
+              setRole(e.target.value as 'player' | 'coach' | 'scout' | 'fan');
+              // Clear position if not a player
+              if (e.target.value !== 'player') {
+                setPosition('');
+              }
+            }}
+            className="w-full mt-1 px-3 py-2 bg-neutral-800 border border-neutral-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
+          >
+            <option value="player">Player</option>
+            <option value="coach">Coach</option>
+            <option value="scout">Scout</option>
+            <option value="fan">Fan</option>
+          </select>
+        </div>
+
+        {role === 'player' && (
+          <div>
+            <Label
+              htmlFor="position"
+              className="text-sm font-medium"
+              style={{ color: 'var(--ash-grey)' }}
+            >
+              Position
+            </Label>
+            <select
+              id="position"
+              value={position}
+              onChange={(e) => setPosition(e.target.value)}
+              className="w-full mt-1 px-3 py-2 bg-neutral-800 border border-neutral-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
+            >
+              <option value="">Select position</option>
+              {positions.map((pos) => (
+                <option key={pos} value={pos}>
+                  {pos}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        <div>
+          <Label
+            htmlFor="experience"
+            className="text-sm font-medium"
+            style={{ color: 'var(--ash-grey)' }}
+          >
+            Experience Level
+          </Label>
+          <select
+            id="experience"
+            value={experienceLevel}
+            onChange={(e) =>
+              setExperienceLevel(
+                e.target.value as
+                  | 'beginner'
+                  | 'intermediate'
+                  | 'advanced'
+                  | 'professional'
+              )
+            }
+            className="w-full mt-1 px-3 py-2 bg-neutral-800 border border-neutral-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
+          >
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+            <option value="professional">Professional</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 pt-2">
+        <Button
+          onClick={handleSave}
+          size="sm"
+          className="bg-green-600 hover:bg-green-700 text-white"
+        >
+          <CheckCircle className="h-4 w-4 mr-2" />
+          Save
+        </Button>
+        <Button
+          onClick={onCancel}
+          size="sm"
+          variant="outline"
+          className="border-neutral-600 hover:bg-neutral-700"
+          style={{ color: 'var(--ash-grey)' }}
+        >
+          Cancel
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// Add Sport Modal Component
+function AddSportModal({
+  allSports,
+  userSports,
+  onAddSport,
+  onClose,
+}: {
+  allSports: any[];
+  userSports: SportSelection[];
+  onAddSport: (sportId: string, sportName: string) => void;
+  onClose: () => void;
+}) {
+  const userSportIds = userSports.map((sport) => sport.sport_id);
+  const availableSports = allSports.filter(
+    (sport) => !userSportIds.includes(parseInt(sport.id))
+  );
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-neutral-900 border border-neutral-700 rounded-xl p-6 w-full max-w-md">
+        <div className="flex items-center justify-between mb-4">
+          <h3
+            className="text-lg font-semibold"
+            style={{ color: 'var(--timberwolf)' }}
+          >
+            Add New Sport
+          </h3>
+          <Button onClick={onClose} size="sm" variant="ghost" className="p-1">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className="space-y-3 max-h-60 overflow-y-auto">
+          {availableSports.length === 0 ? (
+            <p
+              className="text-center py-4"
+              style={{ color: 'var(--ash-grey)' }}
+            >
+              You&apos;ve added all available sports!
+            </p>
+          ) : (
+            availableSports.map((sport) => (
+              <button
+                key={sport.id}
+                onClick={() => onAddSport(sport.id, sport.name)}
+                className="w-full p-3 bg-neutral-800/50 hover:bg-neutral-800 border border-neutral-600 rounded-lg transition-colors text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <Trophy className="h-5 w-5 text-yellow-400" />
+                  <div>
+                    <h4
+                      className="font-medium"
+                      style={{ color: 'var(--timberwolf)' }}
+                    >
+                      {sport.name}
+                    </h4>
+                    {sport.description && (
+                      <p
+                        className="text-sm"
+                        style={{ color: 'var(--ash-grey)' }}
+                      >
+                        {sport.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Sports Tab Component
 function SportsTab({
   profile,
@@ -308,22 +594,27 @@ function SportsTab({
   onMarkChanged: () => void;
 }) {
   const [userSports, setUserSports] = useState<SportSelection[]>([]);
+  const [allSports, setAllSports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sportsLoading, setSportsLoading] = useState(false);
+  const [showAddSport, setShowAddSport] = useState(false);
+  const [editingSport, setEditingSport] = useState<number | null>(null);
 
   useEffect(() => {
     loadUserSports();
+    loadAllSports();
   }, []);
 
   const loadUserSports = async () => {
     try {
-      // For now, use the sports data from the profile
       const sports = profile?.user_sports || [];
       setUserSports(
         sports.map((sport: any) => ({
-          sport_id: sport.sport_id,
+          sport_id: sport.sport_id || parseInt(sport.sport?.id),
           sport_name: sport.sport?.name || 'Unknown Sport',
-          position: sport.position,
-          experience_level: sport.experience_level,
+          role: sport.role || 'player',
+          position: sport.positions?.[0] || '',
+          experience_level: sport.experience_level || 'beginner',
         }))
       );
     } catch (error) {
@@ -331,6 +622,89 @@ function SportsTab({
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadAllSports = async () => {
+    setSportsLoading(true);
+    try {
+      const response = await fetch('/api/sports');
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch sports');
+      }
+
+      const data = await response.json();
+      setAllSports(data.sports || []);
+    } catch (error) {
+      console.error('Failed to load sports:', error);
+
+      // Fallback to default sports list
+      const defaultSports = [
+        {
+          id: '1',
+          name: 'Football',
+          description: 'Association Football (Soccer)',
+        },
+        { id: '2', name: 'Basketball', description: 'Professional Basketball' },
+        {
+          id: '3',
+          name: 'American Football',
+          description: 'American Football (NFL)',
+        },
+        { id: '4', name: 'Baseball', description: 'Professional Baseball' },
+        { id: '5', name: 'Tennis', description: 'Professional Tennis' },
+        { id: '6', name: 'Volleyball', description: 'Professional Volleyball' },
+        { id: '7', name: 'Hockey', description: 'Ice Hockey' },
+        { id: '8', name: 'Golf', description: 'Professional Golf' },
+        { id: '9', name: 'Swimming', description: 'Competitive Swimming' },
+        { id: '10', name: 'Track & Field', description: 'Athletics' },
+      ];
+      setAllSports(defaultSports);
+    } finally {
+      setSportsLoading(false);
+    }
+  };
+
+  const handleAddSport = (sportId: string, sportName: string) => {
+    const newSport: SportSelection = {
+      sport_id: parseInt(sportId),
+      sport_name: sportName,
+      role: 'player',
+      position: '',
+      experience_level: 'beginner',
+    };
+
+    const updatedSports = [...userSports, newSport];
+    setUserSports(updatedSports);
+    setShowAddSport(false);
+
+    // Trigger form change detection
+    onUpdate({ user_sports: updatedSports });
+    onMarkChanged();
+  };
+
+  const handleUpdateSport = (
+    index: number,
+    updates: Partial<SportSelection>
+  ) => {
+    const updatedSports = userSports.map((sport, i) =>
+      i === index ? { ...sport, ...updates } : sport
+    );
+    setUserSports(updatedSports);
+    setEditingSport(null);
+
+    // Trigger form change detection
+    onUpdate({ user_sports: updatedSports });
+    onMarkChanged();
+  };
+
+  const handleRemoveSport = (index: number) => {
+    const updatedSports = userSports.filter((_, i) => i !== index);
+    setUserSports(updatedSports);
+
+    // Trigger form change detection
+    onUpdate({ user_sports: updatedSports });
+    onMarkChanged();
   };
 
   if (loading) {
@@ -346,26 +720,39 @@ function SportsTab({
     <div className="max-w-2xl mx-auto space-y-8">
       {/* Header */}
       <div className="text-center">
-        <h2
-          className="text-2xl font-bold mb-2"
-          style={{ color: 'var(--timberwolf)' }}
-        >
-          Sports & Positions
-        </h2>
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <div className="p-2 bg-yellow-400/10 rounded-xl">
+            <Trophy className="h-6 w-6 text-yellow-400" />
+          </div>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
+            Sports & Positions
+          </h2>
+        </div>
         <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
-          Manage your sports and playing positions
+          Manage your athletic profile and playing positions
         </p>
       </div>
 
-      {/* Current Sports */}
-      <div className="space-y-4">
+      {/* Add Sport Button */}
+      <div className="flex justify-between items-center">
         <h3
           className="text-lg font-semibold"
           style={{ color: 'var(--timberwolf)' }}
         >
           Your Sports
         </h3>
+        <Button
+          onClick={() => setShowAddSport(true)}
+          size="sm"
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+        >
+          <Plus className="h-4 w-4" />
+          Add Sport
+        </Button>
+      </div>
 
+      {/* Current Sports */}
+      <div className="space-y-4">
         {userSports.length === 0 ? (
           <div className="text-center py-8 bg-neutral-800/30 rounded-xl border border-neutral-600">
             <Trophy
@@ -381,48 +768,79 @@ function SportsTab({
             {userSports.map((sport, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between p-4 bg-neutral-800/50 rounded-xl border border-neutral-600"
+                className="p-4 bg-neutral-800/50 rounded-xl border border-neutral-600"
               >
-                <div className="flex items-center gap-3">
-                  <Trophy className="h-5 w-5 text-yellow-400" />
-                  <div>
-                    <h4
-                      className="font-medium"
-                      style={{ color: 'var(--timberwolf)' }}
-                    >
-                      {sport.sport_name}
-                    </h4>
-                    <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
-                      {sport.position} •{' '}
-                      {sport.experience_level.charAt(0).toUpperCase() +
-                        sport.experience_level.slice(1)}
-                    </p>
+                {editingSport === index ? (
+                  // Edit Mode
+                  <SportEditForm
+                    sport={sport}
+                    sportName={sport.sport_name}
+                    onSave={(updates) => handleUpdateSport(index, updates)}
+                    onCancel={() => setEditingSport(null)}
+                  />
+                ) : (
+                  // View Mode
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Trophy className="h-5 w-5 text-yellow-400" />
+                      <div>
+                        <h4
+                          className="font-medium"
+                          style={{ color: 'var(--timberwolf)' }}
+                        >
+                          {sport.sport_name}
+                        </h4>
+                        <p
+                          className="text-sm"
+                          style={{ color: 'var(--ash-grey)' }}
+                        >
+                          {sport.role.charAt(0).toUpperCase() +
+                            sport.role.slice(1)}
+                          {sport.role === 'player' &&
+                            sport.position &&
+                            ` • ${sport.position}`}{' '}
+                          •{' '}
+                          {sport.experience_level.charAt(0).toUpperCase() +
+                            sport.experience_level.slice(1)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setEditingSport(index)}
+                        className="border-neutral-600 hover:bg-neutral-700"
+                        style={{ color: 'var(--ash-grey)' }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleRemoveSport(index)}
+                        className="border-red-600 text-red-400 hover:bg-red-900/20"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Coming Soon Notice */}
-      <div className="bg-neutral-800/50 border border-neutral-600 rounded-xl p-6">
-        <h4
-          className="text-sm font-semibold mb-3 flex items-center gap-2"
-          style={{ color: 'var(--timberwolf)' }}
-        >
-          <Info className="h-4 w-4" />
-          Sports Management
-        </h4>
-        <p className="text-sm mb-3" style={{ color: 'var(--ash-grey)' }}>
-          Advanced sports editing functionality is coming soon! For now, you can
-          view your current sports.
-        </p>
-        <p className="text-xs" style={{ color: 'var(--ash-grey)' }}>
-          To modify your sports, positions, or experience levels, please contact
-          support or re-complete onboarding.
-        </p>
-      </div>
+      {/* Add Sport Modal */}
+      {showAddSport && (
+        <AddSportModal
+          allSports={allSports}
+          userSports={userSports}
+          onAddSport={handleAddSport}
+          onClose={() => setShowAddSport(false)}
+        />
+      )}
     </div>
   );
 }
@@ -431,39 +849,41 @@ function SportsTab({
 function AvatarTab({
   profile,
   user,
-  onMarkChanged,
+  onAvatarSaved,
 }: {
   profile: any;
   user: any;
-  onMarkChanged: () => void;
+  onAvatarSaved: () => void;
 }) {
   const { refreshProfile } = useProfile();
 
   const handleAvatarUpdate = async (newAvatarUrl: string | null) => {
-    // Mark as changed to trigger save state
-    onMarkChanged();
-
     // Refresh profile data to reflect the change
     await refreshProfile(true);
+
+    // Notify parent that avatar was saved (resets unsaved changes state)
+    onAvatarSaved();
   };
 
   return (
     <div className="max-w-2xl mx-auto space-y-8">
       {/* Header */}
       <div className="text-center">
-        <h2
-          className="text-2xl font-bold mb-2"
-          style={{ color: 'var(--timberwolf)' }}
-        >
-          Profile Avatar
-        </h2>
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <div className="p-2 bg-blue-400/10 rounded-xl">
+            <User className="h-6 w-6 text-blue-400" />
+          </div>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            Profile Avatar
+          </h2>
+        </div>
         <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
-          Upload a profile picture to personalize your PLAYBACK profile
+          Upload a professional photo that represents your athletic identity
         </p>
       </div>
 
       {/* Avatar Upload */}
-      <div className="bg-neutral-800/50 border border-neutral-600 rounded-xl p-6">
+      <div className="bg-gradient-to-br from-neutral-800/40 to-neutral-700/30 backdrop-blur-xl border border-neutral-700/50 rounded-xl p-6">
         <AvatarUpload
           userId={user.id}
           currentAvatarUrl={profile?.avatar_url}
@@ -476,12 +896,14 @@ function AvatarTab({
       </div>
 
       {/* Tips Section */}
-      <div className="bg-neutral-800/50 border border-neutral-600 rounded-xl p-6">
+      <div className="bg-gradient-to-br from-neutral-800/40 to-neutral-700/30 backdrop-blur-xl border border-neutral-700/50 rounded-xl p-6">
         <h4
           className="text-sm font-semibold mb-3 flex items-center gap-2"
           style={{ color: 'var(--timberwolf)' }}
         >
-          <Info className="h-4 w-4" />
+          <div className="p-1 bg-blue-400/10 rounded-lg">
+            <Info className="h-4 w-4 text-blue-400" />
+          </div>
           Avatar Tips
         </h4>
         <ul className="text-sm space-y-2" style={{ color: 'var(--ash-grey)' }}>
@@ -544,14 +966,16 @@ function SocialTab({
     <div className="max-w-2xl mx-auto space-y-8">
       {/* Header */}
       <div className="text-center">
-        <h2
-          className="text-2xl font-bold mb-2"
-          style={{ color: 'var(--timberwolf)' }}
-        >
-          Social & Contact
-        </h2>
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <div className="p-2 bg-pink-400/10 rounded-xl">
+            <Share2 className="h-6 w-6 text-pink-400" />
+          </div>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
+            Social & Contact
+          </h2>
+        </div>
         <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
-          Connect your social media accounts to build your network
+          Connect your social media accounts to build your athletic network
         </p>
       </div>
 
@@ -668,12 +1092,14 @@ function SocialTab({
       </div>
 
       {/* Tips Section */}
-      <div className="bg-neutral-800/50 border border-neutral-600 rounded-xl p-6">
+      <div className="bg-gradient-to-br from-neutral-800/40 to-neutral-700/30 backdrop-blur-xl border border-neutral-700/50 rounded-xl p-6">
         <h4
           className="text-sm font-semibold mb-3 flex items-center gap-2"
           style={{ color: 'var(--timberwolf)' }}
         >
-          <Info className="h-4 w-4" />
+          <div className="p-1 bg-pink-400/10 rounded-lg">
+            <Info className="h-4 w-4 text-pink-400" />
+          </div>
           Social Media Tips
         </h4>
         <ul className="text-sm space-y-2" style={{ color: 'var(--ash-grey)' }}>
@@ -710,14 +1136,14 @@ function TabNavigation({
   tabs: { id: string; label: string; icon: React.ReactNode }[];
 }) {
   return (
-    <div className="flex space-x-1 bg-neutral-800/50 p-1 rounded-xl border border-neutral-600">
+    <div className="flex space-x-2 bg-neutral-800/30 p-2 rounded-2xl border border-neutral-700/50">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => setActiveTab(tab.id)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+          className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
             activeTab === tab.id
-              ? 'bg-green-500 text-white shadow-lg'
+              ? 'bg-gradient-to-r from-green-500 to-blue-500 text-white shadow-lg'
               : 'text-neutral-400 hover:text-white hover:bg-neutral-700/50'
           }`}
         >
@@ -764,6 +1190,16 @@ function ProfileEditContent() {
     setHasUnsavedChanges(true);
   };
 
+  const handleAvatarSaved = () => {
+    // Avatar is already saved by the AvatarUpload component
+    // Just reset the unsaved changes state
+    setHasUnsavedChanges(false);
+    setSaveSuccess(true);
+
+    // Clear success message after a delay
+    setTimeout(() => setSaveSuccess(false), 3000);
+  };
+
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -778,21 +1214,37 @@ function ProfileEditContent() {
     setSaveSuccess(false);
 
     try {
-      const result = await updateProfileBasicInfo(user.id, profileUpdates);
+      // Handle basic profile info updates
+      const { user_sports, ...basicUpdates } = profileUpdates;
 
-      if (result.error) {
-        setSaveError(result.error);
-      } else {
-        setSaveSuccess(true);
-        setHasUnsavedChanges(false);
-        setProfileUpdates({});
-
-        // Refresh profile data in context
-        await refreshProfile(true);
-
-        // Auto-hide success message after 3 seconds
-        setTimeout(() => setSaveSuccess(false), 3000);
+      // Update basic profile info if there are any basic fields
+      if (Object.keys(basicUpdates).length > 0) {
+        const result = await updateProfileBasicInfo(user.id, basicUpdates);
+        if (result.error) {
+          setSaveError(result.error);
+          return;
+        }
       }
+
+      // Update user sports if changed
+      if (user_sports) {
+        const sportsResult = await updateUserSports(user.id, user_sports);
+        if (sportsResult.error) {
+          setSaveError(sportsResult.error);
+          return;
+        }
+      }
+
+      // Success
+      setSaveSuccess(true);
+      setHasUnsavedChanges(false);
+      setProfileUpdates({});
+
+      // Refresh profile data in context
+      await refreshProfile(true);
+
+      // Auto-hide success message after 3 seconds
+      setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
       setSaveError(
         error instanceof Error ? error.message : 'Failed to save changes'
@@ -846,83 +1298,78 @@ function ProfileEditContent() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--night)' }}>
-      {/* Header */}
-      <div className="bg-neutral-900/50 border-b border-neutral-700">
-        <div className="container mx-auto px-4 py-6 max-w-6xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleBackToDashboard}
-                className="flex items-center gap-2 hover:bg-neutral-800"
-                style={{ color: 'var(--ash-grey)' }}
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Dashboard
-              </Button>
-              <div className="h-6 w-px bg-neutral-600" />
-              <div>
-                <h1
-                  className="text-2xl font-bold"
-                  style={{ color: 'var(--timberwolf)' }}
-                >
-                  Edit Profile
-                </h1>
-                <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
-                  Update your PLAYBACK profile information
-                </p>
-              </div>
+      {/* Page Header - Simple */}
+      <div className="container mx-auto px-4 pt-6 pb-4 max-w-6xl">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBackToDashboard}
+              className="flex items-center gap-2 hover:bg-neutral-800/50"
+              style={{ color: 'var(--ash-grey)' }}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Button>
+            <div className="h-6 w-px bg-neutral-600" />
+            <div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+                Edit Profile
+              </h1>
+              <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
+                Update your PLAYBACK profile information
+              </p>
             </div>
+          </div>
 
-            {/* Action Buttons */}
-            <div className="flex items-center gap-3">
-              {saveSuccess && (
-                <div className="flex items-center gap-2 text-sm text-green-400 bg-green-900/20 px-3 py-2 rounded-lg border border-green-800">
-                  <CheckCircle className="h-4 w-4" />
-                  Changes saved
-                </div>
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3">
+            {saveSuccess && (
+              <div className="flex items-center gap-2 text-sm text-green-400 bg-green-900/20 px-3 py-2 rounded-lg border border-green-800">
+                <CheckCircle className="h-4 w-4" />
+                Changes saved
+              </div>
+            )}
+            {hasUnsavedChanges && !saveSuccess && (
+              <div className="flex items-center gap-2 text-sm text-orange-400 bg-orange-900/20 px-3 py-2 rounded-lg border border-orange-800">
+                <AlertCircle className="h-4 w-4" />
+                Unsaved changes
+              </div>
+            )}
+            <Button
+              variant="outline"
+              onClick={handleBackToDashboard}
+              disabled={saving}
+              className="flex items-center gap-2 border-neutral-600 hover:bg-neutral-800"
+              style={{ color: 'var(--ash-grey)' }}
+            >
+              <X className="h-4 w-4" />
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveChanges}
+              disabled={!hasUnsavedChanges || saving}
+              className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white"
+            >
+              {saving ? (
+                <>
+                  <LoadingSpinner size="sm" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  Save Changes
+                </>
               )}
-              {hasUnsavedChanges && !saveSuccess && (
-                <div className="flex items-center gap-2 text-sm text-orange-400 bg-orange-900/20 px-3 py-2 rounded-lg border border-orange-800">
-                  <AlertCircle className="h-4 w-4" />
-                  Unsaved changes
-                </div>
-              )}
-              <Button
-                variant="outline"
-                onClick={handleBackToDashboard}
-                disabled={saving}
-                className="flex items-center gap-2 border-neutral-600 hover:bg-neutral-800"
-                style={{ color: 'var(--ash-grey)' }}
-              >
-                <X className="h-4 w-4" />
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSaveChanges}
-                disabled={!hasUnsavedChanges || saving}
-                className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white"
-              >
-                {saving ? (
-                  <>
-                    <LoadingSpinner size="sm" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4" />
-                    Save Changes
-                  </>
-                )}
-              </Button>
-            </div>
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-4 pb-8 max-w-6xl">
         {/* Error Display */}
         {saveError && (
           <div className="mb-8 bg-red-900/20 border border-red-800 rounded-xl p-4">
@@ -945,8 +1392,13 @@ function ProfileEditContent() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-3">
-            <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl shadow-lg">
-              <div className="p-6">
+            <div className="bg-gradient-to-br from-neutral-900/90 to-neutral-800/50 backdrop-blur-xl border border-neutral-700/50 rounded-2xl shadow-lg relative overflow-hidden">
+              {/* Background Pattern */}
+              <div className="absolute inset-0 opacity-5">
+                <div className="absolute inset-0 bg-gradient-to-br from-green-400/20 to-blue-400/20"></div>
+              </div>
+
+              <div className="relative z-10 p-6">
                 {/* Tab Navigation */}
                 <div className="mb-8">
                   <TabNavigation
@@ -957,7 +1409,7 @@ function ProfileEditContent() {
                 </div>
 
                 {/* Tab Content */}
-                <div className="bg-neutral-800/30 rounded-xl p-8">
+                <div className="bg-neutral-800/30 backdrop-blur-sm rounded-2xl p-8 border border-neutral-700/50">
                   {activeTab === 'basic' && (
                     <BasicInfoTab
                       profile={profile.data}
@@ -970,7 +1422,7 @@ function ProfileEditContent() {
                     <AvatarTab
                       profile={profile.data}
                       user={user}
-                      onMarkChanged={markAsChanged}
+                      onAvatarSaved={handleAvatarSaved}
                     />
                   )}
                   {activeTab === 'sports' && (
@@ -994,13 +1446,18 @@ function ProfileEditContent() {
 
           {/* Profile Preview Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-6 sticky top-8">
-              <h3
-                className="text-lg font-semibold mb-4"
-                style={{ color: 'var(--timberwolf)' }}
-              >
-                Profile Preview
-              </h3>
+            <div className="bg-gradient-to-br from-neutral-900/90 to-neutral-800/50 backdrop-blur-xl border border-neutral-700/50 rounded-2xl p-6 sticky top-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-blue-400/10 rounded-xl">
+                  <User className="h-5 w-5 text-blue-400" />
+                </div>
+                <h3
+                  className="text-lg font-semibold"
+                  style={{ color: 'var(--timberwolf)' }}
+                >
+                  Profile Preview
+                </h3>
+              </div>
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <AvatarDisplay

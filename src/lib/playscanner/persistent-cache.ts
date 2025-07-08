@@ -227,28 +227,35 @@ export class PersistentCacheService {
 
       let retryCount = 0;
       const maxRetries = 3;
-      
+
       while (retryCount < maxRetries) {
-        const { error } = await this.supabase.from('playscanner_cache').upsert({
-          cache_key: cacheKey,
-          city: city.toLowerCase(),
-          date,
-          slots,
-          metadata,
-          expires_at: expiresAt.toISOString(),
-        }, {
-          onConflict: 'cache_key',
-          ignoreDuplicates: false
-        });
+        const { error } = await this.supabase.from('playscanner_cache').upsert(
+          {
+            cache_key: cacheKey,
+            city: city.toLowerCase(),
+            date,
+            slots,
+            metadata,
+            expires_at: expiresAt.toISOString(),
+          },
+          {
+            onConflict: 'cache_key',
+            ignoreDuplicates: false,
+          }
+        );
 
         if (!error) {
           break;
         }
 
         if (error.code === '23505' && retryCount < maxRetries - 1) {
-          console.warn(`Duplicate key conflict for ${cacheKey}, retrying... (${retryCount + 1}/${maxRetries})`);
+          console.warn(
+            `Duplicate key conflict for ${cacheKey}, retrying... (${retryCount + 1}/${maxRetries})`
+          );
           retryCount++;
-          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1000 * retryCount)
+          );
           continue;
         }
 

@@ -32,9 +32,13 @@ export async function POST(request: NextRequest) {
     const productionCollector = new ProductionCollector();
     const collectionResult = await Promise.race([
       productionCollector.collectWithIntelligence(),
-      new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error('Collection timeout - serverless function limit')), 25000)
-      )
+      new Promise<never>((_, reject) =>
+        setTimeout(
+          () =>
+            reject(new Error('Collection timeout - serverless function limit')),
+          25000
+        )
+      ),
     ]);
 
     // Cache updates are handled within the collector now
