@@ -93,12 +93,14 @@ export function VideoUpload({
           const metadata = await extractVideoMetadata(file);
 
           // Generate thumbnail
-          const thumbnail = await generateVideoThumbnail(file);
+          const thumbnail = await generateVideoThumbnail(file, userId);
 
           // Update with metadata and thumbnail
           setUploadingVideos((prev) =>
             prev.map((v) =>
-              v.file === file ? { ...v, metadata, thumbnail, progress: 25 } : v
+              v.file === file
+                ? { ...v, metadata, thumbnail: thumbnail || '', progress: 25 }
+                : v
             )
           );
 
@@ -122,7 +124,7 @@ export function VideoUpload({
             // Notify parent component
             onVideoUploaded({
               url: uploadResult.url,
-              thumbnail,
+              thumbnail: thumbnail || '',
               duration: metadata.duration,
               size: metadata.size,
               format: metadata.format,

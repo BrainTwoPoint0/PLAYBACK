@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getPublicProfileByUsername } from '@/lib/profile/utils';
+import { getPublicHighlights, type Highlight } from '@/lib/highlights/utils';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { Button } from '@/components/ui/button';
 import { AvatarDisplay } from '@/components/avatar/avatar-upload';
+import { VideoPlayer } from '@/components/video/video-player';
 import {
   User,
   Trophy,
@@ -23,11 +25,17 @@ import {
   Crown,
   ExternalLink,
   Calendar as CalendarIcon,
+  Play,
+  Film,
+  Eye,
+  Clock,
+  Grid3X3,
 } from 'lucide-react';
 
 // Types
 interface ProfileData {
   id: string;
+  user_id: string;
   username: string;
   full_name: string;
   bio: string | null;
@@ -217,12 +225,238 @@ function ShareProfile({ username }: { username: string }) {
   );
 }
 
+// Public Highlights Component
+function PublicHighlights({ userId }: { userId: string }) {
+  const [highlights, setHighlights] = useState<Highlight[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [playingVideo, setPlayingVideo] = useState<string | null>(null);
+  const videoRefs = useRef<{ [key: string]: HTMLVideoElement | null }>({});
+
+  const handlePlayVideo = async (highlightId: string) => {
+    console.log('Attempting to play video:', highlightId);
+
+    // Pause any currently playing video
+    if (playingVideo && videoRefs.current[playingVideo]) {
+      videoRefs.current[playingVideo]?.pause();
+    }
+
+    // Start playing the new video
+    setPlayingVideo(highlightId);
+
+    // Wait for the next tick and try to play
+    setTimeout(async () => {
+      const video = videoRefs.current[highlightId];
+      if (video) {
+        try {
+          await video.play();
+          console.log('Video started playing successfully');
+        } catch (error) {
+          console.error('Failed to play video:', error);
+        }
+      }
+    }, 100);
+  };
+
+  useEffect(() => {
+    const loadHighlights = async () => {
+      try {
+        setLoading(true);
+        const result = await getPublicHighlights(userId);
+        if (result.data) {
+          setHighlights(result.data);
+        }
+      } catch (error) {
+        console.error('Failed to load highlights:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadHighlights();
+  }, [userId]);
+
+  if (loading) {
+    return (
+      <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-6">
+        <div className="flex items-center gap-2 mb-6">
+          <Film className="h-5 w-5 text-purple-400" />
+          <h2
+            className="text-xl font-bold"
+            style={{ color: 'var(--timberwolf)' }}
+          >
+            Highlights
+          </h2>
+        </div>
+        <div className="flex items-center justify-center py-8">
+          <LoadingSpinner size="md" />
+        </div>
+      </div>
+    );
+  }
+
+  if (highlights.length === 0) {
+    return (
+      <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-6">
+        <div className="flex items-center gap-2 mb-6">
+          <Film className="h-5 w-5 text-purple-400" />
+          <h2
+            className="text-xl font-bold"
+            style={{ color: 'var(--timberwolf)' }}
+          >
+            Highlights
+          </h2>
+        </div>
+        <div className="text-center py-8">
+          <Film
+            className="h-12 w-12 mx-auto mb-3"
+            style={{ color: 'var(--ash-grey)' }}
+          />
+          <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
+            No public highlights available
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <Film className="h-5 w-5 text-purple-400" />
+          <h2
+            className="text-xl font-bold"
+            style={{ color: 'var(--timberwolf)' }}
+          >
+            Highlights
+          </h2>
+          <span className="text-sm bg-purple-400/10 text-purple-400 px-2 py-1 rounded-full">
+            {highlights.length}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs hover:bg-neutral-800"
+            style={{ color: 'var(--ash-grey)' }}
+          >
+            <Grid3X3 className="h-3 w-3 mr-1" />
+            Grid View
+          </Button>
+        </div>
+      </div>
+
+      {/* Highlights Grid - Much Larger */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {highlights.map((highlight) => (
+          <div
+            key={highlight.id}
+            className="group relative aspect-video bg-neutral-800/50 rounded-xl overflow-hidden hover:ring-2 hover:ring-purple-400/50 transition-all duration-300"
+          >
+            {/* Direct Video Implementation */}
+            {highlight.video_url ? (
+              <video
+                ref={(el) => {
+                  videoRefs.current[highlight.id] = el;
+                }}
+                key={highlight.id}
+                className="w-full h-full object-cover rounded-xl"
+                poster={highlight.thumbnail_url || undefined}
+                controls={playingVideo === highlight.id}
+                preload="metadata"
+                playsInline
+                muted={playingVideo !== highlight.id}
+                onPlay={() => setPlayingVideo(highlight.id)}
+                onPause={() => setPlayingVideo(null)}
+                onEnded={() => setPlayingVideo(null)}
+                onLoadStart={() =>
+                  console.log('Video loading started:', highlight.title)
+                }
+                onLoadedData={() =>
+                  console.log('Video loaded:', highlight.title)
+                }
+                onError={(e) =>
+                  console.error('Video error:', e, highlight.video_url)
+                }
+              >
+                <source src={highlight.video_url} type="video/mp4" />
+                <source src={highlight.video_url} type="video/webm" />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-neutral-800 rounded-xl">
+                <div className="text-center text-neutral-400">
+                  <Film className="h-8 w-8 mx-auto mb-2" />
+                  <p className="text-sm">Video not available</p>
+                </div>
+              </div>
+            )}
+
+            {/* Overlay Info */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl">
+              <div className="absolute bottom-3 left-3 right-3">
+                <h3 className="text-white text-sm font-medium truncate mb-2">
+                  {highlight.title}
+                </h3>
+                <div className="flex items-center gap-3 text-xs text-white/80">
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    <span>
+                      {highlight.duration
+                        ? Math.floor(highlight.duration / 60) +
+                          ':' +
+                          String(highlight.duration % 60).padStart(2, '0')
+                        : '0:00'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Eye className="h-3 w-3" />
+                    <span>{highlight.views || 0}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Play Button Overlay - Only show when not playing */}
+            {playingVideo !== highlight.id && highlight.video_url && (
+              <div
+                className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors duration-300 rounded-xl cursor-pointer"
+                onClick={() => handlePlayVideo(highlight.id)}
+              >
+                <div className="w-16 h-16 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Play className="h-8 w-8 text-white ml-0.5" />
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Show All Button */}
+      {highlights.length > 8 && (
+        <div className="text-center mt-6">
+          <Button
+            variant="outline"
+            className="border-neutral-600 hover:bg-neutral-800"
+            style={{ color: 'var(--ash-grey)' }}
+          >
+            View All Highlights ({highlights.length})
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PublicProfilePage() {
   const params = useParams();
   const router = useRouter();
   const username = params.username as string;
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [highlightsCount, setHighlightsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -249,6 +483,14 @@ export default function PublicProfilePage() {
       }
 
       setProfile(result.data as ProfileData);
+
+      // Load highlights count
+      const highlightsResult = await getPublicHighlights(
+        result.data.user_id || ''
+      );
+      if (highlightsResult.data) {
+        setHighlightsCount(highlightsResult.data.length);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load profile');
     } finally {
@@ -323,66 +565,45 @@ export default function PublicProfilePage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--night)' }}>
-      {/* Header */}
-      <div className="bg-neutral-900/50 border-b border-neutral-700">
-        <div className="container mx-auto px-4 py-6 max-w-6xl">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.back()}
-              className="flex items-center gap-2 hover:bg-neutral-800"
-              style={{ color: 'var(--ash-grey)' }}
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </Button>
-
-            <ShareProfile username={profile.username} />
-          </div>
-        </div>
-      </div>
-
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-4 md:py-8 max-w-6xl">
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
           {/* Profile Header */}
           <div className="lg:col-span-3">
             <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-4 md:p-8">
-              <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6">
-                {/* Avatar */}
-                <div className="flex-shrink-0">
+              <div className="flex flex-col md:flex-row gap-6">
+                {/* Left Column - Avatar */}
+                <div className="flex-shrink-0 flex justify-center md:justify-start">
                   <AvatarDisplay
                     avatarUrl={profile.avatar_url}
                     fullName={profile.full_name}
-                    size="xl"
+                    size="3xl"
                     className="shadow-lg"
                   />
                 </div>
 
-                {/* Profile Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h1
-                      className="text-3xl font-bold"
-                      style={{ color: 'var(--timberwolf)' }}
-                    >
-                      {profile.full_name}
-                    </h1>
-                    {profile.is_verified && (
-                      <CheckCircle className="h-6 w-6 text-blue-400" />
-                    )}
+                {/* Right Column - Profile Info */}
+                <div className="flex-1 min-w-0 space-y-4">
+                  {/* Name and Username */}
+                  <div className="text-center md:text-left">
+                    <div className="flex items-center gap-3 justify-center md:justify-start mb-2">
+                      <h1
+                        className="text-3xl font-bold"
+                        style={{ color: 'var(--timberwolf)' }}
+                      >
+                        {profile.full_name}
+                      </h1>
+                      {profile.is_verified && (
+                        <CheckCircle className="h-6 w-6 text-blue-400" />
+                      )}
+                    </div>
+                    <p className="text-lg" style={{ color: 'var(--ash-grey)' }}>
+                      @{profile.username}
+                    </p>
                   </div>
 
-                  <p
-                    className="text-lg mb-4"
-                    style={{ color: 'var(--ash-grey)' }}
-                  >
-                    @{profile.username}
-                  </p>
-
-                  {/* Profile Stats */}
-                  <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 mb-4">
+                  {/* Profile Stats - Sports, Location, Date Joined */}
+                  <div className="flex flex-row sm:flex-wrap gap-2 sm:gap-4 justify-center md:justify-start">
                     {profile.user_sports.length > 0 && (
                       <div className="flex items-center gap-2">
                         <Trophy className="h-4 w-4 text-green-400" />
@@ -422,12 +643,17 @@ export default function PublicProfilePage() {
                   {/* Bio */}
                   {profile.bio && (
                     <p
-                      className="text-base leading-relaxed"
+                      className="text-base leading-relaxed text-center md:text-left"
                       style={{ color: 'var(--ash-grey)' }}
                     >
                       {profile.bio}
                     </p>
                   )}
+
+                  {/* Share Profile Button */}
+                  <div className="flex justify-center md:justify-start">
+                    <ShareProfile username={profile.username} />
+                  </div>
                 </div>
               </div>
             </div>
@@ -435,7 +661,7 @@ export default function PublicProfilePage() {
 
           {/* Sports Section */}
           <div className="lg:col-span-2">
-            <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-6">
+            <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-6 mb-6">
               <h2
                 className="text-xl font-bold mb-6 flex items-center gap-2"
                 style={{ color: 'var(--timberwolf)' }}
@@ -462,6 +688,9 @@ export default function PublicProfilePage() {
                 </div>
               )}
             </div>
+
+            {/* Highlights Section */}
+            <PublicHighlights userId={profile.user_id} />
           </div>
 
           {/* Contact & Social */}
@@ -583,7 +812,7 @@ export default function PublicProfilePage() {
                     Highlights
                   </span>
                   <span className="text-sm font-medium text-purple-400">
-                    Coming Soon
+                    {highlightsCount}
                   </span>
                 </div>
               </div>

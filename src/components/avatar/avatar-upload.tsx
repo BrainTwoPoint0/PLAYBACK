@@ -338,7 +338,7 @@ export function AvatarDisplay({
 }: {
   avatarUrl?: string | null;
   fullName: string;
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl';
   className?: string;
 }) {
   const sizeClasses = {
@@ -347,6 +347,9 @@ export function AvatarDisplay({
     md: 'w-12 h-12',
     lg: 'w-16 h-16',
     xl: 'w-24 h-24',
+    '2xl': 'w-32 h-32',
+    '3xl': 'w-40 h-40',
+    '4xl': 'w-48 h-48',
   };
 
   const displayUrl = getOptimizedAvatarUrl(avatarUrl, fullName, 200);

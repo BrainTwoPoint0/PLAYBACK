@@ -195,6 +195,7 @@ export async function getPublicProfileByUsername(username: string) {
       .select(
         `
         id,
+        user_id,
         username,
         full_name,
         bio,

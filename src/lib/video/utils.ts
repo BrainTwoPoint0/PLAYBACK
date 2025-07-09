@@ -129,9 +129,104 @@ export function extractVideoMetadata(file: File): Promise<VideoMetadata> {
 }
 
 /**
- * Generate video thumbnail
+ * Generate video thumbnail and upload to storage
  */
-export function generateVideoThumbnail(
+export async function generateVideoThumbnail(
+  file: File,
+  userId: string,
+  timeInSeconds = 1
+): Promise<string | null> {
+  try {
+    console.log('Starting thumbnail generation for:', file.name);
+
+    // Generate thumbnail as blob
+    const thumbnailBlob = await new Promise<Blob>((resolve, reject) => {
+      const video = document.createElement('video');
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      video.onloadedmetadata = () => {
+        console.log('Video metadata loaded:', {
+          width: video.videoWidth,
+          height: video.videoHeight,
+          duration: video.duration,
+        });
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        video.currentTime = Math.min(timeInSeconds, video.duration / 2);
+      };
+
+      video.onseeked = () => {
+        console.log('Video seeked to:', video.currentTime);
+
+        if (ctx) {
+          ctx.drawImage(video, 0, 0);
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                console.log('Thumbnail blob created:', blob.size, 'bytes');
+                resolve(blob);
+              } else {
+                console.error('Failed to create thumbnail blob');
+                reject(new Error('Failed to create thumbnail blob'));
+              }
+            },
+            'image/jpeg',
+            0.8
+          );
+        } else {
+          console.error('Failed to create canvas context');
+          reject(new Error('Failed to create canvas context'));
+        }
+      };
+
+      video.onerror = (e) => {
+        console.error('Video error during thumbnail generation:', e);
+        reject(new Error('Failed to load video for thumbnail'));
+      };
+
+      video.src = URL.createObjectURL(file);
+      console.log('Video element created with src');
+    });
+
+    console.log('Uploading thumbnail to storage...');
+
+    // Upload thumbnail to storage
+    const supabase = createClient();
+    const fileName = `${userId}/thumbnails/${Date.now()}.jpg`;
+
+    const { data, error } = await supabase.storage
+      .from('playback-highlights')
+      .upload(fileName, thumbnailBlob, {
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (error) {
+      console.error('Failed to upload thumbnail:', error);
+      return null;
+    }
+
+    console.log('Thumbnail uploaded successfully:', fileName);
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('playback-highlights')
+      .getPublicUrl(fileName);
+
+    console.log('Thumbnail public URL:', urlData.publicUrl);
+    return urlData.publicUrl;
+  } catch (error) {
+    console.error('Failed to generate thumbnail:', error);
+    return null;
+  }
+}
+
+/**
+ * Generate video thumbnail as data URL (for preview only)
+ */
+export function generateVideoThumbnailPreview(
   file: File,
   timeInSeconds = 1
 ): Promise<string> {

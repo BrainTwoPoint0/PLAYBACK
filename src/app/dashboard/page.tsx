@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { AvatarDisplay } from '@/components/avatar/avatar-upload';
 import { getUserHighlights } from '@/lib/highlights/utils';
-import { getUserStatistics } from '@/lib/stats/utils';
 import {
   User,
   Mail,
@@ -24,7 +23,6 @@ import {
   ExternalLink,
   Edit3,
   Share2,
-  BarChart3,
   Target,
   Zap,
   Crown,
@@ -93,7 +91,6 @@ function DashboardContent() {
   const { profile, refreshProfile } = useProfile();
   const onboardingStatus = useOnboardingStatus();
   const [highlightsCount, setHighlightsCount] = useState(0);
-  const [statsCount, setStatsCount] = useState(0);
   const [loadingCounts, setLoadingCounts] = useState(true);
 
   const handleSignOut = async () => {
@@ -114,17 +111,10 @@ function DashboardContent() {
 
       setLoadingCounts(true);
       try {
-        const [highlightsResult, statsResult] = await Promise.all([
-          getUserHighlights(user.id),
-          getUserStatistics(user.id),
-        ]);
+        const highlightsResult = await getUserHighlights(user.id);
 
         if (highlightsResult.data && !highlightsResult.error) {
           setHighlightsCount(highlightsResult.data.length);
-        }
-
-        if (statsResult.data && !statsResult.error) {
-          setStatsCount(statsResult.data.length);
         }
       } catch (error) {
         console.error('Error fetching counts:', error);
@@ -284,81 +274,92 @@ function DashboardContent() {
               </div>
 
               <div className="relative z-10">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="flex items-center gap-6">
-                    <div className="relative">
-                      <AvatarDisplay
-                        avatarUrl={profile.data?.avatar_url}
-                        fullName={profile.data?.full_name || 'User'}
-                        size="xl"
-                        className="ring-4 ring-neutral-700/50"
-                      />
+                {/* Profile Content */}
+                <div className="flex items-start gap-8 mb-6">
+                  {/* Left Column - Profile Picture */}
+                  <div className="relative flex-shrink-0">
+                    <AvatarDisplay
+                      avatarUrl={profile.data?.avatar_url}
+                      fullName={profile.data?.full_name || 'User'}
+                      size="3xl"
+                      className="ring-4 ring-neutral-700/50"
+                    />
+                    {profile.data?.is_verified && (
+                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                        <CheckCircle className="h-4 w-4 text-white" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Column - Profile Info */}
+                  <div className="flex-1 min-w-0 space-y-4">
+                    {/* Row 1: Name */}
+                    <div className="flex items-center gap-3">
+                      <h2
+                        className="text-2xl font-bold"
+                        style={{ color: 'var(--timberwolf)' }}
+                      >
+                        {profile.data?.full_name || 'Your Name'}
+                      </h2>
                       {profile.data?.is_verified && (
-                        <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                          <CheckCircle className="h-4 w-4 text-white" />
-                        </div>
+                        <Crown className="h-5 w-5 text-yellow-400" />
                       )}
                     </div>
 
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <h2
-                          className="text-2xl font-bold"
-                          style={{ color: 'var(--timberwolf)' }}
-                        >
-                          {profile.data?.full_name || 'Your Name'}
-                        </h2>
-                        {profile.data?.is_verified && (
-                          <Crown className="h-5 w-5 text-yellow-400" />
-                        )}
-                      </div>
-                      {profile.data?.username && (
+                    {/* Row 2: Username */}
+                    {profile.data?.username && (
+                      <div>
                         <p
-                          className="text-sm mb-3"
+                          className="text-sm"
                           style={{ color: 'var(--ash-grey)' }}
                         >
                           @{profile.data.username}
                         </p>
-                      )}
-                      {profile.data?.bio && (
+                      </div>
+                    )}
+
+                    {/* Row 3: Bio */}
+                    {profile.data?.bio && (
+                      <div>
                         <p
-                          className="text-sm leading-relaxed max-w-md"
+                          className="text-sm leading-relaxed"
                           style={{ color: 'var(--ash-grey)' }}
                         >
                           {profile.data.bio}
                         </p>
-                      )}
-                    </div>
-                  </div>
+                      </div>
+                    )}
 
-                  <div className="flex items-center gap-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-neutral-600 hover:bg-neutral-800/50 group"
-                      onClick={() =>
-                        window.open(
-                          `/profile/${profile.data?.username}`,
-                          '_blank'
-                        )
-                      }
-                    >
-                      <Share2
-                        className="h-4 w-4 mr-2"
-                        style={{ color: 'var(--ash-grey)' }}
-                      />
-                      <span style={{ color: 'var(--ash-grey)' }}>
-                        View Public
-                      </span>
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white group"
-                      onClick={() => (window.location.href = '/profile/edit')}
-                    >
-                      <Edit3 className="h-4 w-4 mr-2" />
-                      Edit Profile
-                    </Button>
+                    {/* Row 4: Action Buttons */}
+                    <div className="flex items-center gap-3 pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-neutral-600 hover:bg-neutral-800/50 group"
+                        onClick={() =>
+                          window.open(
+                            `/profile/${profile.data?.username}`,
+                            '_blank'
+                          )
+                        }
+                      >
+                        <Share2
+                          className="h-4 w-4 mr-2"
+                          style={{ color: 'var(--ash-grey)' }}
+                        />
+                        <span style={{ color: 'var(--ash-grey)' }}>
+                          View Public
+                        </span>
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white group"
+                        onClick={() => (window.location.href = '/profile/edit')}
+                      >
+                        <Edit3 className="h-4 w-4 mr-2" />
+                        Edit Profile
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
@@ -382,10 +383,10 @@ function DashboardContent() {
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
-                      {loadingCounts ? '...' : statsCount}
+                      247
                     </p>
                     <p className="text-xs" style={{ color: 'var(--ash-grey)' }}>
-                      Statistics
+                      Network
                     </p>
                   </div>
                 </div>
@@ -497,20 +498,6 @@ function DashboardContent() {
                     Upload Highlight
                   </span>
                   <ChevronRight className="h-4 w-4 ml-auto text-neutral-600 group-hover:text-purple-400" />
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start bg-neutral-800/30 hover:bg-neutral-800/50 border border-neutral-700/50 hover:border-neutral-600/50 transition-all duration-300 group"
-                  onClick={() =>
-                    (window.location.href = '/highlights?tab=stats')
-                  }
-                >
-                  <BarChart3 className="h-4 w-4 mr-3 text-blue-400" />
-                  <span style={{ color: 'var(--timberwolf)' }}>
-                    Add Statistics
-                  </span>
-                  <ChevronRight className="h-4 w-4 ml-auto text-neutral-600 group-hover:text-blue-400" />
                 </Button>
 
                 <Button

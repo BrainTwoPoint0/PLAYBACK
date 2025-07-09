@@ -117,6 +117,12 @@ function HighlightCard({
           onPause={onPause}
           className="w-full h-full"
         />
+        {/* Debug: Show thumbnail URL in development */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="absolute top-2 left-2 bg-black/80 text-white text-xs p-1 rounded max-w-xs truncate">
+            Thumbnail: {highlight.thumbnail_url || 'No thumbnail'}
+          </div>
+        )}
       </div>
 
       {/* Content */}

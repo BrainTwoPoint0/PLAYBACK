@@ -26,6 +26,7 @@ import {
   Plus,
   Trash2,
 } from 'lucide-react';
+import { ProfileHeader } from '@/components/profile/profile-header';
 import { useRouter } from 'next/navigation';
 import {
   updateProfileBasicInfo,
@@ -1298,77 +1299,59 @@ function ProfileEditContent() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--night)' }}>
-      {/* Page Header - Simple */}
       <div className="container mx-auto px-4 pt-6 pb-4 max-w-6xl">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleBackToDashboard}
-              className="flex items-center gap-2 hover:bg-neutral-800/50"
-              style={{ color: 'var(--ash-grey)' }}
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Dashboard
-            </Button>
-            <div className="h-6 w-px bg-neutral-600" />
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
-                Edit Profile
-              </h1>
-              <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
-                Update your PLAYBACK profile information
-              </p>
+        <ProfileHeader
+          title="Edit Profile"
+          description="Update your PLAYBACK profile information"
+          backTo="/dashboard"
+          backLabel="Back to Dashboard"
+          gradient="from-green-400 to-blue-400"
+        />
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3 mb-6">
+          {saveSuccess && (
+            <div className="flex items-center gap-2 text-sm text-green-400 bg-green-900/20 px-3 py-2 rounded-lg border border-green-800">
+              <CheckCircle className="h-4 w-4" />
+              Changes saved
             </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-3">
-            {saveSuccess && (
-              <div className="flex items-center gap-2 text-sm text-green-400 bg-green-900/20 px-3 py-2 rounded-lg border border-green-800">
-                <CheckCircle className="h-4 w-4" />
-                Changes saved
-              </div>
+          )}
+          {hasUnsavedChanges && !saveSuccess && (
+            <div className="flex items-center gap-2 text-sm text-orange-400 bg-orange-900/20 px-3 py-2 rounded-lg border border-orange-800">
+              <AlertCircle className="h-4 w-4" />
+              Unsaved changes
+            </div>
+          )}
+          <Button
+            variant="outline"
+            onClick={handleBackToDashboard}
+            disabled={saving}
+            className="flex items-center gap-2 border-neutral-600 hover:bg-neutral-800"
+            style={{ color: 'var(--ash-grey)' }}
+          >
+            <X className="h-4 w-4" />
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSaveChanges}
+            disabled={!hasUnsavedChanges || saving}
+            className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white"
+          >
+            {saving ? (
+              <>
+                <LoadingSpinner size="sm" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4" />
+                Save Changes
+              </>
             )}
-            {hasUnsavedChanges && !saveSuccess && (
-              <div className="flex items-center gap-2 text-sm text-orange-400 bg-orange-900/20 px-3 py-2 rounded-lg border border-orange-800">
-                <AlertCircle className="h-4 w-4" />
-                Unsaved changes
-              </div>
-            )}
-            <Button
-              variant="outline"
-              onClick={handleBackToDashboard}
-              disabled={saving}
-              className="flex items-center gap-2 border-neutral-600 hover:bg-neutral-800"
-              style={{ color: 'var(--ash-grey)' }}
-            >
-              <X className="h-4 w-4" />
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSaveChanges}
-              disabled={!hasUnsavedChanges || saving}
-              className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white"
-            >
-              {saving ? (
-                <>
-                  <LoadingSpinner size="sm" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4" />
-                  Save Changes
-                </>
-              )}
-            </Button>
-          </div>
+          </Button>
         </div>
       </div>
-
       {/* Main Content */}
+
       <div className="container mx-auto px-4 pb-8 max-w-6xl">
         {/* Error Display */}
         {saveError && (
