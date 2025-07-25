@@ -179,25 +179,27 @@ export default function SearchResults({
 
                 {/* Court/Pitch Details */}
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {slot.features.surface && (
+                  {slot.features?.surface && (
                     <Badge variant="secondary" className="text-xs">
                       {slot.features.surface.toUpperCase()}
                     </Badge>
                   )}
 
                   {/* Sport-specific metadata */}
-                  {sport === 'padel' && 'courtType' in slot.sportMeta && (
-                    <Badge variant="secondary" className="text-xs">
-                      {slot.sportMeta.courtType.toUpperCase()}
-                    </Badge>
-                  )}
+                  {sport === 'padel' &&
+                    slot.sportMeta &&
+                    'courtType' in slot.sportMeta && (
+                      <Badge variant="secondary" className="text-xs">
+                        {slot.sportMeta.courtType.toUpperCase()}
+                      </Badge>
+                    )}
                 </div>
 
                 {/* Availability */}
                 <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
                   <div>
-                    {slot.availability.spotsAvailable} of{' '}
-                    {slot.availability.totalSpots} spots available
+                    {slot.availability?.spotsAvailable || 0} of{' '}
+                    {slot.availability?.totalSpots || 0} spots available
                   </div>
                   <div>
                     Updated {new Date(slot.lastUpdated).toLocaleString()}
