@@ -50,6 +50,12 @@ export interface Venue {
     postcode: string;
     coordinates: { lat: number; lng: number };
   };
+  // Alternative address structure for compatibility
+  address?: {
+    city: string;
+    postcode?: string;
+    street?: string;
+  };
   amenities: string[];
   images: string[];
   rating?: number;

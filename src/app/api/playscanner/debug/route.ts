@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PlaytomicProvider } from '@/lib/playscanner/providers/playtomic';
 
 /**
  * Debug endpoint to test PLAYScanner components
@@ -21,81 +20,25 @@ export async function GET(request: NextRequest) {
         });
 
       case 'provider':
-        const provider = new PlaytomicProvider();
-        const healthStatus = await provider.healthCheck();
         return NextResponse.json({
-          status: 'success',
-          message: 'Provider health check completed',
-          healthStatus,
-          providerName: provider.name,
+          status: 'disabled',
+          message: 'Provider testing disabled - now using cached data only',
           timestamp: new Date().toISOString(),
         });
 
       case 'simple-search':
-        const simpleProvider = new PlaytomicProvider();
-        const testParams = {
-          sport: 'padel' as const,
-          location: 'London',
-          date: '2025-07-07',
-        };
-
-        // Test with a very short timeout to avoid hanging
-        const startTime = Date.now();
-        try {
-          const results = await Promise.race([
-            simpleProvider.fetchAvailability(testParams),
-            new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error('Test timeout')), 10000)
-            ),
-          ]);
-
-          return NextResponse.json({
-            status: 'success',
-            message: 'Simple search completed',
-            resultsCount: results.length,
-            searchTime: Date.now() - startTime,
-            timestamp: new Date().toISOString(),
-          });
-        } catch (error) {
-          return NextResponse.json({
-            status: 'error',
-            message: 'Simple search failed',
-            error: (error as Error).message,
-            errorType: (error as Error).constructor.name,
-            searchTime: Date.now() - startTime,
-            timestamp: new Date().toISOString(),
-          });
-        }
+        return NextResponse.json({
+          status: 'disabled',
+          message: 'Simple search disabled - now using cached data only',
+          timestamp: new Date().toISOString(),
+        });
 
       case 'venue-search':
-        const venueProvider = new PlaytomicProvider();
-        try {
-          // Test just the venue search part
-          const baseUrl = 'https://playtomic.com';
-          const searchMethod = (venueProvider as any).searchVenues;
-          const venues = await Promise.race([
-            searchMethod.call(venueProvider, baseUrl, 'London'),
-            new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error('Venue search timeout')), 8000)
-            ),
-          ]);
-
-          return NextResponse.json({
-            status: 'success',
-            message: 'Venue search completed',
-            venueCount: venues?.length || 0,
-            venues: venues?.slice(0, 3) || [], // First 3 venues for testing
-            timestamp: new Date().toISOString(),
-          });
-        } catch (error) {
-          return NextResponse.json({
-            status: 'error',
-            message: 'Venue search failed',
-            error: (error as Error).message,
-            errorType: (error as Error).constructor.name,
-            timestamp: new Date().toISOString(),
-          });
-        }
+        return NextResponse.json({
+          status: 'disabled',
+          message: 'Venue search disabled - now using cached data only',
+          timestamp: new Date().toISOString(),
+        });
 
       case 'api-test':
         try {
@@ -232,84 +175,11 @@ export async function GET(request: NextRequest) {
         }
 
       case 'full-search-debug':
-        try {
-          // Test the EXACT same logic as the full search but with detailed logging
-          const debugProvider = new PlaytomicProvider();
-          const testParams = {
-            sport: 'padel' as const,
-            location: 'London',
-            date: '2025-07-07',
-          };
-
-          const startTime = Date.now();
-          const baseUrl = 'https://playtomic.com';
-
-          // Step 1: Get venues (we know this works)
-          const searchMethod = (debugProvider as any).searchVenues;
-          const venues = await searchMethod.call(
-            debugProvider,
-            baseUrl,
-            'London'
-          );
-
-          if (!venues || venues.length === 0) {
-            return NextResponse.json({
-              status: 'error',
-              message: 'No venues found',
-              step: 'venue-search',
-              timestamp: new Date().toISOString(),
-            });
-          }
-
-          // Step 2: Test with just the FIRST venue (reduce complexity)
-          const firstVenue = venues[0];
-          const fetchMethod = (debugProvider as any).fetchRealAvailability;
-
-          try {
-            const slots = await fetchMethod.call(
-              debugProvider,
-              firstVenue,
-              testParams
-            );
-
-            return NextResponse.json({
-              status: 'success',
-              message: 'Full search debug successful',
-              venue: {
-                id: firstVenue.id,
-                name: firstVenue.name,
-                tenantId: firstVenue._raw?.tenant_id,
-              },
-              slotsCount: slots.length,
-              sampleSlots: slots.slice(0, 3),
-              searchTime: Date.now() - startTime,
-              timestamp: new Date().toISOString(),
-            });
-          } catch (availabilityError) {
-            return NextResponse.json({
-              status: 'error',
-              message: 'Availability fetch failed',
-              step: 'availability-fetch',
-              error: (availabilityError as Error).message,
-              errorType: (availabilityError as Error).constructor.name,
-              venue: {
-                id: firstVenue.id,
-                name: firstVenue.name,
-                tenantId: firstVenue._raw?.tenant_id,
-              },
-              timestamp: new Date().toISOString(),
-            });
-          }
-        } catch (error) {
-          return NextResponse.json({
-            status: 'error',
-            message: 'Full search debug failed',
-            step: 'overall',
-            error: (error as Error).message,
-            errorType: (error as Error).constructor.name,
-            timestamp: new Date().toISOString(),
-          });
-        }
+        return NextResponse.json({
+          status: 'disabled',
+          message: 'Full search debug disabled - now using cached data only',
+          timestamp: new Date().toISOString(),
+        });
 
       case 'debug-search':
         return NextResponse.json({
@@ -332,13 +202,9 @@ export async function GET(request: NextRequest) {
             message: 'Unknown test type',
             availableTests: [
               'basic',
-              'provider',
-              'simple-search',
-              'venue-search',
               'api-test',
               'headers',
               'availability-test',
-              'full-search-debug',
             ],
           },
           { status: 400 }
