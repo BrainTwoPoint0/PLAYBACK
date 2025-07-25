@@ -94,8 +94,21 @@ export class PersistentCacheService {
         };
       }
 
-      // Apply filters to cached data
-      let filteredSlots = cachedSlots;
+      // Transform raw cached data to CourtSlot format
+      const transformedSlots = cachedSlots.map((slot) => {
+        // If the slot is already transformed (has bookingUrl), return as-is
+        if (slot.bookingUrl) {
+          return slot;
+        }
+        // Otherwise, transform from raw Lambda format
+        return this.transformLambdaSlot(
+          slot,
+          slot.lastUpdated || new Date().toISOString()
+        );
+      });
+
+      // Apply filters to transformed data
+      let filteredSlots = transformedSlots;
 
       // Filter by time range
       if (params.startTime) {
@@ -513,6 +526,72 @@ export class PersistentCacheService {
       console.error('getCollectionSuccessRate error:', error);
       return 0;
     }
+  }
+  /**
+   * Transform lambda slot format to frontend CourtSlot format
+   */
+  private transformLambdaSlot(
+    slot: any,
+    collectionTimestamp?: string
+  ): CourtSlot {
+    // Handle different venue address formats
+    const venueCity =
+      slot.venue?.address?.city || slot.venue?.location?.city || 'London';
+    const venueAddress = slot.venue?.address || slot.venue?.location || {};
+
+    return {
+      id: `${slot.venue?.id}-${slot.court?.id || 'court'}-${slot.startTime}-${slot.endTime}`,
+      sport: 'padel' as const,
+      provider: 'playtomic' as const,
+      venue: {
+        id: slot.venue?.id || '',
+        name: slot.venue?.name || 'Unknown Venue',
+        provider: 'playtomic' as const,
+        location: {
+          address: venueAddress.street || venueAddress.address || '',
+          city: venueCity,
+          postcode: venueAddress.postal_code || venueAddress.postcode || '',
+          coordinates: {
+            lat: venueAddress.coordinate?.lat || slot.venue?.latitude || 0,
+            lng: venueAddress.coordinate?.lon || slot.venue?.longitude || 0,
+          },
+        },
+        // Add address field for compatibility
+        address: {
+          city: venueCity,
+          postcode: venueAddress.postal_code || venueAddress.postcode || '',
+          street: venueAddress.street || venueAddress.address || '',
+        },
+        amenities: [],
+        images: [],
+        contact: {},
+        _raw: slot.venue,
+      },
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+      duration: slot.duration || 90,
+      price: slot.price || 0,
+      currency: slot.currency || 'GBP',
+      bookingUrl: slot.link || `https://playtomic.com/venue/${slot.venue?.id}`,
+      availability: {
+        spotsAvailable: slot.available ? 1 : 0,
+        totalSpots: 1,
+      },
+      features: {
+        indoor: slot.venue?.indoor || false,
+        lights: true,
+        surface:
+          slot.court?.surface === 'unknown'
+            ? 'artificial'
+            : slot.court?.surface || slot.venue?.surface || 'artificial',
+      },
+      sportMeta: {
+        courtType: slot.venue?.indoor ? 'indoor' : 'outdoor',
+        level: 'open',
+        doubles: true,
+      },
+      lastUpdated: collectionTimestamp || new Date().toISOString(),
+    };
   }
 }
 

@@ -27,6 +27,18 @@ export default function SearchForm({
   const today = getToday();
   const [date, setDate] = useState(today);
 
+  // Calculate max date (7 days from today)
+  const getMaxDate = () => {
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 6); // 6 days ahead (today + 6 = 7 days total)
+    const year = maxDate.getFullYear();
+    const month = String(maxDate.getMonth() + 1).padStart(2, '0');
+    const day = String(maxDate.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const maxDate = getMaxDate();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -74,6 +86,7 @@ export default function SearchForm({
           <DatePicker
             id="date"
             min={today}
+            max={maxDate}
             value={date}
             onChange={setDate}
             className="w-full sm:text-left text-center"

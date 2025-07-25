@@ -188,12 +188,52 @@ export async function GET(request: NextRequest) {
           timestamp: new Date().toISOString(),
         });
 
-      case 'cached-search':
-        return NextResponse.json({
-          status: 'disabled',
-          message: 'Cached search test disabled - use persistent cache instead',
-          timestamp: new Date().toISOString(),
-        });
+      case 'clear-cache':
+        try {
+          const { persistentCache } = await import(
+            '@/lib/playscanner/persistent-cache'
+          );
+
+          // Clear expired entries
+          const clearedCount = await persistentCache.cleanup();
+
+          return NextResponse.json({
+            status: 'success',
+            message: 'Cache cleanup completed',
+            clearedEntries: clearedCount,
+            timestamp: new Date().toISOString(),
+          });
+        } catch (error) {
+          return NextResponse.json({
+            status: 'error',
+            message: 'Cache cleanup failed',
+            error: (error as Error).message,
+            timestamp: new Date().toISOString(),
+          });
+        }
+
+      case 'cache-stats':
+        try {
+          const { persistentCache } = await import(
+            '@/lib/playscanner/persistent-cache'
+          );
+
+          const stats = await persistentCache.getCacheStats();
+
+          return NextResponse.json({
+            status: 'success',
+            message: 'Cache statistics',
+            stats,
+            timestamp: new Date().toISOString(),
+          });
+        } catch (error) {
+          return NextResponse.json({
+            status: 'error',
+            message: 'Failed to get cache stats',
+            error: (error as Error).message,
+            timestamp: new Date().toISOString(),
+          });
+        }
 
       default:
         return NextResponse.json(
@@ -205,6 +245,8 @@ export async function GET(request: NextRequest) {
               'api-test',
               'headers',
               'availability-test',
+              'clear-cache',
+              'cache-stats',
             ],
           },
           { status: 400 }

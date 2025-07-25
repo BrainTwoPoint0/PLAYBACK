@@ -104,7 +104,7 @@ class PlaytomicProvider {
     const searchParams = new URLSearchParams({
       coordinate: `${coordinates.lat},${coordinates.lng}`,
       sport_id: 'PADEL',
-      radius: '50000', // 50km radius
+      radius: '25000', // 25km radius to limit to Greater London area
     });
 
     try {
@@ -116,8 +116,26 @@ class PlaytomicProvider {
         return [];
       }
 
+      // Filter to only include London venues using Playtomic's own location data
+      const londonVenues = data.filter((venue) => {
+        const city = venue.address?.city;
+
+        // Only include venues that are explicitly in London city
+        // Exclude outer areas like Purley, Epsom, Romford even if they're in Greater London
+        return (
+          city === 'London' ||
+          city === 'Лондон' || // Russian translation
+          city === 'Londra' || // Italian/Turkish translation
+          city === 'Londres' // French/Spanish translation
+        );
+      });
+
+      console.log(
+        `🏙️ Filtered ${data.length} venues down to ${londonVenues.length} London venues`
+      );
+
       // Transform venue data
-      return data.map((venue) => ({
+      return londonVenues.map((venue) => ({
         id: venue.tenant_id || venue.id,
         name: venue.tenant_name || venue.name,
         slug: venue.tenant_slug || venue.slug || venue.id,

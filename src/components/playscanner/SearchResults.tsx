@@ -119,8 +119,11 @@ export default function SearchResults({
             </div>
           </div>
 
-          {results.map((slot) => (
-            <Card key={slot.id} className="hover:shadow-md transition-shadow">
+          {results.map((slot, index) => (
+            <Card
+              key={`${slot.id}-${slot.venue.id}-${slot.startTime}-${index}`}
+              className="hover:shadow-md transition-shadow"
+            >
               <CardContent className="p-4 md:p-6">
                 <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start mb-4 space-y-4 lg:space-y-0">
                   <div className="flex-1">
@@ -134,14 +137,16 @@ export default function SearchResults({
                     </div>
 
                     <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-300">
-                      <div className="flex items-center space-x-1">
-                        <MapPinIcon className="h-4 w-4 flex-shrink-0" />
-                        <span>
-                          {slot.venue.location?.city ||
-                            slot.venue.address?.city ||
-                            'London'}
-                        </span>
-                      </div>
+                      {(slot.venue.location?.city ||
+                        slot.venue.address?.city) && (
+                        <div className="flex items-center space-x-1">
+                          <MapPinIcon className="h-4 w-4 flex-shrink-0" />
+                          <span>
+                            {slot.venue.location?.city ||
+                              slot.venue.address?.city}
+                          </span>
+                        </div>
+                      )}
                       <div className="flex items-center space-x-1">
                         <ClockIcon className="h-4 w-4 flex-shrink-0" />
                         <span>
@@ -177,34 +182,52 @@ export default function SearchResults({
                   </div>
                 </div>
 
-                {/* Court/Pitch Details */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {slot.features?.surface && (
-                    <Badge variant="secondary" className="text-xs">
-                      {slot.features.surface.toUpperCase()}
-                    </Badge>
-                  )}
+                {/* Court/Pitch Details - Only show if we have meaningful information */}
+                {((sport === 'padel' &&
+                  slot.sportMeta &&
+                  'courtType' in slot.sportMeta) ||
+                  (sport !== 'padel' && slot.features?.surface)) && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {sport === 'padel'
+                      ? slot.sportMeta &&
+                        'courtType' in slot.sportMeta && (
+                          <Badge variant="secondary" className="text-xs">
+                            {slot.sportMeta.courtType.toUpperCase()}
+                          </Badge>
+                        )
+                      : slot.features?.surface && (
+                          <Badge variant="secondary" className="text-xs">
+                            {slot.features.surface.toUpperCase()}
+                          </Badge>
+                        )}
+                  </div>
+                )}
 
-                  {/* Sport-specific metadata */}
-                  {sport === 'padel' &&
-                    slot.sportMeta &&
-                    'courtType' in slot.sportMeta && (
-                      <Badge variant="secondary" className="text-xs">
-                        {slot.sportMeta.courtType.toUpperCase()}
-                      </Badge>
+                {/* Availability - Only show if we have meaningful information */}
+                {(slot.availability?.totalSpots || slot.lastUpdated) && (
+                  <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+                    {slot.availability?.totalSpots && (
+                      <div>
+                        {slot.availability.spotsAvailable || 0} of{' '}
+                        {slot.availability.totalSpots} spots available
+                      </div>
                     )}
-                </div>
-
-                {/* Availability */}
-                <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                  <div>
-                    {slot.availability?.spotsAvailable || 0} of{' '}
-                    {slot.availability?.totalSpots || 0} spots available
+                    {slot.lastUpdated && (
+                      <div>
+                        Updated{' '}
+                        {new Date(slot.lastUpdated).toLocaleString('en-GB', {
+                          timeZone: 'Europe/London',
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          second: '2-digit',
+                        })}
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    Updated {new Date(slot.lastUpdated).toLocaleString()}
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           ))}

@@ -16,6 +16,7 @@ interface DatePickerProps {
   value: string;
   onChange: (value: string) => void;
   min?: string;
+  max?: string;
   className?: string;
   id?: string;
   placeholder?: string;
@@ -25,6 +26,7 @@ export function DatePicker({
   value,
   onChange,
   min,
+  max,
   className,
   id,
   placeholder = 'Pick a date',
@@ -36,6 +38,9 @@ export function DatePicker({
 
   // Convert min string to Date object (ensure consistent timezone handling)
   const minDate = min ? new Date(min + 'T00:00:00') : undefined;
+
+  // Convert max string to Date object (ensure consistent timezone handling)
+  const maxDate = max ? new Date(max + 'T00:00:00') : undefined;
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-GB', {
@@ -80,19 +85,34 @@ export function DatePicker({
           selected={selectedDate}
           onSelect={handleDateSelect}
           disabled={(date) => {
-            if (!minDate) return false;
             // Compare dates by normalizing to start of day
             const dateAtMidnight = new Date(
               date.getFullYear(),
               date.getMonth(),
               date.getDate()
             );
-            const minDateAtMidnight = new Date(
-              minDate.getFullYear(),
-              minDate.getMonth(),
-              minDate.getDate()
-            );
-            return dateAtMidnight < minDateAtMidnight;
+
+            // Check min date
+            if (minDate) {
+              const minDateAtMidnight = new Date(
+                minDate.getFullYear(),
+                minDate.getMonth(),
+                minDate.getDate()
+              );
+              if (dateAtMidnight < minDateAtMidnight) return true;
+            }
+
+            // Check max date
+            if (maxDate) {
+              const maxDateAtMidnight = new Date(
+                maxDate.getFullYear(),
+                maxDate.getMonth(),
+                maxDate.getDate()
+              );
+              if (dateAtMidnight > maxDateAtMidnight) return true;
+            }
+
+            return false;
           }}
           initialFocus
         />
