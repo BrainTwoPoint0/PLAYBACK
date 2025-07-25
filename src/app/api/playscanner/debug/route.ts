@@ -312,91 +312,18 @@ export async function GET(request: NextRequest) {
         }
 
       case 'debug-search':
-        try {
-          // Enable debug mode and test full search
-          process.env.PLAYSCANNER_DEBUG = 'true';
-
-          const { searchService } = await import(
-            '@/lib/playscanner/search-service'
-          );
-          const testParams = {
-            sport: 'padel' as const,
-            location: 'London',
-            date: '2025-07-07',
-          };
-
-          const startTime = Date.now();
-          const result = await searchService.search(testParams);
-
-          // Reset debug mode
-          delete process.env.PLAYSCANNER_DEBUG;
-
-          return NextResponse.json({
-            status: 'success',
-            message: 'Debug search completed',
-            results: result.results.slice(0, 5), // First 5 results
-            totalResults: result.totalResults,
-            providers: result.providers,
-            searchTime: Date.now() - startTime,
-            timestamp: new Date().toISOString(),
-          });
-        } catch (error) {
-          // Reset debug mode
-          delete process.env.PLAYSCANNER_DEBUG;
-
-          return NextResponse.json({
-            status: 'error',
-            message: 'Debug search failed',
-            error: (error as Error).message,
-            errorType: (error as Error).constructor.name,
-            stack:
-              process.env.NODE_ENV === 'development'
-                ? (error as Error).stack
-                : undefined,
-            timestamp: new Date().toISOString(),
-          });
-        }
+        return NextResponse.json({
+          status: 'disabled',
+          message: 'Live search disabled - now using cached data only',
+          timestamp: new Date().toISOString(),
+        });
 
       case 'cached-search':
-        try {
-          // Test cached search approach (Playskan-style)
-          const { CachedSearchService } = await import(
-            '@/lib/playscanner/cached-service'
-          );
-
-          // Initialize mock data
-          CachedSearchService.initializeMockData();
-
-          const testParams = {
-            sport: 'padel' as const,
-            location: 'London',
-            date: new Date().toISOString().split('T')[0], // Today
-          };
-
-          const startTime = Date.now();
-          const result = await CachedSearchService.search(testParams);
-
-          return NextResponse.json({
-            status: 'success',
-            message: 'Cached search completed',
-            results: result.results,
-            totalResults: result.totalResults,
-            searchTime: result.searchTime,
-            source: result.source,
-            cacheAge: result.cacheAge,
-            cacheStats: CachedSearchService.getCacheStats(),
-            apiCallTime: Date.now() - startTime,
-            timestamp: new Date().toISOString(),
-          });
-        } catch (error) {
-          return NextResponse.json({
-            status: 'error',
-            message: 'Cached search failed',
-            error: (error as Error).message,
-            errorType: (error as Error).constructor.name,
-            timestamp: new Date().toISOString(),
-          });
-        }
+        return NextResponse.json({
+          status: 'disabled',
+          message: 'Cached search test disabled - use persistent cache instead',
+          timestamp: new Date().toISOString(),
+        });
 
       default:
         return NextResponse.json(
@@ -412,8 +339,6 @@ export async function GET(request: NextRequest) {
               'headers',
               'availability-test',
               'full-search-debug',
-              'debug-search',
-              'cached-search',
             ],
           },
           { status: 400 }

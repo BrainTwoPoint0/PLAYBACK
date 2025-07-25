@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { persistentCache } from '@/lib/playscanner/persistent-cache';
 
+// Force dynamic rendering for API route
+export const dynamic = 'force-dynamic';
+
 /**
  * PLAYScanner Health Check and Monitoring Endpoint
  * GET /api/playscanner/health
