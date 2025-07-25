@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { searchService } from '@/lib/playscanner/search-service';
 import { persistentCache } from '@/lib/playscanner/persistent-cache';
 import { SearchParams } from '@/lib/playscanner/types';
 
@@ -93,29 +92,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check for cached mode (Playskan-style approach)
-    const useCachedMode =
-      process.env.PLAYSCANNER_USE_CACHED === 'true' || body.cached === true;
-
-    let searchResult;
-
-    if (useCachedMode) {
-      // Use persistent cache approach (production-ready)
-      searchResult = await persistentCache.search(searchParams);
-      searchResult.source = 'persistent_cache';
-    } else {
-      // Use live scraping approach (current implementation)
-      searchResult = await searchService.search(searchParams);
-      searchResult.source = 'live';
-    }
+    // Always use cached mode (data is collected by Lambda)
+    const searchResult = await persistentCache.search(searchParams);
+    searchResult.source = 'persistent_cache';
 
     // Add debugging information in production if enabled
     const debugInfo: any = {};
     if (process.env.PLAYSCANNER_DEBUG === 'true') {
       debugInfo.searchParams = searchParams;
-      debugInfo.cacheHit = !!searchService.getCacheStats();
-      debugInfo.providers = searchService.getAvailableProviders();
-      debugInfo.searchMode = useCachedMode ? 'cached' : 'live';
+      debugInfo.searchMode = 'cached';
     }
 
     return NextResponse.json(
@@ -164,20 +149,16 @@ export async function POST(request: NextRequest) {
  */
 export async function GET() {
   try {
-    // Get provider health status
-    const providerHealth = await searchService.getProviderHealth();
     const cacheStats = await persistentCache.getCacheStats();
-    const availableProviders = searchService.getAvailableProviders();
     const persistentCacheHealth = await persistentCache.healthCheck();
 
     return NextResponse.json({
       status: 'healthy',
       timestamp: new Date().toISOString(),
-      providers: providerHealth,
       cache: cacheStats,
       persistentCache: persistentCacheHealth,
-      availableProviders,
       version: '2.0.0',
+      dataSource: 'lambda-collected',
     });
   } catch (error) {
     return NextResponse.json(

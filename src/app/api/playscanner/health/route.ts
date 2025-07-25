@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { persistentCache } from '@/lib/playscanner/persistent-cache';
-import { searchService } from '@/lib/playscanner/search-service';
 
 /**
  * PLAYScanner Health Check and Monitoring Endpoint
@@ -21,7 +20,7 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       version: '2.0.0',
-      mode: process.env.PLAYSCANNER_USE_CACHED === 'true' ? 'cached' : 'live',
+      mode: 'cached_only',
     };
 
     // Component-specific health checks
@@ -35,12 +34,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (!component || component === 'providers') {
-      const providerHealth = await checkProviderHealth(detailed);
-      healthData.providers = providerHealth;
-
-      if (providerHealth.status !== 'healthy') {
-        healthData.status = 'degraded';
-      }
+      // Providers are now managed by Lambda - check lambda health instead
+      healthData.providers = {
+        status: 'lambda_managed',
+        message: 'Data collection handled by AWS Lambda',
+      };
     }
 
     if (!component || component === 'collection') {
@@ -130,48 +128,6 @@ async function checkCacheHealth(detailed: boolean = false) {
 }
 
 /**
- * Check provider health
- */
-async function checkProviderHealth(detailed: boolean = false) {
-  try {
-    const providerHealth = await searchService.getProviderHealth();
-    const availableProviders = searchService.getAvailableProviders();
-
-    const health: any = {
-      status: 'healthy',
-      availableProviders: availableProviders.length,
-      providers: availableProviders,
-    };
-
-    if (detailed) {
-      health.details = providerHealth;
-    }
-
-    // Check if any providers are unhealthy
-    const unhealthyProviders = Object.values(providerHealth).filter(
-      (status: any) => !status
-    );
-
-    if (unhealthyProviders.length > 0) {
-      health.status = 'degraded';
-      health.warning = `${unhealthyProviders.length} providers unhealthy`;
-    }
-
-    if (availableProviders.length === 0) {
-      health.status = 'unhealthy';
-      health.error = 'No providers available';
-    }
-
-    return health;
-  } catch (error) {
-    return {
-      status: 'unhealthy',
-      error: (error as Error).message,
-    };
-  }
-}
-
-/**
  * Check collection service health
  */
 async function checkCollectionHealth(detailed: boolean = false) {
@@ -231,11 +187,7 @@ async function checkCollectionHealth(detailed: boolean = false) {
  * Check environment configuration
  */
 async function checkEnvironment() {
-  const requiredEnvVars = [
-    'SUPABASE_URL',
-    'SUPABASE_SERVICE_KEY',
-    'PLAYSCANNER_COLLECT_SECRET',
-  ];
+  const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_SERVICE_KEY'];
 
   const missingVars = requiredEnvVars.filter(
     (varName) => !process.env[varName]
@@ -251,7 +203,7 @@ async function checkEnvironment() {
       used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + 'MB',
     },
     configuration: {
-      cacheMode: process.env.PLAYSCANNER_USE_CACHED === 'true',
+      mode: 'cached_only',
       debugMode: process.env.PLAYSCANNER_DEBUG === 'true',
       missingEnvVars: missingVars.length > 0 ? missingVars : undefined,
     },

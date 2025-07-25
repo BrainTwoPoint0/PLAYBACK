@@ -1,0 +1,23 @@
+{
+  "name": "playscanner-lambda",
+  "version": "1.0.0",
+  "description": "AWS Lambda function for PLAYScanner background data collection",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node test-local.js",
+    "build": "npm ci --production",
+    "package": "zip -r function.zip . -x '*.git*' -x 'test-*' -x '*.md' -x 'deploy.sh'",
+    "deploy": "./deploy.sh"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.50.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "PLAYBACK",
+  "license": "MIT",
+  "devDependencies": {
+    "dotenv": "^17.2.1"
+  }
+}
