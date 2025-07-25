@@ -136,7 +136,11 @@ export default function SearchResults({
                     <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-300">
                       <div className="flex items-center space-x-1">
                         <MapPinIcon className="h-4 w-4 flex-shrink-0" />
-                        <span>{slot.venue.location.city}</span>
+                        <span>
+                          {slot.venue.location?.city ||
+                            slot.venue.address?.city ||
+                            'London'}
+                        </span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <ClockIcon className="h-4 w-4 flex-shrink-0" />
