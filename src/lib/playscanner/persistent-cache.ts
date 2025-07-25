@@ -78,11 +78,8 @@ export class PersistentCacheService {
 
     try {
       // Get cached slots for this location/date
-      const cachedSlots = await this.getCachedData(
-        params.location,
-        params.date
-      );
-      if (!cachedSlots || cachedSlots.length === 0) {
+      const cachedData = await this.getCachedData(params.location, params.date);
+      if (!cachedData || cachedData.slots.length === 0) {
         return {
           results: [],
           totalResults: 0,
@@ -94,17 +91,14 @@ export class PersistentCacheService {
         };
       }
 
-      // Transform raw cached data to CourtSlot format
-      const transformedSlots = cachedSlots.map((slot) => {
+      // Transform raw cached data to CourtSlot format using actual collection timestamp
+      const transformedSlots = cachedData.slots.map((slot) => {
         // If the slot is already transformed (has bookingUrl), return as-is
         if (slot.bookingUrl) {
           return slot;
         }
-        // Otherwise, transform from raw Lambda format
-        return this.transformLambdaSlot(
-          slot,
-          slot.lastUpdated || new Date().toISOString()
-        );
+        // Otherwise, transform from raw Lambda format using actual collection timestamp
+        return this.transformLambdaSlot(slot, cachedData.collectionTimestamp);
       });
 
       // Apply filters to transformed data
@@ -182,7 +176,10 @@ export class PersistentCacheService {
   /**
    * Get cached data if valid (not expired)
    */
-  async getCachedData(city: string, date: string): Promise<CourtSlot[] | null> {
+  async getCachedData(
+    city: string,
+    date: string
+  ): Promise<{ slots: CourtSlot[]; collectionTimestamp: string } | null> {
     try {
       const cacheKey = this.getCacheKey(city, date);
 
@@ -209,7 +206,12 @@ export class PersistentCacheService {
       console.log(
         `📚 Serving ${data.slots.length} slots from persistent cache: ${cacheKey}`
       );
-      return data.slots;
+
+      // Return both slots and the collection timestamp from metadata
+      return {
+        slots: data.slots,
+        collectionTimestamp: data.metadata?.collectedAt || data.created_at,
+      };
     } catch (error) {
       console.error('getCachedData error:', error);
       return null;
