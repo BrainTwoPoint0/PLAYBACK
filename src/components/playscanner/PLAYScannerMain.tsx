@@ -6,15 +6,24 @@ import SectionTitle from '@/components/ui/section-title';
 import SportSelector from './SportSelector';
 import SearchForm from './SearchForm';
 import SearchResults from './SearchResults';
-import { Sport, SearchParams } from '@/lib/playscanner/types';
+import { Sport, SearchParams, CourtSlot } from '@/lib/playscanner/types';
+import { applyFilters } from '@/lib/playscanner/filter-utils';
+import { FilterState } from './filters/FilterPanel';
 
 export default function PLAYScannerMain() {
   const [selectedSport, setSelectedSport] = useState<Sport>('padel');
   const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState<CourtSlot[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<any | null>(null);
+  const [currentFilters, setCurrentFilters] = useState<FilterState>({});
+  const [rawResults, setRawResults] = useState<CourtSlot[]>([]); // Store unfiltered results
+
+  // Apply filters to raw results
+  const filteredResults = useMemo(() => {
+    return applyFilters(rawResults, currentFilters, selectedSport);
+  }, [rawResults, currentFilters, selectedSport]);
 
   // Stable sport change handler
   const handleSportChange = useCallback((sport: Sport) => {
@@ -25,6 +34,25 @@ export default function PLAYScannerMain() {
     setIsSearching(true);
     setError(null);
     setResults(null);
+
+    // Extract filters from search params to store in component state
+    const filters: FilterState = {
+      timeRange:
+        searchParams.startTime && searchParams.endTime
+          ? {
+              start: searchParams.startTime,
+              end: searchParams.endTime,
+            }
+          : undefined,
+      priceRange: searchParams.maxPrice
+        ? {
+            min: 500, // Default minimum £5
+            max: searchParams.maxPrice,
+          }
+        : undefined,
+    };
+
+    setCurrentFilters(filters);
 
     try {
       const response = await fetch('/api/playscanner/search', {
@@ -44,6 +72,7 @@ export default function PLAYScannerMain() {
 
       const data = await response.json();
       setResults(data);
+      setRawResults(data.results || []);
       setSearchResults(data.results || []);
       setHasSearched(true);
     } catch (err) {
@@ -124,6 +153,9 @@ export default function PLAYScannerMain() {
               sport={selectedSport}
               onSearch={handleSearch}
               isSearching={isSearching}
+              searchResults={rawResults}
+              filters={currentFilters}
+              onFiltersChange={setCurrentFilters}
             />
           </div>
         </div>
@@ -137,7 +169,7 @@ export default function PLAYScannerMain() {
           transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
         >
           <SearchResults
-            results={searchResults}
+            results={filteredResults}
             isLoading={isSearching}
             sport={selectedSport}
             error={error ? { code: 'SEARCH_ERROR', message: error } : undefined}

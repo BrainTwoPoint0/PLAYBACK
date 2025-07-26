@@ -6,13 +6,27 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DatePicker } from '@/components/ui/date-picker';
 import { SearchIcon, MapPinIcon, CalendarIcon } from 'lucide-react';
-import { SearchFormProps, SearchParams } from '@/lib/playscanner/types';
+import {
+  SearchFormProps,
+  SearchParams,
+  CourtSlot,
+} from '@/lib/playscanner/types';
+import FilterPanel, { FilterState } from './filters/FilterPanel';
+
+interface SearchFormPropsExtended extends SearchFormProps {
+  searchResults?: CourtSlot[];
+  filters?: FilterState;
+  onFiltersChange?: (filters: FilterState) => void;
+}
 
 export default function SearchForm({
   sport,
   onSearch,
   isSearching,
-}: SearchFormProps) {
+  searchResults = [],
+  filters = {},
+  onFiltersChange,
+}: SearchFormPropsExtended) {
   const [location, setLocation] = useState('London');
 
   // Get today's date in YYYY-MM-DD format (always use local date)
@@ -51,6 +65,10 @@ export default function SearchForm({
       sport,
       location,
       date,
+      // Add filter parameters
+      startTime: filters.timeRange?.start,
+      endTime: filters.timeRange?.end,
+      maxPrice: filters.priceRange?.max,
     };
 
     onSearch(searchParams);
@@ -94,6 +112,14 @@ export default function SearchForm({
           />
         </div>
       </div>
+
+      {/* Filter Panel */}
+      <FilterPanel
+        sport={sport}
+        filters={filters}
+        onFiltersChange={onFiltersChange || (() => {})}
+        searchResults={searchResults}
+      />
 
       {/* Search Button */}
       <Button
