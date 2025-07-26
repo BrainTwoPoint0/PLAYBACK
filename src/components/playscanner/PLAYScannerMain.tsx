@@ -140,6 +140,7 @@ export default function PLAYScannerMain() {
             results={searchResults}
             isLoading={isSearching}
             sport={selectedSport}
+            error={error ? { code: 'SEARCH_ERROR', message: error } : undefined}
           />
         </motion.div>
       )}
