@@ -33,12 +33,14 @@ npm test
 ### Deployment
 
 1. **Create IAM Role** for Lambda execution:
+
    ```bash
    aws iam create-role --role-name playscanner-lambda-role \
      --assume-role-policy-document file://trust-policy.json
    ```
 
 2. **Set environment variables**:
+
    ```bash
    export LAMBDA_ROLE_ARN=arn:aws:iam::YOUR_ACCOUNT:role/playscanner-lambda-role
    export SUPABASE_URL=your-supabase-url
@@ -69,11 +71,13 @@ EventBridge (every 30 min) → Lambda → Playtomic API
 ## 💰 Cost Optimization
 
 Staying within AWS Free Tier:
+
 - 1M Lambda requests/month free
 - 400,000 GB-seconds compute free
 - EventBridge scheduled rules are free
 
 Expected usage:
+
 - 48 executions/day = 1,440/month
 - ~22k GB-seconds/month
 - **Total cost**: $0 (within free tier)
@@ -110,12 +114,14 @@ aws lambda invoke --function-name playscanner-collector \
 ## 📊 Monitoring
 
 1. **CloudWatch Metrics**:
+
    - Invocations
    - Duration
    - Errors
    - Throttles
 
 2. **Custom Metrics**:
+
    - Slots collected
    - Venues processed
    - Collection success rate
@@ -130,10 +136,12 @@ aws lambda invoke --function-name playscanner-collector \
 ### Common Issues
 
 1. **Timeout errors**:
+
    - Reduce batch size in collector
    - Increase Lambda memory/timeout
 
 2. **Supabase connection**:
+
    - Check environment variables
    - Verify service key permissions
 
@@ -144,6 +152,7 @@ aws lambda invoke --function-name playscanner-collector \
 ### Debug Mode
 
 Set environment variable for verbose logging:
+
 ```bash
 DEBUG=true
 ```

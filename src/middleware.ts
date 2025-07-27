@@ -1,6 +1,5 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
-import { checkOnboardingStatusServer } from '@/lib/onboarding/server-utils';
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -38,21 +37,15 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Define paths that require authentication
-  const protectedPaths = ['/dashboard', '/onboarding'];
+  const protectedPaths = ['/dashboard', '/profile', '/highlights'];
 
   // Define paths that should redirect authenticated users
   const authPaths = ['/auth/login', '/auth/register', '/auth/forgot-password'];
-
-  // Define paths that require onboarding completion (subset of protected paths)
-  const onboardingRequiredPaths = ['/dashboard', '/profile'];
 
   const isProtectedPath = protectedPaths.some((path) =>
     pathname.startsWith(path)
   );
   const isAuthPath = authPaths.some((path) => pathname.startsWith(path));
-  const requiresOnboarding = onboardingRequiredPaths.some((path) =>
-    pathname.startsWith(path)
-  );
 
   // If user is not authenticated and trying to access protected route
   if (!user && isProtectedPath) {
@@ -67,27 +60,6 @@ export async function middleware(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/dashboard';
     return NextResponse.redirect(redirectUrl);
-  }
-
-  // Check onboarding status only for routes that require onboarding completion
-  if (user && requiresOnboarding) {
-    try {
-      const onboardingResult = await checkOnboardingStatusServer(
-        user.id,
-        request
-      );
-
-      // If onboarding is not complete, redirect to onboarding
-      if (!onboardingResult.isComplete) {
-        const redirectUrl = request.nextUrl.clone();
-        redirectUrl.pathname = '/onboarding';
-        return NextResponse.redirect(redirectUrl);
-      }
-    } catch (error) {
-      // If there's an error checking onboarding status, let the request proceed
-      // The client-side will handle the error appropriately
-      console.error('Middleware onboarding check error:', error);
-    }
   }
 
   return supabaseResponse;

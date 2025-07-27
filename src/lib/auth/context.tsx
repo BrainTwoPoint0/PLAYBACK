@@ -22,6 +22,8 @@ interface UserSport {
     id: string;
     name: string;
     description: string | null;
+    sport_category: string | null;
+    common_positions: any;
   } | null;
 }
 
@@ -34,6 +36,12 @@ interface UserProfile {
   avatar_url: string | null;
   social_links: any;
   is_verified: boolean | null;
+  profile_type: string | null;
+  height_cm: number | null;
+  weight_kg: number | null;
+  preferred_foot: string | null;
+  organization_name: string | null;
+  organization_role: string | null;
   user_sports: UserSport[];
 }
 
@@ -91,13 +99,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
 
-  // Memoized computed values
+  // Profile is considered complete when it exists
   const isOnboardingComplete = useMemo(() => {
-    if (!profile.data) return false;
-    const hasUserSports =
-      profile.data.user_sports && profile.data.user_sports.length > 0;
-    const hasRole = profile.data.user_sports?.some((us) => us.role);
-    return hasUserSports && hasRole;
+    return !!profile.data;
   }, [profile.data]);
 
   // Unified profile fetching function
@@ -116,6 +120,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           avatar_url,
           social_links,
           is_verified,
+          profile_type,
+          height_cm,
+          weight_kg,
+          preferred_foot,
+          organization_name,
+          organization_role,
           user_sports (
             id,
             sport_id,
@@ -125,7 +135,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             sport:sports (
               id,
               name,
-              description
+              description,
+              sport_category,
+              common_positions
             )
           )
         `

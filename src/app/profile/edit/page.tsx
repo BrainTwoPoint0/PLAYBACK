@@ -25,8 +25,10 @@ import {
   Info,
   Plus,
   Trash2,
+  TrendingUp,
 } from 'lucide-react';
 import { ProfileHeader } from '@/components/profile/profile-header';
+import { PhysicalAttributesTab } from '@/components/profile/physical-attributes-tab';
 import { useRouter } from 'next/navigation';
 import {
   updateProfileBasicInfo,
@@ -310,7 +312,7 @@ function SportEditForm({
   onCancel: () => void;
 }) {
   const [role, setRole] = useState(sport.role);
-  const [position, setPosition] = useState(sport.position);
+  const [position, setPosition] = useState(sport.positions[0] || '');
   const [experienceLevel, setExperienceLevel] = useState(
     sport.experience_level
   );
@@ -385,7 +387,7 @@ function SportEditForm({
   const handleSave = () => {
     onSave({
       role: role as 'player' | 'coach' | 'scout' | 'fan',
-      position,
+      positions: position ? [position] : [],
       experience_level: experienceLevel as
         | 'beginner'
         | 'intermediate'
@@ -580,268 +582,6 @@ function AddSportModal({
           )}
         </div>
       </div>
-    </div>
-  );
-}
-
-// Sports Tab Component
-function SportsTab({
-  profile,
-  onUpdate,
-  onMarkChanged,
-}: {
-  profile: any;
-  onUpdate: (updates: any) => void;
-  onMarkChanged: () => void;
-}) {
-  const [userSports, setUserSports] = useState<SportSelection[]>([]);
-  const [allSports, setAllSports] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [sportsLoading, setSportsLoading] = useState(false);
-  const [showAddSport, setShowAddSport] = useState(false);
-  const [editingSport, setEditingSport] = useState<number | null>(null);
-
-  useEffect(() => {
-    loadUserSports();
-    loadAllSports();
-  }, []);
-
-  const loadUserSports = async () => {
-    try {
-      const sports = profile?.user_sports || [];
-      setUserSports(
-        sports.map((sport: any) => ({
-          sport_id: sport.sport_id || parseInt(sport.sport?.id),
-          sport_name: sport.sport?.name || 'Unknown Sport',
-          role: sport.role || 'player',
-          position: sport.positions?.[0] || '',
-          experience_level: sport.experience_level || 'beginner',
-        }))
-      );
-    } catch (error) {
-      console.error('Failed to load user sports:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadAllSports = async () => {
-    setSportsLoading(true);
-    try {
-      const response = await fetch('/api/sports');
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch sports');
-      }
-
-      const data = await response.json();
-      setAllSports(data.sports || []);
-    } catch (error) {
-      console.error('Failed to load sports:', error);
-
-      // Fallback to default sports list
-      const defaultSports = [
-        {
-          id: '1',
-          name: 'Football',
-          description: 'Association Football (Soccer)',
-        },
-        { id: '2', name: 'Basketball', description: 'Professional Basketball' },
-        {
-          id: '3',
-          name: 'American Football',
-          description: 'American Football (NFL)',
-        },
-        { id: '4', name: 'Baseball', description: 'Professional Baseball' },
-        { id: '5', name: 'Tennis', description: 'Professional Tennis' },
-        { id: '6', name: 'Volleyball', description: 'Professional Volleyball' },
-        { id: '7', name: 'Hockey', description: 'Ice Hockey' },
-        { id: '8', name: 'Golf', description: 'Professional Golf' },
-        { id: '9', name: 'Swimming', description: 'Competitive Swimming' },
-        { id: '10', name: 'Track & Field', description: 'Athletics' },
-      ];
-      setAllSports(defaultSports);
-    } finally {
-      setSportsLoading(false);
-    }
-  };
-
-  const handleAddSport = (sportId: string, sportName: string) => {
-    const newSport: SportSelection = {
-      sport_id: parseInt(sportId),
-      sport_name: sportName,
-      role: 'player',
-      position: '',
-      experience_level: 'beginner',
-    };
-
-    const updatedSports = [...userSports, newSport];
-    setUserSports(updatedSports);
-    setShowAddSport(false);
-
-    // Trigger form change detection
-    onUpdate({ user_sports: updatedSports });
-    onMarkChanged();
-  };
-
-  const handleUpdateSport = (
-    index: number,
-    updates: Partial<SportSelection>
-  ) => {
-    const updatedSports = userSports.map((sport, i) =>
-      i === index ? { ...sport, ...updates } : sport
-    );
-    setUserSports(updatedSports);
-    setEditingSport(null);
-
-    // Trigger form change detection
-    onUpdate({ user_sports: updatedSports });
-    onMarkChanged();
-  };
-
-  const handleRemoveSport = (index: number) => {
-    const updatedSports = userSports.filter((_, i) => i !== index);
-    setUserSports(updatedSports);
-
-    // Trigger form change detection
-    onUpdate({ user_sports: updatedSports });
-    onMarkChanged();
-  };
-
-  if (loading) {
-    return (
-      <div className="max-w-2xl mx-auto text-center py-12">
-        <LoadingSpinner size="lg" className="mb-4" />
-        <p style={{ color: 'var(--ash-grey)' }}>Loading your sports...</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="max-w-2xl mx-auto space-y-8">
-      {/* Header */}
-      <div className="text-center">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <div className="p-2 bg-yellow-400/10 rounded-xl">
-            <Trophy className="h-6 w-6 text-yellow-400" />
-          </div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
-            Sports & Positions
-          </h2>
-        </div>
-        <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
-          Manage your athletic profile and playing positions
-        </p>
-      </div>
-
-      {/* Add Sport Button */}
-      <div className="flex justify-between items-center">
-        <h3
-          className="text-lg font-semibold"
-          style={{ color: 'var(--timberwolf)' }}
-        >
-          Your Sports
-        </h3>
-        <Button
-          onClick={() => setShowAddSport(true)}
-          size="sm"
-          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
-        >
-          <Plus className="h-4 w-4" />
-          Add Sport
-        </Button>
-      </div>
-
-      {/* Current Sports */}
-      <div className="space-y-4">
-        {userSports.length === 0 ? (
-          <div className="text-center py-8 bg-neutral-800/30 rounded-xl border border-neutral-600">
-            <Trophy
-              className="h-12 w-12 mx-auto mb-3"
-              style={{ color: 'var(--ash-grey)' }}
-            />
-            <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
-              No sports added yet. Add your first sport to get started!
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {userSports.map((sport, index) => (
-              <div
-                key={index}
-                className="p-4 bg-neutral-800/50 rounded-xl border border-neutral-600"
-              >
-                {editingSport === index ? (
-                  // Edit Mode
-                  <SportEditForm
-                    sport={sport}
-                    sportName={sport.sport_name}
-                    onSave={(updates) => handleUpdateSport(index, updates)}
-                    onCancel={() => setEditingSport(null)}
-                  />
-                ) : (
-                  // View Mode
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Trophy className="h-5 w-5 text-yellow-400" />
-                      <div>
-                        <h4
-                          className="font-medium"
-                          style={{ color: 'var(--timberwolf)' }}
-                        >
-                          {sport.sport_name}
-                        </h4>
-                        <p
-                          className="text-sm"
-                          style={{ color: 'var(--ash-grey)' }}
-                        >
-                          {sport.role.charAt(0).toUpperCase() +
-                            sport.role.slice(1)}
-                          {sport.role === 'player' &&
-                            sport.position &&
-                            ` • ${sport.position}`}{' '}
-                          •{' '}
-                          {sport.experience_level.charAt(0).toUpperCase() +
-                            sport.experience_level.slice(1)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setEditingSport(index)}
-                        className="border-neutral-600 hover:bg-neutral-700"
-                        style={{ color: 'var(--ash-grey)' }}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleRemoveSport(index)}
-                        className="border-red-600 text-red-400 hover:bg-red-900/20"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Add Sport Modal */}
-      {showAddSport && (
-        <AddSportModal
-          allSports={allSports}
-          userSports={userSports}
-          onAddSport={handleAddSport}
-          onClose={() => setShowAddSport(false)}
-        />
-      )}
     </div>
   );
 }
@@ -1169,7 +909,11 @@ function ProfileEditContent() {
   const tabs = [
     { id: 'basic', label: 'Basic Info', icon: <User className="h-4 w-4" /> },
     { id: 'avatar', label: 'Avatar', icon: <User className="h-4 w-4" /> },
-    { id: 'sports', label: 'Sports', icon: <Trophy className="h-4 w-4" /> },
+    {
+      id: 'physical',
+      label: 'Physical',
+      icon: <TrendingUp className="h-4 w-4" />,
+    },
     { id: 'social', label: 'Social', icon: <Share2 className="h-4 w-4" /> },
   ];
 
@@ -1284,14 +1028,12 @@ function ProfileEditContent() {
             className="text-lg font-medium mb-2"
             style={{ color: 'var(--timberwolf)' }}
           >
-            Profile Not Found
+            Profile Loading
           </p>
           <p className="mb-6" style={{ color: 'var(--ash-grey)' }}>
-            Please complete your onboarding first.
+            Setting up your profile...
           </p>
-          <Button onClick={() => router.push('/onboarding')}>
-            Complete Onboarding
-          </Button>
+          <LoadingSpinner size="lg" />
         </div>
       </div>
     );
@@ -1408,8 +1150,8 @@ function ProfileEditContent() {
                       onAvatarSaved={handleAvatarSaved}
                     />
                   )}
-                  {activeTab === 'sports' && (
-                    <SportsTab
+                  {activeTab === 'physical' && (
+                    <PhysicalAttributesTab
                       profile={profile.data}
                       onUpdate={handleProfileUpdate}
                       onMarkChanged={markAsChanged}

@@ -5,6 +5,8 @@ export interface ProfileUpdateData {
   full_name?: string;
   bio?: string;
   location?: string;
+  height_cm?: number | null;
+  weight_kg?: number | null;
   social_links?: {
     instagram?: string;
     twitter?: string;
@@ -41,6 +43,15 @@ export async function updateProfileBasicInfo(
 
     if (profileData.location?.trim()) {
       updateData.location = profileData.location.trim();
+    }
+
+    // Handle physical attributes - these can be null to clear them
+    if (profileData.height_cm !== undefined) {
+      updateData.height_cm = profileData.height_cm;
+    }
+
+    if (profileData.weight_kg !== undefined) {
+      updateData.weight_kg = profileData.weight_kg;
     }
 
     if (profileData.social_links) {
@@ -155,6 +166,12 @@ export async function getUserProfileWithDetails(userId: string) {
         social_links,
         is_public,
         is_verified,
+        profile_type,
+        height_cm,
+        weight_kg,
+        preferred_foot,
+        organization_name,
+        organization_role,
         created_at,
         updated_at,
         user_sports (
@@ -166,7 +183,9 @@ export async function getUserProfileWithDetails(userId: string) {
           sport:sports (
             id,
             name,
-            description
+            description,
+            sport_category,
+            common_positions
           )
         )
       `
@@ -204,6 +223,12 @@ export async function getPublicProfileByUsername(username: string) {
         social_links,
         is_public,
         is_verified,
+        profile_type,
+        height_cm,
+        weight_kg,
+        preferred_foot,
+        organization_name,
+        organization_role,
         created_at,
         updated_at,
         user_sports (
@@ -215,7 +240,9 @@ export async function getPublicProfileByUsername(username: string) {
           sport:sports (
             id,
             name,
-            description
+            description,
+            sport_category,
+            common_positions
           )
         )
       `
@@ -236,7 +263,7 @@ export interface SportSelection {
   sport_id: number;
   sport_name: string;
   role: 'player' | 'coach' | 'scout' | 'fan';
-  position: string;
+  positions: string[];
   experience_level: 'beginner' | 'intermediate' | 'advanced' | 'professional';
 }
 
@@ -286,7 +313,7 @@ export async function updateUserSports(
         sport_id: sport.sport_id.toString(),
         role: sport.role,
         experience_level: sport.experience_level,
-        positions: sport.position ? [sport.position] : [],
+        positions: sport.positions || [],
         is_primary: false,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),

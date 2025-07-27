@@ -25,6 +25,12 @@ export interface Database {
           tags: string[] | null;
           is_public: boolean | null;
           is_verified: boolean | null;
+          profile_type: Database['public']['Enums']['user_role'] | null;
+          height_cm: number | null;
+          weight_kg: number | null;
+          preferred_foot: 'left' | 'right' | 'both' | null;
+          organization_name: string | null;
+          organization_role: string | null;
           created_at: string | null;
           updated_at: string | null;
         };
@@ -43,6 +49,12 @@ export interface Database {
           tags?: string[] | null;
           is_public?: boolean | null;
           is_verified?: boolean | null;
+          profile_type?: Database['public']['Enums']['user_role'] | null;
+          height_cm?: number | null;
+          weight_kg?: number | null;
+          preferred_foot?: 'left' | 'right' | 'both' | null;
+          organization_name?: string | null;
+          organization_role?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
         };
@@ -61,6 +73,12 @@ export interface Database {
           tags?: string[] | null;
           is_public?: boolean | null;
           is_verified?: boolean | null;
+          profile_type?: Database['public']['Enums']['user_role'] | null;
+          height_cm?: number | null;
+          weight_kg?: number | null;
+          preferred_foot?: 'left' | 'right' | 'both' | null;
+          organization_name?: string | null;
+          organization_role?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
         };
@@ -81,6 +99,8 @@ export interface Database {
           description: string | null;
           icon_url: string | null;
           is_active: boolean | null;
+          sport_category: 'team' | 'individual' | 'pair' | 'combat' | null;
+          common_positions: Json | null;
           created_at: string | null;
         };
         Insert: {
@@ -89,6 +109,8 @@ export interface Database {
           description?: string | null;
           icon_url?: string | null;
           is_active?: boolean | null;
+          sport_category?: 'team' | 'individual' | 'pair' | 'combat' | null;
+          common_positions?: Json | null;
           created_at?: string | null;
         };
         Update: {
@@ -97,16 +119,131 @@ export interface Database {
           description?: string | null;
           icon_url?: string | null;
           is_active?: boolean | null;
+          sport_category?: 'team' | 'individual' | 'pair' | 'combat' | null;
+          common_positions?: Json | null;
           created_at?: string | null;
         };
         Relationships: [];
+      };
+      organizations: {
+        Row: {
+          id: string;
+          name: string;
+          type: 'club' | 'academy' | 'league' | 'federation' | 'venue';
+          country_code: string | null;
+          city: string | null;
+          logo_url: string | null;
+          contact_email: string | null;
+          website: string | null;
+          description: string | null;
+          is_active: boolean | null;
+          is_verified: boolean | null;
+          created_by: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          type: 'club' | 'academy' | 'league' | 'federation' | 'venue';
+          country_code?: string | null;
+          city?: string | null;
+          logo_url?: string | null;
+          contact_email?: string | null;
+          website?: string | null;
+          description?: string | null;
+          is_active?: boolean | null;
+          is_verified?: boolean | null;
+          created_by?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          type?: 'club' | 'academy' | 'league' | 'federation' | 'venue';
+          country_code?: string | null;
+          city?: string | null;
+          logo_url?: string | null;
+          contact_email?: string | null;
+          website?: string | null;
+          description?: string | null;
+          is_active?: boolean | null;
+          is_verified?: boolean | null;
+          created_by?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'organizations_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      organization_members: {
+        Row: {
+          id: string;
+          organization_id: string | null;
+          profile_id: string | null;
+          role: 'owner' | 'admin' | 'coach' | 'player' | 'scout' | 'parent';
+          joined_at: string | null;
+          left_at: string | null;
+          is_active: boolean | null;
+          permissions: Json | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          organization_id?: string | null;
+          profile_id?: string | null;
+          role: 'owner' | 'admin' | 'coach' | 'player' | 'scout' | 'parent';
+          joined_at?: string | null;
+          left_at?: string | null;
+          is_active?: boolean | null;
+          permissions?: Json | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string | null;
+          profile_id?: string | null;
+          role?: 'owner' | 'admin' | 'coach' | 'player' | 'scout' | 'parent';
+          joined_at?: string | null;
+          left_at?: string | null;
+          is_active?: boolean | null;
+          permissions?: Json | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'organization_members_organization_id_fkey';
+            columns: ['organization_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'organization_members_profile_id_fkey';
+            columns: ['profile_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       user_sports: {
         Row: {
           id: string;
           user_id: string | null;
           sport_id: string | null;
-          role: 'player' | 'coach' | 'scout' | 'fan';
+          role: Database['public']['Enums']['user_role'];
           experience_level:
             | 'beginner'
             | 'intermediate'
@@ -124,7 +261,7 @@ export interface Database {
           id?: string;
           user_id?: string | null;
           sport_id?: string | null;
-          role: 'player' | 'coach' | 'scout' | 'fan';
+          role: Database['public']['Enums']['user_role'];
           experience_level?:
             | 'beginner'
             | 'intermediate'
@@ -142,7 +279,7 @@ export interface Database {
           id?: string;
           user_id?: string | null;
           sport_id?: string | null;
-          role?: 'player' | 'coach' | 'scout' | 'fan';
+          role?: Database['public']['Enums']['user_role'];
           experience_level?:
             | 'beginner'
             | 'intermediate'
@@ -645,7 +782,14 @@ export interface Database {
       };
     };
     Enums: {
-      user_role: 'player' | 'coach' | 'scout' | 'fan';
+      user_role:
+        | 'player'
+        | 'coach'
+        | 'scout'
+        | 'fan'
+        | 'agent'
+        | 'parent'
+        | 'club_admin';
       experience_level:
         | 'beginner'
         | 'intermediate'
