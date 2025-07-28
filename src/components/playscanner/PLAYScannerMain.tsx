@@ -9,6 +9,9 @@ import SearchResults from './SearchResults';
 import { Sport, SearchParams, CourtSlot } from '@/lib/playscanner/types';
 import { applyFilters } from '@/lib/playscanner/filter-utils';
 import { FilterState } from './filters/FilterPanel';
+import { playscannerAnalytics } from '@/lib/playscanner/analytics';
+import Link from 'next/link';
+import { BarChart3 } from 'lucide-react';
 
 export default function PLAYScannerMain() {
   const [selectedSport, setSelectedSport] = useState<Sport>('padel');
@@ -19,11 +22,29 @@ export default function PLAYScannerMain() {
   const [results, setResults] = useState<any | null>(null);
   const [currentFilters, setCurrentFilters] = useState<FilterState>({});
   const [rawResults, setRawResults] = useState<CourtSlot[]>([]); // Store unfiltered results
+  const [currentSearchId, setCurrentSearchId] = useState<string | null>(null); // Track current search for conversions
 
   // Apply filters to raw results
   const filteredResults = useMemo(() => {
     return applyFilters(rawResults, currentFilters, selectedSport);
   }, [rawResults, currentFilters, selectedSport]);
+
+  // Initialize analytics session on component mount
+  useEffect(() => {
+    playscannerAnalytics.initSession().then(() => {
+      playscannerAnalytics.trackPageView('search');
+    });
+
+    // End session on page unload
+    const handleBeforeUnload = () => {
+      playscannerAnalytics.endSession();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
   // Stable sport change handler
   const handleSportChange = useCallback((sport: Sport) => {
@@ -34,6 +55,7 @@ export default function PLAYScannerMain() {
     setIsSearching(true);
     setError(null);
     setResults(null);
+    const searchStartTime = Date.now();
 
     // Extract filters from search params to store in component state
     const filters: FilterState = {
@@ -71,10 +93,29 @@ export default function PLAYScannerMain() {
       }
 
       const data = await response.json();
+      const searchDuration = Date.now() - searchStartTime;
+
+      // Track search analytics
+      const providers = [
+        ...new Set(
+          (data.results || []).map((slot: CourtSlot) => slot.provider)
+        ),
+      ] as string[];
+      const searchId = await playscannerAnalytics.trackSearch(
+        searchParams,
+        data.results?.length || 0,
+        searchDuration,
+        providers
+      );
+
+      setCurrentSearchId(searchId);
       setResults(data);
       setRawResults(data.results || []);
       setSearchResults(data.results || []);
       setHasSearched(true);
+
+      // Track results page view
+      playscannerAnalytics.trackPageView('results');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Search failed');
     } finally {
@@ -107,13 +148,32 @@ export default function PLAYScannerMain() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
       >
-        <h1 className="text-4xl md:text-6xl font-bold mb-4">
-          PLAY<span className="text-[#00FF88]">Scanner</span>
-        </h1>
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <h1 className="text-4xl md:text-6xl font-bold">
+            PLAY<span className="text-[#00FF88]">Scanner</span>
+          </h1>
+          <Link
+            href="/playscanner/analytics"
+            className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition-colors text-sm"
+            title="View Analytics"
+          >
+            <BarChart3 className="h-4 w-4" />
+            Analytics
+          </Link>
+        </div>
         <p className="text-lg text-neutral-400 max-w-2xl mx-auto leading-relaxed">
           Find and book sports courts and pitches across multiple providers.
           Compare prices, check availability, and book instantly.
         </p>
+        <div className="md:hidden mt-4">
+          <Link
+            href="/playscanner/analytics"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition-colors text-sm"
+          >
+            <BarChart3 className="h-4 w-4" />
+            View Analytics
+          </Link>
+        </div>
       </motion.div>
 
       {/* Sport Selector */}
@@ -173,6 +233,30 @@ export default function PLAYScannerMain() {
             isLoading={isSearching}
             sport={selectedSport}
             error={error ? { code: 'SEARCH_ERROR', message: error } : undefined}
+            onConversion={(slot) => {
+              // Track booking conversion
+              playscannerAnalytics.trackConversion(
+                {
+                  provider_name: slot.provider,
+                  venue_name:
+                    typeof slot.venue === 'string'
+                      ? slot.venue
+                      : slot.venue.name,
+                  venue_location:
+                    typeof slot.venue === 'object' && slot.venue.location
+                      ? typeof slot.venue.location === 'string'
+                        ? slot.venue.location
+                        : `${slot.venue.location.city}, ${slot.venue.location.postcode}`
+                      : '',
+                  booking_url: slot.bookingUrl || '',
+                  estimated_price: slot.price,
+                  sport: selectedSport,
+                  estimated_commission: slot.price ? slot.price * 0.05 : 0, // 5% default commission
+                  commission_rate: 5,
+                },
+                currentSearchId || undefined
+              );
+            }}
           />
         </motion.div>
       )}

@@ -22,6 +22,7 @@ export default function SearchResults({
   isLoading,
   sport,
   error,
+  onConversion,
 }: SearchResultsProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [showCount, setShowCount] = useState(10);
@@ -105,7 +106,10 @@ export default function SearchResults({
               £{(slot.price / 100).toFixed(2)}
             </div>
             <Button
-              onClick={() => window.open(slot.bookingUrl, '_blank')}
+              onClick={() => {
+                onConversion?.(slot);
+                window.open(slot.bookingUrl, '_blank');
+              }}
               className="flex items-center space-x-2 bg-[#00FF88] hover:bg-[#00E077] text-[#0a100d]"
               size="sm"
             >

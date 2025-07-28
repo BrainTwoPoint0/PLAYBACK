@@ -197,7 +197,7 @@ function ProfileCard({
               </CardDescription>
             </div>
           </div>
-          {profileType.comingSoon && (
+          {'comingSoon' in profileType && profileType.comingSoon && (
             <Badge
               variant="outline"
               className="bg-orange-400/10 text-orange-400 border-orange-400/30 text-xs"
@@ -276,7 +276,7 @@ export default function PublicProfilePage() {
       if (result.error || !result.data) {
         setError(result.error || 'Profile not found');
       } else {
-        setProfile(result.data);
+        setProfile(result.data as ProfileData);
       }
     } catch (err) {
       setError('Failed to load profile');

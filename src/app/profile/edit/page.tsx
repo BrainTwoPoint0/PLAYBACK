@@ -525,7 +525,7 @@ function AddSportModal({
 }) {
   const userSportIds = userSports.map((sport) => sport.sport_id);
   const availableSports = allSports.filter(
-    (sport) => !userSportIds.includes(parseInt(sport.id))
+    (sport) => !userSportIds.includes(sport.id)
   );
 
   return (

@@ -166,4 +166,5 @@ export interface SearchResultsProps {
   isLoading: boolean;
   sport: Sport;
   error?: PLAYScannerError;
+  onConversion?: (slot: CourtSlot) => void;
 }
