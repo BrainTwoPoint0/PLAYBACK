@@ -108,44 +108,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchProfile = useCallback(
     async (userId: string) => {
       try {
-        const { data, error } = await supabase
+        // First get the profile
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select(
-            `
-          id,
-          username,
-          full_name,
-          bio,
-          location,
-          avatar_url,
-          social_links,
-          is_verified,
-          profile_type,
-          height_cm,
-          weight_kg,
-          preferred_foot,
-          organization_name,
-          organization_role,
-          user_sports (
-            id,
-            sport_id,
-            role,
-            experience_level,
-            positions,
-            sport:sports (
-              id,
-              name,
-              description,
-              sport_category,
-              common_positions
-            )
-          )
-        `
-          )
+          .select('*')
           .eq('user_id', userId)
           .single();
 
-        if (error) throw error;
+        if (profileError) throw profileError;
+
+        // Then get user_sports using API endpoint (service role to bypass RLS)
+        let userSportsData = [];
+        let sportsError = null;
+
+        try {
+          const response = await fetch('/api/user-sports-get');
+          if (response.ok) {
+            const result = await response.json();
+            userSportsData = result.user_sports || [];
+          } else {
+            const errorData = await response.json();
+            sportsError = errorData.error || 'Failed to fetch sports';
+          }
+        } catch (error) {
+          sportsError =
+            error instanceof Error ? error.message : 'Network error';
+        }
+
+        // Combine the data
+        const data = {
+          ...profileData,
+          user_sports: sportsError ? [] : userSportsData || [],
+        };
+
         return { data, error: null };
       } catch (error) {
         return {

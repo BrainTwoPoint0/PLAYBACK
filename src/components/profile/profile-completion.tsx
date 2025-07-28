@@ -242,8 +242,7 @@ export function ProfileCompletion({ profile }: ProfileCompletionProps) {
                   Perfect Profile! 🎉
                 </h4>
                 <p className="text-xs" style={{ color: 'var(--ash-grey)' }}>
-                  Your profile is complete and ready to impress scouts and
-                  coaches.
+                  Your profile is complete and ready to make connections.
                 </p>
               </div>
             </div>
@@ -254,8 +253,8 @@ export function ProfileCompletion({ profile }: ProfileCompletionProps) {
         {completionData.percentage < 70 && (
           <div className="text-xs" style={{ color: 'var(--ash-grey)' }}>
             <p>
-              💡 Complete your profile to increase visibility to scouts and
-              coaches.
+              💡 Complete your profile to increase visibility and make valuable
+              connections.
             </p>
           </div>
         )}

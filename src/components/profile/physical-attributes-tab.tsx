@@ -88,7 +88,7 @@ export function PhysicalAttributesTab({
       </div>
 
       {/* Form Fields */}
-      <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Height */}
         <div className="space-y-3">
           <Label
@@ -113,12 +113,11 @@ export function PhysicalAttributesTab({
               min="100"
               max="250"
             />
-            <span className="absolute right-3 top-3 text-sm text-neutral-400">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-neutral-400">
               cm
             </span>
           </div>
-          <div className="flex justify-between items-center text-xs">
-            <span className="text-neutral-400">Your height in centimeters</span>
+          <div className="flex justify-end items-center text-xs">
             {height > 0 && (
               <span className="text-green-400">
                 {convertHeightToFeetInches(height)}
@@ -151,12 +150,11 @@ export function PhysicalAttributesTab({
               min="30"
               max="200"
             />
-            <span className="absolute right-3 top-3 text-sm text-neutral-400">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-neutral-400">
               kg
             </span>
           </div>
-          <div className="flex justify-between items-center text-xs">
-            <span className="text-neutral-400">Your weight in kilograms</span>
+          <div className="flex justify-end items-center text-xs">
             {weight > 0 && (
               <span className="text-green-400">
                 {convertWeightToPounds(weight)}

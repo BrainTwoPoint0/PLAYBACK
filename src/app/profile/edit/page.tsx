@@ -241,7 +241,7 @@ function BasicInfoTab({
         </Label>
         <div className="relative">
           <MapPin
-            className="absolute left-3 top-3 h-5 w-5"
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5"
             style={{ color: 'var(--ash-grey)' }}
           />
           <Input
@@ -741,7 +741,7 @@ function SocialTab({
           </Label>
           <div className="relative">
             <span
-              className="absolute left-3 top-3 text-sm"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-sm"
               style={{ color: 'var(--ash-grey)' }}
             >
               @
@@ -775,7 +775,7 @@ function SocialTab({
           </Label>
           <div className="relative">
             <span
-              className="absolute left-3 top-3 text-sm"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-sm"
               style={{ color: 'var(--ash-grey)' }}
             >
               @
@@ -809,7 +809,7 @@ function SocialTab({
           </Label>
           <div className="relative">
             <span
-              className="absolute left-3 top-3 text-sm"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-sm"
               style={{ color: 'var(--ash-grey)' }}
             >
               /in/
@@ -877,21 +877,25 @@ function TabNavigation({
   tabs: { id: string; label: string; icon: React.ReactNode }[];
 }) {
   return (
-    <div className="flex space-x-2 bg-neutral-800/30 p-2 rounded-2xl border border-neutral-700/50">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => setActiveTab(tab.id)}
-          className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
-            activeTab === tab.id
-              ? 'bg-gradient-to-r from-green-500 to-blue-500 text-white shadow-lg'
-              : 'text-neutral-400 hover:text-white hover:bg-neutral-700/50'
-          }`}
-        >
-          {tab.icon}
-          {tab.label}
-        </button>
-      ))}
+    <div className="bg-neutral-800/30 p-3 rounded-2xl border border-neutral-700/50 overflow-x-auto no-visible-scrollbar">
+      <div className="flex gap-2 min-w-full px-4">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex-1 justify-center whitespace-nowrap ${
+              activeTab === tab.id
+                ? 'bg-gradient-to-r from-green-500 to-blue-500 text-white shadow-lg'
+                : 'text-neutral-400 hover:text-white hover:bg-neutral-700/50'
+            }`}
+          >
+            {tab.icon}
+            {tab.label}
+          </button>
+        ))}
+        {/* Spacer to ensure right padding in scrollable area */}
+        <div className="w-4 flex-shrink-0" aria-hidden="true"></div>
+      </div>
     </div>
   );
 }
@@ -907,7 +911,7 @@ function ProfileEditContent() {
   const loading = authLoading || profile.loading;
 
   const tabs = [
-    { id: 'basic', label: 'Basic Info', icon: <User className="h-4 w-4" /> },
+    { id: 'basic', label: 'Info', icon: <User className="h-4 w-4" /> },
     { id: 'avatar', label: 'Avatar', icon: <User className="h-4 w-4" /> },
     {
       id: 'physical',
@@ -1050,7 +1054,7 @@ function ProfileEditContent() {
           gradient="from-green-400 to-blue-400"
         />
         {/* Action Buttons */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-6 justify-center sm:justify-start">
           {saveSuccess && (
             <div className="flex items-center gap-2 text-sm text-green-400 bg-green-900/20 px-3 py-2 rounded-lg border border-green-800">
               <CheckCircle className="h-4 w-4" />
@@ -1117,7 +1121,7 @@ function ProfileEditContent() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-3">
-            <div className="bg-gradient-to-br from-neutral-900/90 to-neutral-800/50 backdrop-blur-xl border border-neutral-700/50 rounded-2xl shadow-lg relative overflow-hidden">
+            <div className="bg-gradient-to-br from-neutral-900/90 to-neutral-800/50 backdrop-blur-xl border border-neutral-700/50 rounded-2xl shadow-lg relative max-h-[80vh] overflow-hidden">
               {/* Background Pattern */}
               <div className="absolute inset-0 opacity-5">
                 <div className="absolute inset-0 bg-gradient-to-br from-green-400/20 to-blue-400/20"></div>
@@ -1134,7 +1138,7 @@ function ProfileEditContent() {
                 </div>
 
                 {/* Tab Content */}
-                <div className="bg-neutral-800/30 backdrop-blur-sm rounded-2xl p-8 border border-neutral-700/50">
+                <div className="bg-neutral-800/30 backdrop-blur-sm rounded-2xl p-8 border border-neutral-700/50 max-h-[60vh] overflow-y-auto">
                   {activeTab === 'basic' && (
                     <BasicInfoTab
                       profile={profile.data}

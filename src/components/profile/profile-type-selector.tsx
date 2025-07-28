@@ -18,18 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  User,
-  Trophy,
-  Search,
-  Heart,
-  Briefcase,
-  Users,
-  Shield,
-  ChevronRight,
-  Check,
-  Lock,
-} from 'lucide-react';
+import { Trophy, Users, Shield, ChevronRight, Check, Lock } from 'lucide-react';
 
 interface ProfileType {
   id: string;
@@ -58,21 +47,6 @@ const PROFILE_TYPES: ProfileType[] = [
     available: true,
   },
   {
-    id: 'scout',
-    name: 'Scout Profile',
-    description: 'Discover and evaluate talent, manage your scouting network',
-    icon: <Search className="h-6 w-6 text-blue-400" />,
-    features: [
-      'Player Discovery Tools',
-      'Talent Evaluation System',
-      'Scouting Reports',
-      'Team Management',
-      'Analytics Dashboard',
-    ],
-    available: false,
-    comingSoon: true,
-  },
-  {
     id: 'coach',
     name: 'Coach Profile',
     description: 'Build your coaching portfolio and connect with teams',
@@ -83,36 +57,6 @@ const PROFILE_TYPES: ProfileType[] = [
       'Training Programs',
       'Player Development',
       'Performance Tracking',
-    ],
-    available: false,
-    comingSoon: true,
-  },
-  {
-    id: 'agent',
-    name: 'Agent Profile',
-    description: 'Represent athletes and manage their career development',
-    icon: <Briefcase className="h-6 w-6 text-purple-400" />,
-    features: [
-      'Client Portfolio',
-      'Contract Management',
-      'Career Development',
-      'Network Building',
-      'Deal Analytics',
-    ],
-    available: false,
-    comingSoon: true,
-  },
-  {
-    id: 'fan',
-    name: 'Fan Profile',
-    description: 'Follow your favorite players and teams, engage with content',
-    icon: <Heart className="h-6 w-6 text-red-400" />,
-    features: [
-      'Follow Players & Teams',
-      'Highlight Collections',
-      'Community Features',
-      'Live Updates',
-      'Fan Rewards',
     ],
     available: false,
     comingSoon: true,
@@ -154,7 +98,13 @@ export function ProfileTypeSelector({
 
   const handleConfirm = () => {
     if (selectedType) {
-      onSelectType(selectedType);
+      if (selectedType === 'player') {
+        // Navigate directly to the Player Profile page
+        window.location.href = '/profile/player';
+      } else {
+        // For other types, use the original callback
+        onSelectType(selectedType);
+      }
       onOpenChange(false);
       setSelectedType(null);
     }

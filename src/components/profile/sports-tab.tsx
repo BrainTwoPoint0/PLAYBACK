@@ -47,7 +47,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 
 interface SportSelection {
-  sport_id: number;
+  sport_id: string; // Changed from number to string for UUID
   sport_name: string;
   role: 'player' | 'coach' | 'scout' | 'fan';
   positions: string[];
@@ -66,6 +66,7 @@ interface SportsTabProps {
   profile: any;
   onUpdate: (updates: any) => void;
   onMarkChanged: () => void;
+  fixedRole?: 'player' | 'coach' | 'scout' | 'fan';
 }
 
 const FOOT_SPORTS = ['Football', 'Soccer', 'American Football'];
@@ -198,25 +199,27 @@ function AddSportDialog({
   allSports,
   userSports,
   onAddSport,
+  fixedRole,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   allSports: SportData[];
   userSports: SportSelection[];
   onAddSport: (sport: SportSelection) => void;
+  fixedRole?: 'player' | 'coach' | 'scout' | 'fan';
 }) {
   const [selectedSport, setSelectedSport] = useState<SportData | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [formData, setFormData] = useState({
-    role: 'player' as SportSelection['role'],
+    role: (fixedRole || 'player') as SportSelection['role'],
     positions: [] as string[],
     experience_level: 'beginner' as SportSelection['experience_level'],
   });
 
   const userSportIds = userSports.map((s) => s.sport_id);
   const availableSports = allSports.filter(
-    (sport) => !userSportIds.includes(parseInt(sport.id))
+    (sport) => !userSportIds.includes(sport.id)
   );
 
   const categories = [
@@ -241,7 +244,7 @@ function AddSportDialog({
     if (!selectedSport) return;
 
     const newSport: SportSelection = {
-      sport_id: parseInt(selectedSport.id),
+      sport_id: selectedSport.id, // Keep as string UUID, don't parseInt
       sport_name: selectedSport.name,
       role: formData.role,
       positions:
@@ -400,29 +403,31 @@ function AddSportDialog({
 
                 {/* Form Fields */}
                 <div className="space-y-4">
-                  {/* Role */}
-                  <div className="space-y-2">
-                    <Label>Your Role</Label>
-                    <Select
-                      value={formData.role}
-                      onValueChange={(value) =>
-                        setFormData({
-                          ...formData,
-                          role: value as SportSelection['role'],
-                        })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="player">Player</SelectItem>
-                        <SelectItem value="coach">Coach</SelectItem>
-                        <SelectItem value="scout">Scout</SelectItem>
-                        <SelectItem value="fan">Fan</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {/* Role - only show if not fixed */}
+                  {!fixedRole && (
+                    <div className="space-y-2">
+                      <Label>Your Role</Label>
+                      <Select
+                        value={formData.role}
+                        onValueChange={(value) =>
+                          setFormData({
+                            ...formData,
+                            role: value as SportSelection['role'],
+                          })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="player">Player</SelectItem>
+                          <SelectItem value="coach">Coach</SelectItem>
+                          <SelectItem value="scout">Scout</SelectItem>
+                          <SelectItem value="fan">Fan</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
 
                   {/* Positions (team sports + player role only) */}
                   {selectedSport.sport_category === 'team' &&
@@ -707,6 +712,7 @@ export function SportsTab({
   profile,
   onUpdate,
   onMarkChanged,
+  fixedRole,
 }: SportsTabProps) {
   const [userSports, setUserSports] = useState<SportSelection[]>([]);
   const [allSports, setAllSports] = useState<SportData[]>([]);
@@ -726,7 +732,7 @@ export function SportsTab({
       const sports = profile?.user_sports || [];
       setUserSports(
         sports.map((sport: any) => ({
-          sport_id: sport.sport_id || parseInt(sport.sport?.id),
+          sport_id: sport.sport_id || sport.sport?.id,
           sport_name: sport.sport?.name || 'Unknown Sport',
           role: sport.role || 'player',
           positions: sport.positions || [],
@@ -778,8 +784,8 @@ export function SportsTab({
     onMarkChanged();
   };
 
-  const getSportData = (sportId: number): SportData | undefined => {
-    return allSports.find((s) => parseInt(s.id) === sportId);
+  const getSportData = (sportId: string): SportData | undefined => {
+    return allSports.find((s) => s.id === sportId);
   };
 
   if (loading) {
@@ -888,6 +894,7 @@ export function SportsTab({
         allSports={allSports}
         userSports={userSports}
         onAddSport={handleAddSport}
+        fixedRole={fixedRole}
       />
 
       {editingSport && editingSportData && (

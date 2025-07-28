@@ -27,9 +27,7 @@ import {
   Sparkles,
   ChevronRight,
   Play,
-  Upload,
   Settings,
-  Search,
 } from 'lucide-react';
 
 // SocialLink Component (from public profile)
@@ -84,7 +82,7 @@ function SocialLink({
 
 function DashboardContent() {
   const { user, signOut, loading } = useAuth();
-  const { profile, refreshProfile } = useProfile();
+  const { profile } = useProfile();
   const onboardingStatus = useOnboardingStatus();
   const [highlightsCount, setHighlightsCount] = useState(0);
   const [loadingCounts, setLoadingCounts] = useState(true);
@@ -119,13 +117,6 @@ function DashboardContent() {
   const handleSignOut = async () => {
     await signOut();
   };
-
-  const handleRefreshProfile = async () => {
-    await refreshProfile(true); // Force refresh
-  };
-
-  const isIncomplete =
-    !onboardingStatus.isComplete && !onboardingStatus.loading && !loading;
 
   // Fetch user data counts
   useEffect(() => {
@@ -168,7 +159,7 @@ function DashboardContent() {
                 <Sparkles className="h-5 w-5 text-yellow-400" />
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
                   Welcome back,{' '}
-                  {profile.data?.full_name?.split(' ')[0] || 'Athlete'}
+                  {profile.data?.full_name?.split(' ')[0] || 'User'}
                 </h1>
               </div>
             </div>
@@ -184,7 +175,7 @@ function DashboardContent() {
             </Button>
           </div>
           <p className="text-base" style={{ color: 'var(--ash-grey)' }}>
-            Continue building your athletic legacy with cutting-edge tools and
+            Continue building your sports profile with cutting-edge tools and
             insights.
           </p>
         </div>
@@ -375,8 +366,60 @@ function DashboardContent() {
                       </div>
                     )}
 
-                    {/* Row 4: Action Buttons */}
-                    <div className="flex items-center gap-3 pt-2">
+                    {/* Row 4: User Profiles List */}
+                    {profile.data?.user_sports &&
+                      profile.data.user_sports.length > 0 && (
+                        <div className="pt-2">
+                          <p
+                            className="text-xs font-medium mb-2"
+                            style={{ color: 'var(--ash-grey)' }}
+                          >
+                            Your Profiles:
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {profile.data.user_sports.map((sport, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center gap-2 px-3 py-1.5 bg-neutral-800/30 border border-neutral-700/50 rounded-full hover:bg-neutral-700/30 transition-colors cursor-pointer group"
+                                onClick={() => {
+                                  const sportName =
+                                    sport.sport?.name
+                                      ?.toLowerCase()
+                                      .replace(/\s+/g, '-') || 'unknown';
+                                  const role = sport.role || 'player';
+                                  const username = profile.data?.username;
+                                  const profileUrl = `/profile/${username}/${sportName}/${role}`;
+
+                                  // For now, log the URL structure - in the future this will navigate to dedicated sport/role profile pages
+                                  console.log(
+                                    `Future profile URL: ${profileUrl}`
+                                  );
+
+                                  // Temporary: Navigate to general profile for now
+                                  window.open(`/profile/${username}`, '_blank');
+                                }}
+                              >
+                                <Trophy className="h-3 w-3 text-green-400" />
+                                <span
+                                  className="text-xs font-medium"
+                                  style={{ color: 'var(--timberwolf)' }}
+                                >
+                                  {sport.sport?.name}{' '}
+                                  {sport.role === 'player'
+                                    ? 'Player'
+                                    : sport.role === 'coach'
+                                      ? 'Coach'
+                                      : 'Profile'}
+                                </span>
+                                <ChevronRight className="h-3 w-3 text-neutral-600 group-hover:text-green-400 transition-colors" />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                    {/* Row 5: Action Buttons */}
+                    <div className="flex items-center gap-3 pt-4">
                       <Button
                         variant="outline"
                         size="sm"
@@ -455,71 +498,42 @@ function DashboardContent() {
               </div>
 
               {/* Available Profile Types */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Player Profile - Coming Soon */}
-                <div className="bg-neutral-800/30 border border-neutral-700/50 rounded-xl p-4 opacity-50 relative">
-                  <div className="absolute top-2 right-2">
-                    <div className="bg-blue-400/10 text-blue-400 border border-blue-400/30 px-2 py-1 rounded-full text-xs">
-                      Coming Soon
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gradient-to-r from-blue-400/10 to-purple-400/10 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Player Profile - Active */}
+                <div
+                  className="bg-neutral-800/30 border border-neutral-700/50 rounded-xl p-4 hover:bg-neutral-700/30 hover:border-green-400/30 transition-all duration-300 cursor-pointer group"
+                  onClick={() => (window.location.href = '/profile/player')}
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-gradient-to-r from-yellow-400/10 to-green-400/10 rounded-lg">
                       <Trophy className="h-4 w-4 text-yellow-400" />
                     </div>
                     <div className="flex-1">
                       <h4
-                        className="font-medium"
+                        className="font-medium group-hover:text-green-400 transition-colors"
                         style={{ color: 'var(--timberwolf)' }}
                       >
                         Player Profile
                       </h4>
                       <p
-                        className="text-xs"
+                        className="text-xs h-8 flex items-start"
                         style={{ color: 'var(--ash-grey)' }}
                       >
                         Showcasing your skills and achievements
                       </p>
                     </div>
                   </div>
-                </div>
-
-                {/* Scout Profile - Coming Soon */}
-                <div className="bg-neutral-800/30 border border-neutral-700/50 rounded-xl p-4 opacity-50 relative">
-                  <div className="absolute top-2 right-2">
-                    <div className="bg-blue-400/10 text-blue-400 border border-blue-400/30 px-2 py-1 rounded-full text-xs">
-                      Coming Soon
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gradient-to-r from-blue-400/10 to-purple-400/10 rounded-lg">
-                      <Search className="h-4 w-4 text-blue-400" />
-                    </div>
-                    <div className="flex-1">
-                      <h4
-                        className="font-medium"
-                        style={{ color: 'var(--timberwolf)' }}
-                      >
-                        Scout Profile
-                      </h4>
-                      <p
-                        className="text-xs"
-                        style={{ color: 'var(--ash-grey)' }}
-                      >
-                        Discover and evaluate talent
-                      </p>
+                  <div className="flex items-center justify-between pt-2 border-t border-neutral-700/30">
+                    <div className="h-6"></div>
+                    <div className="bg-green-400/10 text-green-400 border border-green-400/30 px-3 py-1 rounded-full text-xs">
+                      Available
                     </div>
                   </div>
                 </div>
 
                 {/* Coach Profile - Coming Soon */}
-                <div className="bg-neutral-800/30 border border-neutral-700/50 rounded-xl p-4 opacity-50 relative">
-                  <div className="absolute top-2 right-2">
-                    <div className="bg-blue-400/10 text-blue-400 border border-blue-400/30 px-2 py-1 rounded-full text-xs">
-                      Coming Soon
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
+                <div className="bg-neutral-800/30 border border-neutral-700/50 rounded-xl p-4 opacity-50">
+                  <div className="flex items-center gap-3 mb-3">
                     <div className="p-2 bg-gradient-to-r from-green-400/10 to-blue-400/10 rounded-lg">
                       <User className="h-4 w-4 text-green-400" />
                     </div>
@@ -531,79 +545,24 @@ function DashboardContent() {
                         Coach Profile
                       </h4>
                       <p
-                        className="text-xs"
+                        className="text-xs h-8 flex items-start"
                         style={{ color: 'var(--ash-grey)' }}
                       >
                         Build coaching portfolio
                       </p>
                     </div>
                   </div>
-                </div>
-
-                {/* Agent Profile - Coming Soon */}
-                <div className="bg-neutral-800/30 border border-neutral-700/50 rounded-xl p-4 opacity-50 relative">
-                  <div className="absolute top-2 right-2">
-                    <div className="bg-blue-400/10 text-blue-400 border border-blue-400/30 px-2 py-1 rounded-full text-xs">
+                  <div className="flex items-center justify-between pt-2 border-t border-neutral-700/30">
+                    <div className="h-6"></div>
+                    <div className="bg-blue-400/10 text-blue-400 border border-blue-400/30 px-3 py-1 rounded-full text-xs">
                       Coming Soon
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-lg">
-                      <Settings className="h-4 w-4 text-purple-400" />
-                    </div>
-                    <div className="flex-1">
-                      <h4
-                        className="font-medium"
-                        style={{ color: 'var(--timberwolf)' }}
-                      >
-                        Agent Profile
-                      </h4>
-                      <p
-                        className="text-xs"
-                        style={{ color: 'var(--ash-grey)' }}
-                      >
-                        Represent athletes
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Fan Profile - Coming Soon */}
-                <div className="bg-neutral-800/30 border border-neutral-700/50 rounded-xl p-4 opacity-50 relative">
-                  <div className="absolute top-2 right-2">
-                    <div className="bg-blue-400/10 text-blue-400 border border-blue-400/30 px-2 py-1 rounded-full text-xs">
-                      Coming Soon
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gradient-to-r from-red-400/10 to-pink-400/10 rounded-lg">
-                      <Star className="h-4 w-4 text-red-400" />
-                    </div>
-                    <div className="flex-1">
-                      <h4
-                        className="font-medium"
-                        style={{ color: 'var(--timberwolf)' }}
-                      >
-                        Fan Profile
-                      </h4>
-                      <p
-                        className="text-xs"
-                        style={{ color: 'var(--ash-grey)' }}
-                      >
-                        Follow and engage
-                      </p>
                     </div>
                   </div>
                 </div>
 
                 {/* Club Admin Profile - Coming Soon */}
-                <div className="bg-neutral-800/30 border border-neutral-700/50 rounded-xl p-4 opacity-50 relative">
-                  <div className="absolute top-2 right-2">
-                    <div className="bg-blue-400/10 text-blue-400 border border-blue-400/30 px-2 py-1 rounded-full text-xs">
-                      Coming Soon
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
+                <div className="bg-neutral-800/30 border border-neutral-700/50 rounded-xl p-4 opacity-50">
+                  <div className="flex items-center gap-3 mb-3">
                     <div className="p-2 bg-gradient-to-r from-orange-400/10 to-yellow-400/10 rounded-lg">
                       <Crown className="h-4 w-4 text-blue-400" />
                     </div>
@@ -615,11 +574,17 @@ function DashboardContent() {
                         Club Admin
                       </h4>
                       <p
-                        className="text-xs"
+                        className="text-xs h-8 flex items-start"
                         style={{ color: 'var(--ash-grey)' }}
                       >
                         Manage clubs and teams
                       </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between pt-2 border-t border-neutral-700/30">
+                    <div className="h-6"></div>
+                    <div className="bg-blue-400/10 text-blue-400 border border-blue-400/30 px-3 py-1 rounded-full text-xs">
+                      Coming Soon
                     </div>
                   </div>
                 </div>
@@ -633,7 +598,7 @@ function DashboardContent() {
             <div className="bg-gradient-to-br from-neutral-900/90 to-neutral-800/50 backdrop-blur-xl border border-neutral-700/50 rounded-2xl p-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-purple-400/10 rounded-xl">
-                  <Zap className="h-5 w-5 text-purple-400" />
+                  <Zap className="h-5 w-5 text-yellow-400" />
                 </div>
                 <h3
                   className="text-lg font-semibold"
@@ -647,21 +612,9 @@ function DashboardContent() {
                 <Button
                   variant="ghost"
                   className="w-full justify-start bg-neutral-800/30 hover:bg-neutral-800/50 border border-neutral-700/50 hover:border-neutral-600/50 transition-all duration-300 group"
-                  onClick={() => (window.location.href = '/highlights')}
-                >
-                  <Upload className="h-4 w-4 mr-3 text-purple-400" />
-                  <span style={{ color: 'var(--timberwolf)' }}>
-                    Upload Highlight
-                  </span>
-                  <ChevronRight className="h-4 w-4 ml-auto text-neutral-600 group-hover:text-purple-400" />
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start bg-neutral-800/30 hover:bg-neutral-800/50 border border-neutral-700/50 hover:border-neutral-600/50 transition-all duration-300 group"
                   onClick={() => (window.location.href = '/profile/edit')}
                 >
-                  <Settings className="h-4 w-4 mr-3 text-green-400" />
+                  <Settings className="h-4 w-4 mr-3 text-gray-400" />
                   <span style={{ color: 'var(--timberwolf)' }}>
                     Profile Settings
                   </span>
@@ -710,7 +663,9 @@ function DashboardContent() {
               )}
 
             {/* Profile Completion */}
-            <ProfileCompletion profile={profile.data} />
+            {profileCompletion < 100 && (
+              <ProfileCompletion profile={profile.data} />
+            )}
           </div>
         </div>
       </div>

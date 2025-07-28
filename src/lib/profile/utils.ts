@@ -260,7 +260,7 @@ export async function getPublicProfileByUsername(username: string) {
 }
 
 export interface SportSelection {
-  sport_id: number;
+  sport_id: string; // Changed from number to string for UUID
   sport_name: string;
   role: 'player' | 'coach' | 'scout' | 'fan';
   positions: string[];
@@ -274,61 +274,21 @@ export async function updateUserSports(
   userId: string,
   userSports: SportSelection[]
 ) {
-  const supabase = createClient();
-
   try {
-    // First, get the user's profile ID
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('user_id', userId)
-      .single();
+    const response = await fetch('/api/user-sports', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userSports }),
+    });
 
-    if (profileError || !profile) {
+    if (!response.ok) {
+      const errorData = await response.json();
       return {
         data: null,
-        error: 'Profile not found',
+        error: errorData.error || 'Failed to save sports',
       };
-    }
-
-    const profileId = profile.id;
-
-    // Delete existing user_sports entries
-    const { error: deleteError } = await supabase
-      .from('user_sports')
-      .delete()
-      .eq('user_id', profileId);
-
-    if (deleteError) {
-      return {
-        data: null,
-        error: 'Failed to clear existing sports',
-      };
-    }
-
-    // Insert new user_sports entries if any
-    if (userSports.length > 0) {
-      const userSportsData = userSports.map((sport) => ({
-        user_id: profileId,
-        sport_id: sport.sport_id.toString(),
-        role: sport.role,
-        experience_level: sport.experience_level,
-        positions: sport.positions || [],
-        is_primary: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }));
-
-      const { error: insertError } = await supabase
-        .from('user_sports')
-        .insert(userSportsData);
-
-      if (insertError) {
-        return {
-          data: null,
-          error: 'Failed to save sports',
-        };
-      }
     }
 
     return { data: true, error: null };
