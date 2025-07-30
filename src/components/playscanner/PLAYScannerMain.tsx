@@ -152,14 +152,14 @@ export default function PLAYScannerMain() {
           <h1 className="text-4xl md:text-6xl font-bold">
             PLAY<span className="text-[#00FF88]">Scanner</span>
           </h1>
-          <Link
+          {/* <Link
             href="/playscanner/analytics"
             className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition-colors text-sm"
             title="View Analytics"
           >
             <BarChart3 className="h-4 w-4" />
             Analytics
-          </Link>
+          </Link> */}
         </div>
         <p className="text-lg text-neutral-400 max-w-2xl mx-auto leading-relaxed">
           Find and book sports courts and pitches across multiple providers.
