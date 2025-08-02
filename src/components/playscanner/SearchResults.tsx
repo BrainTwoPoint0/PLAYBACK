@@ -1,10 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { SearchResultsProps } from '@/lib/playscanner/types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { SearchResultsProps, SortBy, CourtSlot } from '@/lib/playscanner/types';
 import {
   MapPinIcon,
   ClockIcon,
@@ -12,8 +19,10 @@ import {
   ExternalLinkIcon,
   ListIcon,
   MapIcon,
+  ArrowUpDownIcon,
 } from 'lucide-react';
 import MapView from './MapView';
+import FilterPanel, { FilterState } from './filters/FilterPanel';
 
 type ViewMode = 'list' | 'map';
 
@@ -26,13 +35,87 @@ export default function SearchResults({
 }: SearchResultsProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [showCount, setShowCount] = useState(10);
+  const [sortBy, setSortBy] = useState<SortBy>('time-asc');
+  const [filters, setFilters] = useState<FilterState>({});
+
+  // Filter results based on selected filters
+  const filteredResults = useMemo(() => {
+    let filtered = [...results];
+
+    // Apply time filter
+    if (filters.timeRange) {
+      filtered = filtered.filter((slot) => {
+        const slotTime = new Date(slot.startTime);
+        const slotHour = slotTime.getHours();
+        const slotMinutes = slotTime.getMinutes();
+        const slotTimeValue = slotHour * 60 + slotMinutes;
+
+        const [startHour, startMin] = filters
+          .timeRange!.start.split(':')
+          .map(Number);
+        const [endHour, endMin] = filters.timeRange!.end.split(':').map(Number);
+        const startTimeValue = startHour * 60 + startMin;
+        const endTimeValue = endHour * 60 + endMin;
+
+        return slotTimeValue >= startTimeValue && slotTimeValue <= endTimeValue;
+      });
+    }
+
+    // Apply price filter
+    if (filters.priceRange) {
+      filtered = filtered.filter(
+        (slot) =>
+          slot.price >= filters.priceRange!.min &&
+          slot.price <= filters.priceRange!.max
+      );
+    }
+
+    // Apply venue filter
+    if (filters.selectedVenues && filters.selectedVenues.length > 0) {
+      filtered = filtered.filter((slot) => {
+        const venueName =
+          typeof slot.venue === 'string' ? slot.venue : slot.venue.name;
+        return filters.selectedVenues!.includes(venueName);
+      });
+    }
+
+    return filtered;
+  }, [results, filters]);
+
+  // Sort results based on selected option
+  const sortedResults = useMemo(() => {
+    const sorted = [...filteredResults];
+
+    switch (sortBy) {
+      case 'time-asc':
+        sorted.sort(
+          (a, b) =>
+            new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+        );
+        break;
+      case 'time-desc':
+        sorted.sort(
+          (a, b) =>
+            new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+        );
+        break;
+      case 'price-asc':
+        sorted.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-desc':
+        sorted.sort((a, b) => b.price - a.price);
+        break;
+    }
+
+    return sorted;
+  }, [filteredResults, sortBy]);
 
   // Paginated results for display
-  const displayedResults = results.slice(0, showCount);
-  const hasMoreResults = results.length > showCount;
+  const displayedResults = sortedResults.slice(0, showCount);
+  const hasMoreResults = sortedResults.length > showCount;
 
   const showMoreResults = () => {
-    setShowCount((prev) => Math.min(prev + 10, results.length));
+    setShowCount((prev) => Math.min(prev + 10, sortedResults.length));
   };
 
   const ViewModeToggle = () => (
@@ -243,16 +326,46 @@ export default function SearchResults({
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <CardTitle>
-            Found {results.length}{' '}
+            Found {filteredResults.length}{' '}
             {sport === 'padel' ? 'Padel Courts' : 'Football Pitches'}
+            {filters.timeRange ||
+            filters.priceRange ||
+            (filters.selectedVenues && filters.selectedVenues.length > 0)
+              ? ` (filtered from ${results.length})`
+              : ''}
           </CardTitle>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center sm:gap-3 sm:justify-normal justify-between">
+            <Select
+              value={sortBy}
+              onValueChange={(value) => setSortBy(value as SortBy)}
+            >
+              <SelectTrigger className="w-[190px]">
+                <div className="flex items-center gap-2">
+                  <ArrowUpDownIcon className="h-4 w-4" />
+                  <SelectValue />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="time-asc">Time: Earliest</SelectItem>
+                <SelectItem value="time-desc">Time: Latest</SelectItem>
+                <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                <SelectItem value="price-desc">Price: High to Low</SelectItem>
+              </SelectContent>
+            </Select>
             <ViewModeToggle />
           </div>
         </div>
       </CardHeader>
 
       <CardContent>
+        {/* Filter Panel */}
+        <FilterPanel
+          sport={sport}
+          filters={filters}
+          onFiltersChange={setFilters}
+          searchResults={results} // Pass original unfiltered results
+          className="mb-6"
+        />
         {/* Results Count Info */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -261,8 +374,8 @@ export default function SearchResults({
               {displayedResults.length === 1 ? 'Court' : 'Courts'} Available
             </h3>
             <p className="text-neutral-400">
-              Showing {displayedResults.length} of {results.length} results in
-              London
+              Showing {displayedResults.length} of {sortedResults.length}{' '}
+              results in London
             </p>
           </div>
 
@@ -275,7 +388,7 @@ export default function SearchResults({
 
         {/* Results Display */}
         {viewMode === 'map' ? (
-          <MapView results={results} sport={sport} />
+          <MapView results={sortedResults} sport={sport} />
         ) : (
           <div className="space-y-4">
             {displayedResults.map((slot, index) => (
@@ -292,7 +405,7 @@ export default function SearchResults({
         {hasMoreResults && viewMode !== 'map' && (
           <div className="flex justify-center mt-8">
             <Button onClick={showMoreResults} variant="outline" size="lg">
-              Show More Courts ({results.length - showCount} remaining)
+              Show More Courts ({sortedResults.length - showCount} remaining)
             </Button>
           </div>
         )}

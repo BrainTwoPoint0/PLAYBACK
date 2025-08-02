@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { Label } from '@/components/ui/label';
 import { TimePicker } from '@/components/ui/time-picker';
+import { Button } from '@/components/ui/button';
 import { ClockIcon } from 'lucide-react';
 import { CourtSlot } from '@/lib/playscanner/types';
 
@@ -65,11 +66,27 @@ export default function TimeFilters({
     onTimeRangeChange(newRange);
   };
 
+  const clearTimeRange = () => {
+    onTimeRangeChange(undefined);
+  };
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2">
-        <ClockIcon className="h-4 w-4" />
-        <Label className="text-sm font-medium">Time Range</Label>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <ClockIcon className="h-4 w-4" />
+          <Label className="text-sm font-medium">Time Range</Label>
+        </div>
+        {timeRange && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearTimeRange}
+            className="text-xs"
+          >
+            Clear
+          </Button>
+        )}
       </div>
 
       {/* Custom Time Range with dynamic bounds */}

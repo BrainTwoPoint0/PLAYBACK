@@ -13,10 +13,12 @@ import { ChevronDownIcon, SlidersHorizontalIcon, XIcon } from 'lucide-react';
 import { Sport, CourtSlot } from '@/lib/playscanner/types';
 import TimeFilters from './TimeFilters';
 import PriceFilters from './PriceFilters';
+import VenueFilters from './VenueFilters';
 
 export interface FilterState {
   timeRange?: { start: string; end: string };
   priceRange?: { min: number; max: number };
+  selectedVenues?: string[]; // Array of venue names
 }
 
 interface FilterPanelProps {
@@ -60,6 +62,7 @@ export default function FilterPanel({
     let count = 0;
     if (filters.timeRange) count++;
     if (filters.priceRange) count++;
+    if (filters.selectedVenues && filters.selectedVenues.length > 0) count++;
     return count;
   };
 
@@ -106,6 +109,15 @@ export default function FilterPanel({
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Venue Filters */}
+              <VenueFilters
+                selectedVenues={filters.selectedVenues}
+                onVenuesChange={(venues) =>
+                  updateFilter('selectedVenues', venues)
+                }
+                searchResults={searchResults}
+              />
+
               {/* Time Range Filters */}
               <TimeFilters
                 timeRange={filters.timeRange}
@@ -133,6 +145,21 @@ export default function FilterPanel({
             Active Filters:
           </div>
           <div className="flex flex-wrap gap-2">
+            {filters.selectedVenues && filters.selectedVenues.length > 0 && (
+              <Badge variant="secondary" className="gap-1">
+                {filters.selectedVenues.length === 1
+                  ? filters.selectedVenues[0]
+                  : `${filters.selectedVenues.length} venues`}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-auto p-0 w-4 h-4 hover:bg-transparent"
+                  onClick={() => updateFilter('selectedVenues', undefined)}
+                >
+                  <XIcon className="h-3 w-3" />
+                </Button>
+              </Badge>
+            )}
             {filters.timeRange && (
               <Badge variant="secondary" className="gap-1">
                 {filters.timeRange.start} - {filters.timeRange.end}

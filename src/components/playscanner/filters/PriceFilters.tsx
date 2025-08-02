@@ -44,8 +44,10 @@ export default function PriceFilters({
   const currentMax = priceRange?.max ?? dynamicMax;
 
   const handleSliderChange = (values: number[]) => {
-    const [min, max] = values;
-    onPriceRangeChange({ min, max });
+    if (values.length === 2) {
+      const [min, max] = values;
+      onPriceRangeChange({ min, max });
+    }
   };
 
   const clearPriceRange = () => {
@@ -58,9 +60,21 @@ export default function PriceFilters({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2">
-        <PoundSterlingIcon className="h-4 w-4" />
-        <Label className="text-sm font-medium">Price Range</Label>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <PoundSterlingIcon className="h-4 w-4" />
+          <Label className="text-sm font-medium">Price Range</Label>
+        </div>
+        {priceRange && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearPriceRange}
+            className="text-xs"
+          >
+            Clear
+          </Button>
+        )}
       </div>
 
       {/* Dynamic Price Range Slider */}
@@ -76,6 +90,7 @@ export default function PriceFilters({
           min={dynamicMin}
           max={dynamicMax}
           step={100}
+          minStepsBetweenThumbs={1}
           className="w-full"
         />
 

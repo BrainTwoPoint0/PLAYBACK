@@ -161,6 +161,9 @@ export interface SearchFormProps {
   isSearching: boolean;
 }
 
+// Sorting types
+export type SortBy = 'time-asc' | 'time-desc' | 'price-asc' | 'price-desc';
+
 export interface SearchResultsProps {
   results: CourtSlot[];
   isLoading: boolean;

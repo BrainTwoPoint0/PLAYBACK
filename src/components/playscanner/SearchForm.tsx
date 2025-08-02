@@ -6,27 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DatePicker } from '@/components/ui/date-picker';
 import { SearchIcon, MapPinIcon, CalendarIcon } from 'lucide-react';
-import {
-  SearchFormProps,
-  SearchParams,
-  CourtSlot,
-} from '@/lib/playscanner/types';
-import FilterPanel, { FilterState } from './filters/FilterPanel';
-
-interface SearchFormPropsExtended extends SearchFormProps {
-  searchResults?: CourtSlot[];
-  filters?: FilterState;
-  onFiltersChange?: (filters: FilterState) => void;
-}
+import { SearchFormProps, SearchParams } from '@/lib/playscanner/types';
 
 export default function SearchForm({
   sport,
   onSearch,
   isSearching,
-  searchResults = [],
-  filters = {},
-  onFiltersChange,
-}: SearchFormPropsExtended) {
+}: SearchFormProps) {
   const [location, setLocation] = useState('London');
 
   // Get today's date in YYYY-MM-DD format (always use local date)
@@ -65,10 +51,6 @@ export default function SearchForm({
       sport,
       location,
       date,
-      // Add filter parameters
-      startTime: filters.timeRange?.start,
-      endTime: filters.timeRange?.end,
-      maxPrice: filters.priceRange?.max,
     };
 
     onSearch(searchParams);
@@ -113,30 +95,22 @@ export default function SearchForm({
         </div>
       </div>
 
-      {/* Filter Panel */}
-      <FilterPanel
-        sport={sport}
-        filters={filters}
-        onFiltersChange={onFiltersChange || (() => {})}
-        searchResults={searchResults}
-      />
-
       {/* Search Button */}
       <Button
         type="submit"
-        className="w-full"
+        className="w-full bg-[#00FF88] hover:bg-[#00E077] text-[#0a100d] font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         size="lg"
         disabled={isSearching || !location || !date}
       >
         {isSearching ? (
-          <div className="flex items-center space-x-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-            <span>Searching...</span>
+          <div className="flex items-center justify-center space-x-2">
+            <div className="animate-spin rounded-full h-5 w-5 border-2 border-[#0a100d] border-t-transparent" />
+            <span className="text-lg">Searching...</span>
           </div>
         ) : (
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center justify-center space-x-2">
             <SearchIcon className="h-5 w-5" />
-            <span>
+            <span className="text-lg">
               Search {sport === 'padel' ? 'Padel Courts' : 'Football Pitches'}
             </span>
           </div>

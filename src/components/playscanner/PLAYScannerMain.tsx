@@ -7,8 +7,6 @@ import SportSelector from './SportSelector';
 import SearchForm from './SearchForm';
 import SearchResults from './SearchResults';
 import { Sport, SearchParams, CourtSlot } from '@/lib/playscanner/types';
-import { applyFilters } from '@/lib/playscanner/filter-utils';
-import { FilterState } from './filters/FilterPanel';
 import { playscannerAnalytics } from '@/lib/playscanner/analytics';
 import Link from 'next/link';
 import { BarChart3 } from 'lucide-react';
@@ -20,14 +18,8 @@ export default function PLAYScannerMain() {
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<any | null>(null);
-  const [currentFilters, setCurrentFilters] = useState<FilterState>({});
   const [rawResults, setRawResults] = useState<CourtSlot[]>([]); // Store unfiltered results
   const [currentSearchId, setCurrentSearchId] = useState<string | null>(null); // Track current search for conversions
-
-  // Apply filters to raw results
-  const filteredResults = useMemo(() => {
-    return applyFilters(rawResults, currentFilters, selectedSport);
-  }, [rawResults, currentFilters, selectedSport]);
 
   // Initialize analytics session on component mount
   useEffect(() => {
@@ -56,25 +48,6 @@ export default function PLAYScannerMain() {
     setError(null);
     setResults(null);
     const searchStartTime = Date.now();
-
-    // Extract filters from search params to store in component state
-    const filters: FilterState = {
-      timeRange:
-        searchParams.startTime && searchParams.endTime
-          ? {
-              start: searchParams.startTime,
-              end: searchParams.endTime,
-            }
-          : undefined,
-      priceRange: searchParams.maxPrice
-        ? {
-            min: 500, // Default minimum £5
-            max: searchParams.maxPrice,
-          }
-        : undefined,
-    };
-
-    setCurrentFilters(filters);
 
     try {
       const response = await fetch('/api/playscanner/search', {
@@ -213,9 +186,6 @@ export default function PLAYScannerMain() {
               sport={selectedSport}
               onSearch={handleSearch}
               isSearching={isSearching}
-              searchResults={rawResults}
-              filters={currentFilters}
-              onFiltersChange={setCurrentFilters}
             />
           </div>
         </div>
@@ -229,7 +199,7 @@ export default function PLAYScannerMain() {
           transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
         >
           <SearchResults
-            results={filteredResults}
+            results={rawResults}
             isLoading={isSearching}
             sport={selectedSport}
             error={error ? { code: 'SEARCH_ERROR', message: error } : undefined}
