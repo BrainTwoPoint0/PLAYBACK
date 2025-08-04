@@ -138,7 +138,7 @@ export default function PLAYScannerMain() {
           Find and book sports courts and pitches across multiple providers.
           Compare prices, check availability, and book instantly.
         </p>
-        <div className="md:hidden mt-4">
+        {/* <div className="md:hidden mt-4">
           <Link
             href="/playscanner/analytics"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition-colors text-sm"
@@ -146,7 +146,7 @@ export default function PLAYScannerMain() {
             <BarChart3 className="h-4 w-4" />
             View Analytics
           </Link>
-        </div>
+        </div> */}
       </motion.div>
 
       {/* Sport Selector */}
