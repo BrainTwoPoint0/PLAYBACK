@@ -315,28 +315,6 @@ export class PersistentCacheService {
   }
 
   /**
-   * Store venue metadata
-   */
-  async storeVenue(venue: Venue, city: string): Promise<void> {
-    try {
-      const { error } = await this.supabase.from('playscanner_venues').upsert({
-        venue_id: venue.id,
-        provider: venue.provider,
-        city: city.toLowerCase(),
-        venue_data: venue,
-        is_active: true,
-        last_seen: new Date().toISOString(),
-      });
-
-      if (error) {
-        console.error('Error storing venue:', error);
-      }
-    } catch (error) {
-      console.error('storeVenue error:', error);
-    }
-  }
-
-  /**
    * Get cache statistics
    */
   async getCacheStats(): Promise<CacheStats> {
@@ -372,9 +350,10 @@ export class PersistentCacheService {
    */
   async healthCheck(): Promise<{ healthy: boolean; details: any }> {
     try {
-      const { data, error } = await this.supabase
-        .from('playscanner_health')
-        .select('count')
+      // Use playscanner_cache for health check instead of playscanner_health
+      const { error } = await this.supabase
+        .from('playscanner_cache')
+        .select('id')
         .limit(1);
 
       if (error) {

@@ -60,27 +60,7 @@ async function setCachedData(city, date, slots) {
   console.log(`💾 Cached ${slots.length} slots for ${city} ${date}`);
 }
 
-/**
- * Store venue information
- */
-async function storeVenue(venue, city) {
-  const supabase = getSupabaseClient();
-
-  const venueData = {
-    venue_id: venue.id,
-    provider: 'playtomic',
-    city: city.toLowerCase(),
-    venue_data: venue,
-    is_active: true,
-    last_seen: new Date().toISOString(),
-  };
-
-  const { error } = await supabase.from('playscanner_venues').upsert(venueData);
-
-  if (error) {
-    throw new Error(`Failed to store venue: ${error.message}`);
-  }
-}
+// storeVenue function removed - playscanner_venues table dropped as unused
 
 /**
  * Log collection results
@@ -158,7 +138,6 @@ async function getCacheStats() {
 
 module.exports = {
   setCachedData,
-  storeVenue,
   logCollection,
   getCacheStats,
 };
