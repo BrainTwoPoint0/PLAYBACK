@@ -12,7 +12,6 @@ export default function Press() {
           width={100}
           className="w-32 h-32"
         />
-
         <Image
           alt="Great British Entrepreneur Awards Logo"
           src="/media/GBEA.svg"
@@ -20,6 +19,14 @@ export default function Press() {
           width={100}
           className="w-40 h-40"
         />
+        <Image
+          alt="World Football Summit Logo"
+          src="/media/wfs.png"
+          height={100}
+          width={100}
+          className="w-28 h-20"
+        />
+
         <Image
           alt="StartUp Awards Logo"
           src="/media/startup-awards.png"
