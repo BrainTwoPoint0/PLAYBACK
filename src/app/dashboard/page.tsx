@@ -6,8 +6,6 @@ import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { AvatarDisplay } from '@/components/avatar/avatar-upload';
-import { ProfileCompletion } from '@/components/profile/profile-completion';
-import { getUserHighlights } from '@/lib/highlights/utils';
 import {
   User,
   Trophy,
@@ -84,8 +82,7 @@ function DashboardContent() {
   const { user, signOut, loading } = useAuth();
   const { profile } = useProfile();
   const onboardingStatus = useOnboardingStatus();
-  const [highlightsCount, setHighlightsCount] = useState(0);
-  const [loadingCounts, setLoadingCounts] = useState(true);
+  const [loadingCounts, setLoadingCounts] = useState(false);
 
   // Calculate profile completion
   const profileCompletion = useMemo(() => {
@@ -117,28 +114,6 @@ function DashboardContent() {
   const handleSignOut = async () => {
     await signOut();
   };
-
-  // Fetch user data counts
-  useEffect(() => {
-    const fetchCounts = async () => {
-      if (!user) return;
-
-      setLoadingCounts(true);
-      try {
-        const highlightsResult = await getUserHighlights(user.id);
-
-        if (highlightsResult.data && !highlightsResult.error) {
-          setHighlightsCount(highlightsResult.data.length);
-        }
-      } catch (error) {
-        console.error('Error fetching counts:', error);
-      } finally {
-        setLoadingCounts(false);
-      }
-    };
-
-    fetchCounts();
-  }, [user]);
 
   if (loading || onboardingStatus.loading) {
     return (
@@ -249,10 +224,7 @@ function DashboardContent() {
           </div>
 
           {/* Content */}
-          <div
-            className="bg-gradient-to-br from-neutral-900/90 to-neutral-800/50 backdrop-blur-xl border border-neutral-700/50 rounded-2xl p-4 md:p-6 hover:border-purple-400/30 transition-all duration-300 group cursor-pointer"
-            onClick={() => (window.location.href = '/highlights')}
-          >
+          <div className="bg-gradient-to-br from-neutral-900/90 to-neutral-800/50 backdrop-blur-xl border border-neutral-700/50 rounded-2xl p-4 md:p-6 hover:border-purple-400/30 transition-all duration-300 group">
             <div className="flex items-center justify-between mb-4">
               <div className="p-2 bg-purple-400/10 rounded-xl">
                 <Play className="h-5 w-5 text-purple-400" />
@@ -266,9 +238,7 @@ function DashboardContent() {
               Content
             </h3>
             <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-purple-400">
-                {loadingCounts ? '...' : highlightsCount}
-              </span>
+              <span className="text-2xl font-bold text-purple-400">0</span>
               <span className="text-xs bg-purple-400/10 text-purple-400 px-2 py-1 rounded-full">
                 Items
               </span>
@@ -320,11 +290,6 @@ function DashboardContent() {
                       size="3xl"
                       className="ring-4 ring-neutral-700/50"
                     />
-                    {profile.data?.is_verified && (
-                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                        <CheckCircle className="h-4 w-4 text-white" />
-                      </div>
-                    )}
                   </div>
 
                   {/* Right Column - Profile Info */}
@@ -337,9 +302,6 @@ function DashboardContent() {
                       >
                         {profile.data?.full_name || 'Your Name'}
                       </h2>
-                      {profile.data?.is_verified && (
-                        <Crown className="h-5 w-5 text-yellow-400" />
-                      )}
                     </div>
 
                     {/* Row 2: Username */}
@@ -366,57 +328,26 @@ function DashboardContent() {
                       </div>
                     )}
 
-                    {/* Row 4: User Profiles List */}
-                    {profile.data?.user_sports &&
-                      profile.data.user_sports.length > 0 && (
-                        <div className="pt-2">
-                          <p
-                            className="text-xs font-medium mb-2"
-                            style={{ color: 'var(--ash-grey)' }}
+                    {/* Row 4: Profile Variants (New Schema) */}
+                    <div className="pt-2">
+                      <p
+                        className="text-xs font-medium mb-2"
+                        style={{ color: 'var(--ash-grey)' }}
+                      >
+                        Profile Status:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-neutral-800/30 border border-neutral-700/50 rounded-full">
+                          <Trophy className="h-3 w-3 text-green-400" />
+                          <span
+                            className="text-xs font-medium"
+                            style={{ color: 'var(--timberwolf)' }}
                           >
-                            Your Profiles:
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            {profile.data.user_sports.map((sport, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center gap-2 px-3 py-1.5 bg-neutral-800/30 border border-neutral-700/50 rounded-full hover:bg-neutral-700/30 transition-colors cursor-pointer group"
-                                onClick={() => {
-                                  const sportName =
-                                    sport.sport?.name
-                                      ?.toLowerCase()
-                                      .replace(/\s+/g, '-') || 'unknown';
-                                  const role = sport.role || 'player';
-                                  const username = profile.data?.username;
-                                  const profileUrl = `/profile/${username}/${sportName}/${role}`;
-
-                                  // For now, log the URL structure - in the future this will navigate to dedicated sport/role profile pages
-                                  console.log(
-                                    `Future profile URL: ${profileUrl}`
-                                  );
-
-                                  // Temporary: Navigate to general profile for now
-                                  window.open(`/profile/${username}`, '_blank');
-                                }}
-                              >
-                                <Trophy className="h-3 w-3 text-green-400" />
-                                <span
-                                  className="text-xs font-medium"
-                                  style={{ color: 'var(--timberwolf)' }}
-                                >
-                                  {sport.sport?.name}{' '}
-                                  {sport.role === 'player'
-                                    ? 'Player'
-                                    : sport.role === 'coach'
-                                      ? 'Coach'
-                                      : 'Profile'}
-                                </span>
-                                <ChevronRight className="h-3 w-3 text-neutral-600 group-hover:text-green-400 transition-colors" />
-                              </div>
-                            ))}
-                          </div>
+                            Base Profile Active
+                          </span>
                         </div>
-                      )}
+                      </div>
+                    </div>
 
                     {/* Row 5: Action Buttons */}
                     <div className="flex items-center gap-3 pt-4">
@@ -425,9 +356,8 @@ function DashboardContent() {
                         size="sm"
                         className="border-neutral-600 hover:bg-neutral-800/50 group"
                         onClick={() =>
-                          window.open(
-                            `/profile/${profile.data?.username}`,
-                            '_blank'
+                          alert(
+                            'Public profiles will be rebuilt for new schema'
                           )
                         }
                       >
@@ -442,7 +372,11 @@ function DashboardContent() {
                       <Button
                         size="sm"
                         className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white group"
-                        onClick={() => (window.location.href = '/profile/edit')}
+                        onClick={() =>
+                          alert(
+                            'Profile editing will be rebuilt for new schema'
+                          )
+                        }
                       >
                         <Edit3 className="h-4 w-4 mr-2" />
                         Edit Profile
@@ -455,15 +389,15 @@ function DashboardContent() {
                 <div className="grid grid-cols-3 gap-6 pt-6 border-t border-neutral-700/50">
                   <div className="text-center">
                     <p className="text-2xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
-                      {profile.data?.user_sports?.length || 0}
+                      0
                     </p>
                     <p className="text-xs" style={{ color: 'var(--ash-grey)' }}>
-                      Sports
+                      Profile Variants
                     </p>
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                      {loadingCounts ? '...' : highlightsCount}
+                      0
                     </p>
                     <p className="text-xs" style={{ color: 'var(--ash-grey)' }}>
                       Highlights
@@ -502,7 +436,9 @@ function DashboardContent() {
                 {/* Player Profile - Active */}
                 <div
                   className="bg-neutral-800/30 border border-neutral-700/50 rounded-xl p-4 hover:bg-neutral-700/30 hover:border-green-400/30 transition-all duration-300 cursor-pointer group"
-                  onClick={() => (window.location.href = '/profile/player')}
+                  onClick={() =>
+                    alert('Player profiles will be rebuilt for new schema')
+                  }
                 >
                   <div className="flex items-center gap-3 mb-3">
                     <div className="p-2 bg-gradient-to-r from-yellow-400/10 to-green-400/10 rounded-lg">
@@ -612,7 +548,9 @@ function DashboardContent() {
                 <Button
                   variant="ghost"
                   className="w-full justify-start bg-neutral-800/30 hover:bg-neutral-800/50 border border-neutral-700/50 hover:border-neutral-600/50 transition-all duration-300 group"
-                  onClick={() => (window.location.href = '/profile/edit')}
+                  onClick={() =>
+                    alert('Profile settings will be rebuilt for new schema')
+                  }
                 >
                   <Settings className="h-4 w-4 mr-3 text-gray-400" />
                   <span style={{ color: 'var(--timberwolf)' }}>
@@ -661,11 +599,6 @@ function DashboardContent() {
                   </div>
                 </div>
               )}
-
-            {/* Profile Completion */}
-            {profileCompletion < 100 && (
-              <ProfileCompletion profile={profile.data} />
-            )}
           </div>
         </div>
       </div>

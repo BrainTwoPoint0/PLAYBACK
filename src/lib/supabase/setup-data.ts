@@ -135,13 +135,14 @@ export async function insertDefaultAchievements() {
       },
     ];
 
+    // TODO: Re-enable when achievements table is created
     // Check if achievements already exist
-    const { data: existingAchievements } = await supabase
-      .from('achievements')
-      .select('name');
+    // const { data: existingAchievements } = await supabase
+    //   .from('achievements')
+    //   .select('name');
 
-    const existingAchievementNames =
-      existingAchievements?.map((a) => a.name) || [];
+    const existingAchievementNames: string[] = [];
+    // existingAchievements?.map((a) => a.name) || [];
     const achievementsToInsert = defaultAchievements.filter(
       (achievement) => !existingAchievementNames.includes(achievement.name)
     );
@@ -150,11 +151,18 @@ export async function insertDefaultAchievements() {
       return {
         success: true,
         message: 'All default achievements already exist',
-        count: existingAchievements?.length || 0,
+        count: 0, // existingAchievements?.length || 0,
       };
     }
 
-    const { data, error } = await supabase
+    // TODO: Re-enable when achievements table is created
+    return {
+      success: true,
+      message: 'Achievements functionality disabled until table is created',
+      totalAchievements: 0,
+    };
+
+    /* const { data, error } = await supabase
       .from('achievements')
       .insert(achievementsToInsert)
       .select();
@@ -173,7 +181,7 @@ export async function insertDefaultAchievements() {
       insertedAchievements: data,
       totalAchievements:
         (existingAchievements?.length || 0) + achievementsToInsert.length,
-    };
+    }; */
   } catch (error) {
     return {
       success: false,

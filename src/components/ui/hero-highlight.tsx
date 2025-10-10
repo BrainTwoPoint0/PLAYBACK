@@ -5,7 +5,7 @@ import {
   motion,
   useMotionTemplate,
   animate,
-} from 'framer-motion';
+} from 'motion/react';
 import React, { useEffect, useState } from 'react';
 
 export const HeroHighlight = ({

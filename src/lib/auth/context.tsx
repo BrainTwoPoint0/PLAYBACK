@@ -12,37 +12,26 @@ import { User, Session, AuthError } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
-// Unified user profile interface
-interface UserSport {
-  id: string;
-  role: string;
-  experience_level: string | null;
-  positions: string[] | null;
-  sport: {
-    id: string;
-    name: string;
-    description: string | null;
-    sport_category: string | null;
-    common_positions: any;
-  } | null;
-}
-
 interface UserProfile {
   id: string;
-  username: string | null;
+  user_id: string;
+  username: string;
+  email: string | null;
   full_name: string | null;
   bio: string | null;
-  location: string | null;
   avatar_url: string | null;
-  social_links: any;
-  is_verified: boolean | null;
-  profile_type: string | null;
+  cover_image_url: string | null;
+  date_of_birth: string | null;
   height_cm: number | null;
   weight_kg: number | null;
-  preferred_foot: string | null;
-  organization_name: string | null;
-  organization_role: string | null;
-  user_sports: UserSport[];
+  nationality: string | null;
+  location: string | null;
+  phone: string | null;
+  website: string | null;
+  social_links: any;
+  is_public: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 interface ProfileState {
@@ -117,28 +106,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (profileError) throw profileError;
 
-        // Then get user_sports using API endpoint (service role to bypass RLS)
-        let userSportsData = [];
-        let sportsError = null;
-
-        try {
-          const response = await fetch('/api/user-sports-get');
-          if (response.ok) {
-            const result = await response.json();
-            userSportsData = result.user_sports || [];
-          } else {
-            const errorData = await response.json();
-            sportsError = errorData.error || 'Failed to fetch sports';
-          }
-        } catch (error) {
-          sportsError =
-            error instanceof Error ? error.message : 'Network error';
-        }
-
-        // Combine the data
         const data = {
           ...profileData,
-          user_sports: sportsError ? [] : userSportsData || [],
         };
 
         return { data, error: null };

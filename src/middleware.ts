@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
           supabaseResponse = NextResponse.next({
@@ -37,7 +37,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Define paths that require authentication
-  const protectedPaths = ['/dashboard', '/profile', '/highlights'];
+  const protectedPaths = ['/dashboard'];
 
   // Define paths that should redirect authenticated users
   const authPaths = ['/auth/login', '/auth/register', '/auth/forgot-password'];

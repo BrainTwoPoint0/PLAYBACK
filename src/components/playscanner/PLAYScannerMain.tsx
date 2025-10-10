@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import SectionTitle from '@/components/ui/section-title';
 import SportSelector from './SportSelector';
 import SearchForm from './SearchForm';

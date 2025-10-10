@@ -150,7 +150,7 @@ export default function SearchResults({
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start mb-4 space-y-4 lg:space-y-0">
           <div className="flex-1">
             <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-3">
-              <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-0">
+              <h3 className="text-lg md:text-xl font-semibold text-white mb-1 sm:mb-0">
                 {slot.venue.name}
               </h3>
               <Badge variant="outline" className="text-xs w-fit">
@@ -158,7 +158,7 @@ export default function SearchResults({
               </Badge>
             </div>
 
-            <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-300">
+            <div className="flex items-center space-x-4 text-sm text-gray-300">
               {(slot.venue.location?.city || slot.venue.address?.city) && (
                 <div className="flex items-center space-x-1">
                   <MapPinIcon className="h-4 w-4 flex-shrink-0" />
@@ -225,7 +225,7 @@ export default function SearchResults({
 
         {/* Availability */}
         {(slot.availability?.totalSpots || slot.lastUpdated) && (
-          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center justify-between text-xs text-gray-400">
             {slot.availability?.totalSpots && (
               <div>
                 {slot.availability.spotsAvailable || 0} of{' '}
@@ -265,7 +265,7 @@ export default function SearchResults({
             {/* Loading skeletons */}
             {[1, 2, 3].map((i) => (
               <div key={i} className="animate-pulse">
-                <div className="bg-gray-200 dark:bg-gray-700 h-32 rounded-lg"></div>
+                <div className="bg-gray-700 h-32 rounded-lg"></div>
               </div>
             ))}
           </div>
@@ -282,9 +282,7 @@ export default function SearchResults({
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
-              {error.message}
-            </p>
+            <p className="text-gray-300 mb-4">{error.message}</p>
             <Button variant="outline" onClick={() => window.location.reload()}>
               Try Again
             </Button>
@@ -303,11 +301,11 @@ export default function SearchResults({
         <CardContent>
           <div className="text-center py-8">
             <div className="text-6xl mb-4">🎾</div>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
+            <p className="text-gray-300 mb-4">
               No {sport === 'padel' ? 'padel courts' : 'football pitches'} found
               for your search criteria.
             </p>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-sm text-gray-400">
               <p>Try adjusting your search criteria:</p>
               <ul className="mt-2 space-y-1">
                 <li>• Search in a different location</li>

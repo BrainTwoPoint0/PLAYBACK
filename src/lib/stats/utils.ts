@@ -2,13 +2,15 @@ import { createClient } from '@/lib/supabase/client';
 
 export interface Statistic {
   id: string;
-  user_id: string | null;
+  profile_variant_id: string;
   sport_id?: string | null;
   stat_type: string;
-  stat_value: number;
-  stat_unit?: string | null;
+  metrics: any;
   stat_date: string;
-  notes?: string | null;
+  competition?: string | null;
+  opponent?: string | null;
+  match_id?: string | null;
+  is_verified?: boolean | null;
   created_at: string | null;
   updated_at: string | null;
 }
@@ -191,15 +193,15 @@ export async function createStatistic(
     const { data, error } = await supabase
       .from('statistics')
       .insert({
-        user_id: userId,
+        profile_variant_id: userId,
         sport_id: statisticData.sport_id,
         stat_type: statisticData.stat_type,
-        stat_value: statisticData.value,
-        stat_unit: statisticData.unit,
+        metrics: {
+          value: statisticData.value,
+          unit: statisticData.unit,
+          description: statisticData.description,
+        },
         stat_date: statisticData.date_recorded,
-        notes: statisticData.description,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       })
       .select()
       .single();

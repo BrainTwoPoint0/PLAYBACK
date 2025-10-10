@@ -298,7 +298,7 @@ export function StatsDashboard({
                       {stat.stat_type}
                     </h4>
                     <p className="text-lg font-bold text-yellow-400">
-                      {stat.stat_value} {stat.stat_unit}
+                      {stat.metrics?.value} {stat.metrics?.unit}
                     </p>
                   </div>
                   <Star className="h-4 w-4 text-yellow-400" />
@@ -346,7 +346,7 @@ export function StatsDashboard({
                           {stat.stat_type}
                         </h4>
                         <p className="text-lg font-bold text-blue-400">
-                          {stat.stat_value} {stat.stat_unit}
+                          {stat.metrics?.value} {stat.metrics?.unit}
                         </p>
                       </div>
 
@@ -368,8 +368,10 @@ export function StatsDashboard({
                       style={{ color: 'var(--ash-grey)' }}
                     >
                       <p>{new Date(stat.stat_date).toLocaleDateString()}</p>
-                      {stat.notes && (
-                        <p className="line-clamp-2 mt-2">{stat.notes}</p>
+                      {stat.metrics?.description && (
+                        <p className="line-clamp-2 mt-2">
+                          {stat.metrics.description}
+                        </p>
                       )}
                     </div>
                   </div>

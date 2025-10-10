@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Tabs } from './ui/tabs';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import SectionTitle from './ui/section-title';
 
 export default function Services() {
