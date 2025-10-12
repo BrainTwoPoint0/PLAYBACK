@@ -3,8 +3,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { urlForImage } from '@/sanity/lib/image';
-import { formatDate } from '@playback/commons/lib';
-import { motion } from 'framer-motion';
+import { formatDate } from '@/lib/utils';
+import { motion } from 'motion/react';
 
 interface BlogCardProps {
   title: string;

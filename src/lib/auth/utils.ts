@@ -1,10 +1,10 @@
-import { createClient } from '@playback/commons/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
 
 // Server-side auth utilities (for server components and API routes only)
 export async function getUser(): Promise<User | null> {
-  const supabase = await createClient();
+  const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -27,7 +27,7 @@ export async function requireNoAuth(): Promise<void> {
 }
 
 export async function getUserProfile(userId: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data: profile, error } = await supabase
     .from('profiles')
     .select('*')
@@ -41,7 +41,7 @@ export async function createUserProfile(
   user: User,
   additionalData?: Record<string, any>
 ) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const profileData = {
     user_id: user.id,
@@ -53,7 +53,6 @@ export async function createUserProfile(
 
   const { data, error } = await supabase
     .from('profiles')
-    // @ts-ignore - Type generated from database
     .insert(profileData)
     .select()
     .single();

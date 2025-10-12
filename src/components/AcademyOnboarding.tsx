@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import React from 'react';
-import { Timeline } from '@playback/commons/components/ui/timeline';
+import { Timeline } from './ui/timeline';
 import Link from 'next/link';
 
 export function AcademyOnboarding() {

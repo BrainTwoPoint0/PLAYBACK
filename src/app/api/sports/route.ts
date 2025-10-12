@@ -1,8 +1,8 @@
-import { createClient } from '@playback/commons/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   try {
     const { data: sports, error } = await supabase

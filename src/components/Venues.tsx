@@ -1,5 +1,5 @@
 import React from 'react';
-import { PinContainer } from '@playback/commons/components/ui/3d-pin';
+import { PinContainer } from './ui/3d-pin';
 import Image from 'next/image';
 import SectionTitle from './ui/section-title';
 export default function Venues() {

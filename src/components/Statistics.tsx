@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { cn } from '@playback/commons/lib';
+import { motion, useInView } from 'motion/react';
+import { cn } from '@/lib/utils';
 
 export default function Statistics() {
   return (

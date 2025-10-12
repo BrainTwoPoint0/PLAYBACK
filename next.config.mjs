@@ -10,19 +10,12 @@ const nextConfig = {
     domains: ['cdn.sanity.io'],
   },
   webpack: (config, { isServer }) => {
-    // Handle framer-motion and motion package conflicts in workspace
+    // Handle framer-motion and motion package conflicts
     config.resolve.alias = {
       ...config.resolve.alias,
-      // Force all framer-motion imports to use the workspace root framer-motion package
-      'framer-motion': path.resolve(__dirname, '../node_modules/framer-motion'),
+      // Force all framer-motion imports to use the main framer-motion package
+      'framer-motion': path.resolve(__dirname, 'node_modules/framer-motion'),
     };
-
-    // Add workspace root node_modules to resolve modules
-    config.resolve.modules = [
-      ...(config.resolve.modules || []),
-      path.resolve(__dirname, '../node_modules'),
-      path.resolve(__dirname, 'node_modules'),
-    ];
 
     return config;
   },

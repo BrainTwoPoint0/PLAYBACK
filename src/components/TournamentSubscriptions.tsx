@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { HoverEffect } from '@playback/commons/components/ui/card-hover-effect';
+import { HoverEffect } from './ui/card-hover-effect';
 import SectionTitle from './ui/section-title';
 
 export function TournamentSubscriptions() {

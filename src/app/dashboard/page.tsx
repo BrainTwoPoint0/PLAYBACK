@@ -3,9 +3,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth, useProfile, useOnboardingStatus } from '@/lib/auth/context';
 import { ProtectedRoute } from '@/components/auth/protected-route';
-import { Button } from '@playback/commons/components/ui/button';
-import { LoadingSpinner } from '@playback/commons/components/ui/loading';
-import { AvatarDisplay } from '@playback/commons/components/avatar/avatar-upload';
+import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/ui/loading';
+import { AvatarDisplay } from '@/components/avatar/avatar-upload';
 import {
   User,
   Trophy,

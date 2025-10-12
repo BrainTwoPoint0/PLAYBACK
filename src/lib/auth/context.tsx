@@ -9,7 +9,7 @@ import {
   useCallback,
 } from 'react';
 import { User, Session, AuthError } from '@supabase/supabase-js';
-import { createClient } from '@playback/commons/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
 interface UserProfile {
@@ -106,7 +106,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (profileError) throw profileError;
 
-        return { data: profileData as UserProfile, error: null };
+        const data = {
+          ...profileData,
+        };
+
+        return { data, error: null };
       } catch (error) {
         return {
           data: null,

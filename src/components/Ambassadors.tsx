@@ -1,8 +1,8 @@
 'use client';
 import React from 'react';
 
-import { AnimatePresence, motion } from 'framer-motion';
-import { CanvasRevealEffect } from '@playback/commons/components/ui/canvas-reveal-effect';
+import { AnimatePresence, motion } from 'motion/react';
+import { CanvasRevealEffect } from './ui/canvas-reveal-effect';
 import SectionTitle from './ui/section-title';
 
 export function Ambassadors() {

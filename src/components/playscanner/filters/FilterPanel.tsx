@@ -1,19 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@playback/commons/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@playback/commons/components/ui/card';
-import { Badge } from '@playback/commons/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@playback/commons/components/ui/collapsible';
+} from '@/components/ui/collapsible';
 import { ChevronDownIcon, SlidersHorizontalIcon, XIcon } from 'lucide-react';
 import { Sport, CourtSlot } from '@/lib/playscanner/types';
 import TimeFilters from './TimeFilters';

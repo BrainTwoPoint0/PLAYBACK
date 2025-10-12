@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/context';
-import { LoadingSpinner } from '@playback/commons/components/ui/loading';
+import { LoadingSpinner } from '@/components/ui/loading';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
