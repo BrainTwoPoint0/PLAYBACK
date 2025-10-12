@@ -1,16 +1,16 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
+import { Label } from '@playback/commons/components/ui/label';
+import { Button } from '@playback/commons/components/ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
+} from '@playback/commons/components/ui/select';
+import { Badge } from '@playback/commons/components/ui/badge';
 import { MapPinIcon, XIcon } from 'lucide-react';
 import { CourtSlot } from '@/lib/playscanner/types';
 

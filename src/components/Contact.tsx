@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Label } from './ui/label';
-import { Input } from './ui/input';
-import { cn } from '@/lib/utils';
-import { Textarea } from './ui/textarea';
+import { Label } from '@playback/commons/components/ui/label';
+import { Input } from '@playback/commons/components/ui/input';
+import { cn } from '@playback/commons/lib';
+import { Textarea } from '@playback/commons/components/ui/textarea';
 import SectionTitle from './ui/section-title';
 import {
   Select,
@@ -12,7 +12,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@playback/commons/components/ui/select';
 
 type Status = 'pending' | 'ok' | 'error';
 

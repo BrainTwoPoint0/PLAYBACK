@@ -23,7 +23,9 @@
       "@/*": ["./src/*"],
       "@/components/*": ["./src/components/*"],
       "@/lib/*": ["./src/lib/*"],
-      "@/sanity/*": ["./src/sanity/*"]
+      "@/sanity/*": ["./src/sanity/*"],
+      "@playback/commons": ["./packages/commons/src"],
+      "@playback/commons/*": ["./packages/commons/src/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

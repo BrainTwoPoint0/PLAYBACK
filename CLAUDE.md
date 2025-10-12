@@ -2,6 +2,52 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Repository Structure
+
+This is a **monorepo** containing multiple Next.js applications for the PLAYBACK sports ecosystem:
+
+```
+PLAYBACK/                    # Parent monorepo
+├── PLAYBACK/               # Main website (playbacksports.ai)
+│   ├── .git/              # Independent git repository
+│   ├── src/
+│   │   ├── app/          # Next.js App Router pages & API routes
+│   │   ├── components/   # App-specific components (Sanity, blog, etc.)
+│   │   ├── lib/          # App-specific utilities
+│   │   └── sanity/       # Sanity CMS configuration
+│   └── package.json       # Next.js 14 application
+│
+├── PLAYHUB/               # Marketplace (playhub.playbacksports.ai)
+│   └── [To be initialized]
+│
+├── packages/              # Shared packages
+│   └── commons/          # @playback/commons v1.0.0
+│       ├── src/
+│       │   ├── components/  # 37 shared UI components
+│       │   │   ├── ui/      # shadcn/ui (Button, Input, Card, etc.)
+│       │   │   ├── avatar/  # Avatar upload/display
+│       │   │   ├── video/   # Video player/upload
+│       │   │   └── stats/   # Statistics dashboard
+│       │   └── lib/         # Shared utilities
+│       │       ├── supabase/ # Client & server with types
+│       │       ├── auth/     # Auth utilities
+│       │       ├── avatar/   # Avatar processing
+│       │       ├── video/    # Video processing
+│       │       └── utils.ts  # cn() utility
+│       └── package.json
+│
+├── docs/                  # Shared documentation
+│   ├── projectplan.md     # Implementation history
+│   ├── PLAYHUB.md        # Marketplace specification
+│   └── playback-context.md
+│
+├── package.json          # Root workspace configuration
+├── CLAUDE.md             # This file
+└── README.md
+```
+
+**Important**: Each application (PLAYBACK, PLAYHUB) is an **independent git repository** with its own remote and deployment pipeline. The commons package is tracked in the parent repository.
+
 ## Standard Workflow
 
 1. First think through the problem, read the codebase for relevant files, and write a plan to CLAUDE.md
@@ -54,52 +100,99 @@ npm run prepare      # Install Husky hooks (runs automatically after npm install
 ### Project Structure
 
 ```
-src/
+PLAYBACK/src/
   app/              # Next.js App Router pages and API routes
     api/            # API endpoints (sports, posts, playscanner)
     auth/           # Authentication pages (login, register, reset)
     dashboard/      # User dashboard
-    highlights/     # Video highlights management
-    profile/        # User profiles ([username] for public profiles)
+    playscanner/    # Court availability search
     studio/         # Sanity CMS studio
-  components/       # Reusable UI components (presentational only)
-    ui/            # shadcn/ui components
-    auth/          # Authentication-specific components
-    highlights/    # Highlight-related components
-    profile/       # Profile components
-  lib/             # Shared helpers and external SDK wrappers
-    auth/          # Auth utilities and helpers
-    supabase/      # Supabase client configuration
+
+  components/       # App-specific UI components
+    auth/          # Sanity blog components (blog-card, blog-post-grid)
+    sanity/        # Other app-specific components
+
+  lib/             # App-specific utilities
+    auth/          # Local auth context and utilities
     sanity/        # Sanity client and utilities
-    playscanner/   # PLAYScanner search functionality
+    playscanner/   # PLAYScanner functionality
+
   sanity/          # Sanity CMS schemas and configuration
+```
+
+### Commons Package (`@playback/commons`)
+
+All shared UI components and utilities live in the commons package:
+
+```
+packages/commons/src/
+  components/      # Shared UI components
+    ui/           # shadcn/ui base components (37+)
+    avatar/       # Avatar upload/display
+    video/        # Video player/upload
+    stats/        # Statistics components
+    analytics/    # Analytics components
+
+  lib/            # Shared utilities
+    utils.ts      # cn() utility for Tailwind
+    supabase/     # Supabase clients (client & server)
+    auth/         # Auth utilities
+    avatar/       # Avatar processing
+    video/        # Video processing
+    stats/        # Stats utilities
 ```
 
 ### Import Conventions
 
-- Always use the `@/` alias for imports: `@/components/Button` or `@/lib/utils`
+**For Shared Code (UI components, utilities):**
+
+```typescript
+// Import from commons package
+import { Button, Card } from '@playback/commons/components/ui';
+import { cn } from '@playback/commons/lib';
+import { createClient } from '@playback/commons/lib/supabase/client';
+import { AvatarUpload } from '@playback/commons/components/avatar';
+```
+
+**For App-Specific Code:**
+
+```typescript
+// Import from local app using @/ alias
+import { BlogCard } from '@/components/sanity/blog-card';
+import { sanityClient } from '@/lib/sanity/client';
+```
+
+**Server-Side Imports (IMPORTANT):**
+
+```typescript
+// Server-side utilities MUST be imported directly (NOT from barrel exports)
+// These can ONLY be used in server components, API routes, or server actions
+import { createClient } from '@playback/commons/lib/supabase/server';
+import { getUser } from '@playback/commons/lib/auth/utils';
+```
+
+**Key Rules**:
+
+- Use `@playback/commons` for all shared UI components and utilities
+- Use `@/` only for app-specific code (Sanity, local utilities)
+- Never import server-side utilities (`supabase/server`, `auth/utils`) from barrel exports
 - Route files should never import from `src/app/components`
-- All shared visual elements live in `src/components`
-- The `cn` utility for Tailwind class merging is in `src/lib/utils.ts`
 
 ### Key Features Implementation
 
 1. **Authentication Flow**
-
    - Middleware protection in `src/middleware.ts`
    - Auth context provider in `src/components/auth/auth-provider.tsx`
    - Protected routes require authentication
    - Email verification and password reset flows
 
 2. **User Registration & Profile Creation**
-
    - Streamlined registration with username and full name collection
    - Direct-to-dashboard experience after email verification
    - Automatic profile creation via database trigger
    - Organic profile building within dashboard
 
 3. **New Modular Profile System (2025-01-16)**
-
    - **Multi-Profile Architecture**: Users can have multiple profile variants (player, coach, scout, etc.)
    - **Sport-Specific Profiles**: Dedicated tables for football, basketball, tennis with sport-specific fields
    - **Realistic Experience Levels**: From "recreational" to "professional" with sport-specific terminology
@@ -158,21 +251,18 @@ SANITY_API_READ_TOKEN=
 ### Development Guidelines
 
 1. **Component Development**
-
    - Use shadcn/ui components as base
    - Follow existing component patterns
    - Keep components in `src/components` directory
    - Use TypeScript interfaces for props
 
 2. **API Routes**
-
    - Use Next.js App Router conventions
    - Implement proper error handling
    - Return appropriate HTTP status codes
    - Use Supabase client for database operations
 
 3. **Styling**
-
    - Use Tailwind CSS classes
    - Follow the existing dark theme
    - Use `cn()` utility for conditional classes
@@ -196,6 +286,81 @@ SANITY_API_READ_TOKEN=
 - Lazy loading for video highlights
 - Supabase RLS for security and performance
 - Static generation where possible
+
+## Commons Package Architecture
+
+### What is @playback/commons?
+
+A shared npm workspace package containing all reusable UI components, utilities, and types used across the PLAYBACK ecosystem (PLAYBACK, PLAYHUB, PLAYScanner).
+
+**Version**: 1.0.0
+**Location**: `/packages/commons`
+
+### How It Works
+
+- **No Publishing Required**: Managed via npm workspaces, no npm publish needed
+- **Linked Locally**: Automatically linked during development via workspace configuration
+- **Bundled in Production**: Commons code is bundled directly into apps during build
+- **Immediate Availability**: Changes to commons are immediately available to all apps
+- **Semantic Versioning**: Versioned using semver (1.0.0, 1.1.0, 2.0.0, etc.) for tracking breaking changes
+
+### What's Inside
+
+**37+ UI Components**:
+
+- Form controls: Button, Input, Label, Checkbox, Radio, Select, Slider, Switch, Textarea
+- Layout: Card, Dialog, Popover, Sheet, Tabs, Collapsible
+- Navigation: Command, Navigation Menu
+- Feedback: Loading Spinner, Toast
+- Data Display: Avatar, Badge, Calendar, Table
+- Advanced: Date Picker, Infinite Moving Cards, Hero Highlight, Animated Tooltip, Canvas Reveal Effect
+
+**Feature Components**:
+
+- Avatar Upload with image processing and Supabase Storage integration
+- Video Upload with thumbnail generation
+- Stats Form and Dashboard for performance tracking
+- Analytics components for data visualization
+
+**Supabase Utilities**:
+
+- Client-side and server-side Supabase client factories
+- TypeScript types generated from database schema
+- Authentication utilities (client and server)
+
+**Library Functions**:
+
+- `cn()` for Tailwind class merging
+- Avatar utilities: upload, delete, process images, generate placeholders
+- Video utilities: upload, validation, thumbnail generation, metadata extraction
+- Stats utilities: CRUD operations, predefined categories for Football, Basketball, Tennis
+- Date formatting and other utility helpers
+
+### Deployment
+
+The commons package:
+
+- **Does NOT need separate deployment** - bundled into each app
+- **Works automatically in production** - npm workspaces resolve during build
+- **No publishing to npm required** - linked locally in monorepo
+- **Version controlled via Git** - tracked in parent repository
+
+When you deploy PLAYBACK:
+
+1. Build process runs `npm run build`
+2. Next.js bundles all code including `@playback/commons`
+3. Commons code is included in the production bundle
+4. Deployed as a single application
+
+### Versioning Strategy
+
+See `/packages/commons/VERSIONING.md` for complete guide.
+
+**Quick Reference**:
+
+- **PATCH** (1.0.x): Bug fixes, backward compatible
+- **MINOR** (1.x.0): New features, backward compatible
+- **MAJOR** (x.0.0): Breaking changes, not backward compatible
 
 ### Current Development Status (Updated 2025-01-16)
 
@@ -224,6 +389,16 @@ SANITY_API_READ_TOKEN=
 **✅ Schema Migration Frontend Implementation (2025-01-18):**
 
 - Complete frontend cleanup and signup flow fixes
+
+**✅ Commons Package Migration (2025-10-11):**
+
+- Migrated all UI components from PLAYBACK to `@playback/commons`
+- Centralized Supabase clients (client & server) in commons package
+- Removed 68 files from PLAYBACK (UI components, utilities, duplicate code)
+- Updated all imports to use `@playback/commons` package
+- Fixed Tailwind CSS configuration to scan commons package
+- Configured npm workspaces for automatic package linking
+- Production build verified - all 24 pages generating successfully
 
 **📋 Completed Tasks:**
 
@@ -384,5 +559,14 @@ The persistent 406/500 errors were caused by:
 - **Realistic experience levels** that people actually identify with
 - **Modular preferences** system for future services
 - **Preserved PLAYScanner data** and revenue-generating analytics
+- **Commons package architecture** for true code reuse across all PLAYBACK applications
 
-- usually I already have a running session so don't run npm run dev
+## Important Notes
+
+- Usually I already have a running session so don't run `npm run dev`
+- **NEVER create files** unless absolutely necessary - always prefer editing existing files
+- **Use @playback/commons** for all shared UI components and utilities
+- **Use @/ only** for app-specific code (Sanity, local utilities)
+- **Server-side imports** must be direct imports, never from barrel exports
+- When working with commons, changes are immediately available to all apps (no rebuild required during development)
+- Production builds automatically bundle commons code into the app

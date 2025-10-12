@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { DatePicker } from '@/components/ui/date-picker';
+import { Button } from '@playback/commons/components/ui/button';
+import { Input } from '@playback/commons/components/ui/input';
+import { Label } from '@playback/commons/components/ui/label';
+import { DatePicker } from '@playback/commons/components/ui/date-picker';
 import { SearchIcon, MapPinIcon, CalendarIcon } from 'lucide-react';
 import { SearchFormProps, SearchParams } from '@/lib/playscanner/types';
 

@@ -1,16 +1,21 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@playback/commons/components/ui/card';
+import { Badge } from '@playback/commons/components/ui/badge';
+import { Button } from '@playback/commons/components/ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@playback/commons/components/ui/select';
 import { SearchResultsProps, SortBy, CourtSlot } from '@/lib/playscanner/types';
 import {
   MapPinIcon,

@@ -1,9 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@playback/commons/components/ui/card';
+import { Button } from '@playback/commons/components/ui/button';
+import { Badge } from '@playback/commons/components/ui/badge';
 import {
   Users,
   Search,
@@ -18,7 +23,7 @@ import {
 import {
   SimpleBarChart,
   SimpleLineChart,
-} from '@/components/analytics/SimpleChart';
+} from '@playback/commons/components/analytics/SimpleChart';
 
 interface AnalyticsData {
   timeframe: string;

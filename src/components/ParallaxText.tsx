@@ -8,7 +8,7 @@ import {
   useMotionValue,
   useVelocity,
   useAnimationFrame,
-} from 'motion/react';
+} from 'framer-motion';
 import { wrap } from '@motionone/utils';
 
 interface ParallaxProps {

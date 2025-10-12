@@ -1,9 +1,9 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
-import { Button } from '@/components/ui/button';
+import { Label } from '@playback/commons/components/ui/label';
+import { Slider } from '@playback/commons/components/ui/slider';
+import { Button } from '@playback/commons/components/ui/button';
 import { PoundSterlingIcon } from 'lucide-react';
 import { CourtSlot } from '@/lib/playscanner/types';
 

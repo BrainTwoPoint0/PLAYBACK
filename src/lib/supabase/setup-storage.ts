@@ -1,4 +1,4 @@
-import { createClient } from './client';
+import { createClient } from '@playback/commons/lib/supabase/client';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 
 export async function createStorageBuckets() {

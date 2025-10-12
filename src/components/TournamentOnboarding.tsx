@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import React from 'react';
-import { Timeline } from './ui/timeline';
+import { Timeline } from '@playback/commons/components/ui/timeline';
 
 export function TournamentOnboarding() {
   const data = [

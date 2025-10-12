@@ -114,14 +114,12 @@ aws lambda invoke --function-name playscanner-collector \
 ## 📊 Monitoring
 
 1. **CloudWatch Metrics**:
-
    - Invocations
    - Duration
    - Errors
    - Throttles
 
 2. **Custom Metrics**:
-
    - Slots collected
    - Venues processed
    - Collection success rate
@@ -136,12 +134,10 @@ aws lambda invoke --function-name playscanner-collector \
 ### Common Issues
 
 1. **Timeout errors**:
-
    - Reduce batch size in collector
    - Increase Lambda memory/timeout
 
 2. **Supabase connection**:
-
    - Check environment variables
    - Verify service key permissions
 

@@ -3,12 +3,12 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@playback/commons/lib/supabase/client';
 import { validatePassword, getAuthErrorMessage } from '@/lib/auth/shared';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { LoadingSpinner } from '@/components/ui/loading';
+import { Button } from '@playback/commons/components/ui/button';
+import { Input } from '@playback/commons/components/ui/input';
+import { Label } from '@playback/commons/components/ui/label';
+import { LoadingSpinner } from '@playback/commons/components/ui/loading';
 import { AlertCircle, Lock, CheckCircle, Eye, EyeOff } from 'lucide-react';
 
 function ResetPasswordForm() {

@@ -1,4 +1,14 @@
-import { CardHolderAnimation } from '@/components/ui/card-holder-animation';
+'use client';
+
+import dynamic from 'next/dynamic';
+
+const CardHolderAnimation = dynamic(
+  () =>
+    import('@playback/commons/components/ui/card-holder-animation').then(
+      (mod) => ({ default: mod.CardHolderAnimation })
+    ),
+  { ssr: false }
+);
 
 export default function CardDemoPage() {
   return (

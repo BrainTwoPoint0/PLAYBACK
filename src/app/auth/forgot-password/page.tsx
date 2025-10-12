@@ -4,10 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/context';
 import { validateEmail, getAuthErrorMessage } from '@/lib/auth/shared';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { LoadingSpinner } from '@/components/ui/loading';
+import { Button } from '@playback/commons/components/ui/button';
+import { Input } from '@playback/commons/components/ui/input';
+import { Label } from '@playback/commons/components/ui/label';
+import { LoadingSpinner } from '@playback/commons/components/ui/loading';
 import { AlertCircle, Mail, CheckCircle, ArrowLeft } from 'lucide-react';
 
 export default function ForgotPasswordPage() {

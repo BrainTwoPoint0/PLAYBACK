@@ -8,7 +8,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from '@/components/ui/navigation-menu';
+} from '@playback/commons/components/ui/navigation-menu';
 import * as React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';

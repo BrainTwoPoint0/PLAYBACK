@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@playback/commons/lib/supabase/client';
 
 // Client-side auth utilities
 export function useRequireAuth() {

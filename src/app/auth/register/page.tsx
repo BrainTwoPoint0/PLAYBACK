@@ -4,17 +4,17 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/context';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@playback/commons/lib/supabase/client';
 import {
   validateEmail,
   validatePassword,
   validateUsername,
   getAuthErrorMessage,
 } from '@/lib/auth/shared';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { LoadingSpinner } from '@/components/ui/loading';
+import { Button } from '@playback/commons/components/ui/button';
+import { Input } from '@playback/commons/components/ui/input';
+import { Label } from '@playback/commons/components/ui/label';
+import { LoadingSpinner } from '@playback/commons/components/ui/loading';
 import { AlertCircle, Mail, Lock, Check, X, Loader2 } from 'lucide-react';
 
 export default function RegisterPage() {

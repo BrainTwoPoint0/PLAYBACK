@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { CourtSlot } from '@/lib/playscanner/types';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@playback/commons/components/ui/card';
+import { Badge } from '@playback/commons/components/ui/badge';
+import { Button } from '@playback/commons/components/ui/button';
 import { MapPinIcon, ClockIcon, ExternalLinkIcon, Loader2 } from 'lucide-react';
 
 // Dynamically import Map components to avoid SSR issues

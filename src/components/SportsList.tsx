@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { InfiniteMovingCards } from './ui/infinite-moving-cards';
+import { InfiniteMovingCards } from '@playback/commons/components/ui/infinite-moving-cards';
 import SectionTitle from './ui/section-title';
 
 export function SportsList() {

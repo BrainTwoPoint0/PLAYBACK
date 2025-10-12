@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/context';
-import { Button } from '@/components/ui/button';
+import { Button } from '@playback/commons/components/ui/button';
 
 export default function VerifyEmailPage() {
   const { user, signOut } = useAuth();

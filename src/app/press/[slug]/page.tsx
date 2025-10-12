@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { client } from '@/sanity/lib/client';
 import { urlForImage } from '@/sanity/lib/image';
-import { formatDate } from '@/lib/utils';
+import { formatDate } from '@playback/commons/lib';
 import { PortableText } from '@/components/ui/portable-text';
 
 interface PageProps {

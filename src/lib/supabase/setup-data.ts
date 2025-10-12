@@ -1,4 +1,4 @@
-import { createClient } from './client';
+import { createClient } from '@playback/commons/lib/supabase/client';
 
 export async function insertDefaultSports() {
   try {
@@ -47,7 +47,9 @@ export async function insertDefaultSports() {
       .from('sports')
       .select('name');
 
-    const existingSportNames = existingSports?.map((s) => s.name) || [];
+    const existingSportNames: string[] = (existingSports?.map(
+      (s: any) => s.name
+    ) || []) as string[];
     const sportsToInsert = defaultSports.filter(
       (sport) => !existingSportNames.includes(sport.name)
     );
@@ -62,6 +64,7 @@ export async function insertDefaultSports() {
 
     const { data, error } = await supabase
       .from('sports')
+      // @ts-ignore - Type generated from database
       .insert(sportsToInsert)
       .select();
 

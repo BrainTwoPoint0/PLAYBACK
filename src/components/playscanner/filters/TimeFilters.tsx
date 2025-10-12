@@ -1,9 +1,9 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Label } from '@/components/ui/label';
-import { TimePicker } from '@/components/ui/time-picker';
-import { Button } from '@/components/ui/button';
+import { Label } from '@playback/commons/components/ui/label';
+import { TimePicker } from '@playback/commons/components/ui/time-picker';
+import { Button } from '@playback/commons/components/ui/button';
 import { ClockIcon } from 'lucide-react';
 import { CourtSlot } from '@/lib/playscanner/types';
 
