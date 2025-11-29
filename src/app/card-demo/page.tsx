@@ -1,4 +1,22 @@
-import { CardHolderAnimation } from '@/components/ui/card-holder-animation';
+'use client';
+
+import dynamic from 'next/dynamic';
+
+// Dynamic import with SSR disabled - CardHolderAnimation uses Three.js which requires browser APIs
+const CardHolderAnimation = dynamic(
+  () =>
+    import('@/components/ui/card-holder-animation').then(
+      (mod) => mod.CardHolderAnimation
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-full flex items-center justify-center bg-black text-gray-400">
+        Loading 3D animation...
+      </div>
+    ),
+  }
+);
 
 export default function CardDemoPage() {
   return (
