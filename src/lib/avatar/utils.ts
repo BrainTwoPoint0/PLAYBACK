@@ -144,8 +144,7 @@ export async function updateProfileAvatar(
   try {
     const supabase = createClient();
 
-    const { error } = await supabase
-      .from('profiles')
+    const { error } = await (supabase.from('profiles') as any)
       .update({
         avatar_url: avatarUrl,
         updated_at: new Date().toISOString(),

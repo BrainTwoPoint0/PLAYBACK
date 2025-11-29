@@ -49,7 +49,7 @@ export function VideoPlayer({
   const [showControls, setShowControls] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
 
-  const controlsTimeoutRef = useRef<NodeJS.Timeout>();
+  const controlsTimeoutRef = useRef<NodeJS.Timeout>(undefined);
 
   useEffect(() => {
     const video = videoRef.current;

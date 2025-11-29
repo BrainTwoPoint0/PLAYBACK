@@ -125,6 +125,10 @@ export const SkeletonTwo = () => {
     '/showcase/subscriptions/subscription-options.png',
   ];
 
+  // Pre-defined rotation values to avoid hydration mismatch
+  const rotationsFirst = [-3, 5, -7, 2, -4];
+  const rotationsSecond = [4, -6, 3, -2, 7];
+
   const imageVariants = {
     whileHover: {
       scale: 1.1,
@@ -144,7 +148,7 @@ export const SkeletonTwo = () => {
           <motion.div
             key={'images-first' + idx}
             style={{
-              rotate: Math.random() * 20 - 10,
+              rotate: rotationsFirst[idx],
             }}
             variants={imageVariants}
             whileHover="whileHover"
@@ -166,7 +170,7 @@ export const SkeletonTwo = () => {
           <motion.div
             key={'images-second' + idx}
             style={{
-              rotate: Math.random() * 20 - 10,
+              rotate: rotationsSecond[idx],
             }}
             variants={imageVariants}
             whileHover="whileHover"

@@ -105,12 +105,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .single();
 
         if (profileError) throw profileError;
+        if (!profileData) throw new Error('Profile not found');
 
-        const data = {
-          ...profileData,
-        };
-
-        return { data, error: null };
+        return { data: profileData, error: null };
       } catch (error) {
         return {
           data: null,

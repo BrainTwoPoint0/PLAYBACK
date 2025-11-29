@@ -130,6 +130,9 @@ interface ServiceProps {
   };
 }
 
+// Pre-defined rotation values for deterministic rendering (avoids hydration mismatch)
+const rotationValues = [-5, 7, -3, 8, -6, 4, -2, 6, -4, 3];
+
 const Service = ({ title, images, features, callToAction }: ServiceProps) => {
   return (
     <div className="flex flex-col justify-between h-full p-6 bg-[--night] border-4 border-[var(--ash-grey)] rounded-2xl overflow-hidden">
@@ -141,7 +144,7 @@ const Service = ({ title, images, features, callToAction }: ServiceProps) => {
           <motion.div
             key={idx}
             style={{
-              rotate: Math.random() * 20 - 10,
+              rotate: rotationValues[idx % rotationValues.length],
             }}
             whileHover={{
               scale: 1.1,

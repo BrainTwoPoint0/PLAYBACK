@@ -1,5 +1,8 @@
 import { createClient } from '@/lib/supabase/client';
 
+// Type assertion helper to work around Supabase type generation issues
+const getSupabase = () => createClient() as any;
+
 export interface Statistic {
   id: string;
   profile_variant_id: string;
@@ -187,7 +190,7 @@ export async function createStatistic(
   userId: string,
   statisticData: CreateStatisticData
 ): Promise<{ data: Statistic | null; error: string | null }> {
-  const supabase = createClient();
+  const supabase = getSupabase();
 
   try {
     const { data, error } = await supabase
@@ -230,7 +233,7 @@ export async function getUserStatistics(
     stat_type?: string;
   }
 ): Promise<{ data: Statistic[] | null; error: string | null }> {
-  const supabase = createClient();
+  const supabase = getSupabase();
 
   try {
     let query = supabase
@@ -270,7 +273,7 @@ export async function updateStatistic(
   statisticId: string,
   updates: Partial<CreateStatisticData>
 ): Promise<{ data: Statistic | null; error: string | null }> {
-  const supabase = createClient();
+  const supabase = getSupabase();
 
   try {
     const { data, error } = await supabase
@@ -303,7 +306,7 @@ export async function updateStatistic(
 export async function deleteStatistic(
   statisticId: string
 ): Promise<{ success: boolean; error: string | null }> {
-  const supabase = createClient();
+  const supabase = getSupabase();
 
   try {
     const { error } = await supabase
@@ -332,7 +335,7 @@ export async function getPersonalBests(
   userId: string,
   sportId?: string
 ): Promise<{ data: Statistic[] | null; error: string | null }> {
-  const supabase = createClient();
+  const supabase = getSupabase();
 
   try {
     let query = supabase
@@ -375,7 +378,7 @@ export async function getStatisticsSummary(userId: string): Promise<{
   } | null;
   error: string | null;
 }> {
-  const supabase = createClient();
+  const supabase = getSupabase();
 
   try {
     // Get all stats for user
@@ -388,16 +391,17 @@ export async function getStatisticsSummary(userId: string): Promise<{
       return { data: null, error: error.message };
     }
 
-    const stats = allStats || [];
+    const stats: Statistic[] = allStats || [];
 
     // Calculate summary
     const totalStats = stats.length;
     const personalBests = 0; // No personal best field in current schema
-    const sportsTracked = new Set(stats.map((s) => s.sport_id).filter(Boolean))
-      .size;
+    const sportsTracked = new Set(
+      stats.map((s: Statistic) => s.sport_id).filter(Boolean)
+    ).size;
     const recentStats = stats
       .sort(
-        (a, b) =>
+        (a: Statistic, b: Statistic) =>
           new Date(b.stat_date).getTime() - new Date(a.stat_date).getTime()
       )
       .slice(0, 5);

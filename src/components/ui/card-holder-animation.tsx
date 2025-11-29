@@ -1,7 +1,7 @@
 'use client';
 
 import * as THREE from 'three';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Canvas, extend, useThree, useFrame } from '@react-three/fiber';
 import {
   useGLTF,
@@ -24,13 +24,11 @@ import type { Mesh, Vector3 } from 'three';
 // Extend Three.js with meshline
 extend({ MeshLineGeometry, MeshLineMaterial });
 
-// Type declarations for extended elements
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      meshLineGeometry: any;
-      meshLineMaterial: any;
-    }
+// Type declarations for extended elements using @react-three/fiber's ThreeElements
+declare module '@react-three/fiber' {
+  interface ThreeElements {
+    meshLineGeometry: any;
+    meshLineMaterial: any;
   }
 }
 
@@ -143,14 +141,30 @@ function Band({ maxSpeed = 50, minSpeed = 10 }: BandProps) {
   const [dragged, drag] = useState<false | THREE.Vector3>(false);
   const [hovered, hover] = useState(false);
 
-  // Create rope joints
-  useRopeJoint(fixed, j1, [[0, 0, 0], [0, 0, 0], 1]);
-  useRopeJoint(j1, j2, [[0, 0, 0], [0, 0, 0], 1]);
-  useRopeJoint(j2, j3, [[0, 0, 0], [0, 0, 0], 1]);
-  useSphericalJoint(j3, card, [
-    [0, 0, 0],
-    [0, 1.45, 0],
-  ]);
+  // Create rope joints (cast refs as non-null since they're populated by RigidBody components)
+  useRopeJoint(
+    fixed as React.RefObject<RapierRigidBody>,
+    j1 as React.RefObject<RapierRigidBody>,
+    [[0, 0, 0], [0, 0, 0], 1]
+  );
+  useRopeJoint(
+    j1 as React.RefObject<RapierRigidBody>,
+    j2 as React.RefObject<RapierRigidBody>,
+    [[0, 0, 0], [0, 0, 0], 1]
+  );
+  useRopeJoint(
+    j2 as React.RefObject<RapierRigidBody>,
+    j3 as React.RefObject<RapierRigidBody>,
+    [[0, 0, 0], [0, 0, 0], 1]
+  );
+  useSphericalJoint(
+    j3 as React.RefObject<RapierRigidBody>,
+    card as React.RefObject<RapierRigidBody>,
+    [
+      [0, 0, 0],
+      [0, 1.45, 0],
+    ]
+  );
 
   useEffect(() => {
     if (hovered) {

@@ -4,7 +4,6 @@ import {
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
@@ -37,27 +36,22 @@ export default function NavBar() {
               />
             </NavigationMenuTrigger>
             <NavigationMenuContent className="p-2 space-y-2 w-[13.13rem]">
-              <NavigationMenuItem>
-                <Link href="/">
-                  <NavigationMenuLink
-                    className={`${navigationMenuTriggerStyle()}`}
-                  >
-                    Home
-                  </NavigationMenuLink>
+              <div>
+                <Link href="/" className={`${navigationMenuTriggerStyle()}`}>
+                  Home
                 </Link>
-              </NavigationMenuItem>
+              </div>
               {navItems
                 .filter((item) => !item.disabled)
                 .map(({ href, label }) => (
-                  <NavigationMenuItem key={label}>
-                    <Link href={href} legacyBehavior passHref>
-                      <NavigationMenuLink
-                        className={`${navigationMenuTriggerStyle()}`}
-                      >
-                        {label}
-                      </NavigationMenuLink>
+                  <div key={label}>
+                    <Link
+                      href={href}
+                      className={`${navigationMenuTriggerStyle()}`}
+                    >
+                      {label}
                     </Link>
-                  </NavigationMenuItem>
+                  </div>
                 ))}
             </NavigationMenuContent>
           </NavigationMenuItem>
@@ -82,12 +76,8 @@ export default function NavBar() {
                     {label}
                   </span>
                 ) : (
-                  <Link href={href} legacyBehavior passHref>
-                    <NavigationMenuLink
-                      className={navigationMenuTriggerStyle()}
-                    >
-                      {label}
-                    </NavigationMenuLink>
+                  <Link href={href} className={navigationMenuTriggerStyle()}>
+                    {label}
                   </Link>
                 )}
               </NavigationMenuItem>

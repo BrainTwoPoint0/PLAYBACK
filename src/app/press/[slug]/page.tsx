@@ -8,15 +8,16 @@ import { formatDate } from '@/lib/utils';
 import { PortableText } from '@/components/ui/portable-text';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const post = await getPostBySlug(params.slug);
+  const { slug } = await params;
+  const post = await getPostBySlug(slug);
 
   if (!post) {
     return {
@@ -55,7 +56,8 @@ async function getPostBySlug(slug: string) {
 }
 
 export default async function PostPage({ params }: PageProps) {
-  const post = await getPostBySlug(params.slug);
+  const { slug } = await params;
+  const post = await getPostBySlug(slug);
 
   if (!post) {
     notFound();

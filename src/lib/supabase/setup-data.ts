@@ -1,8 +1,11 @@
 import { createClient } from './client';
 
+// Type assertion helper to work around Supabase type generation issues
+const getSupabase = () => createClient() as any;
+
 export async function insertDefaultSports() {
   try {
-    const supabase = createClient();
+    const supabase = getSupabase();
 
     const defaultSports = [
       {
@@ -47,7 +50,8 @@ export async function insertDefaultSports() {
       .from('sports')
       .select('name');
 
-    const existingSportNames = existingSports?.map((s) => s.name) || [];
+    const existingSportNames =
+      existingSports?.map((s: { name: string }) => s.name) || [];
     const sportsToInsert = defaultSports.filter(
       (sport) => !existingSportNames.includes(sport.name)
     );
@@ -90,7 +94,7 @@ export async function insertDefaultSports() {
 
 export async function insertDefaultAchievements() {
   try {
-    const supabase = createClient();
+    const supabase = getSupabase();
 
     const defaultAchievements = [
       {
