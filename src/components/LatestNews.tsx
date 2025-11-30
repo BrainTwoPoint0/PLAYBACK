@@ -22,7 +22,7 @@ export default function LatestNews({ posts }: LatestNewsProps) {
   }
 
   return (
-    <section className="container mt-36">
+    <section className="container mt-20">
       <SectionTitle title="Latest News" />
       <BlogPostGrid posts={posts} />
       <div className="flex justify-center mt-8">
