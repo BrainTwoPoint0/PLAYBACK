@@ -6,14 +6,14 @@ import { cn } from '@/lib/utils';
 export default function Statistics() {
   return (
     <div className="flex flex-col md:flex-row justify-center items-center gap-4">
-      <Card title="Players Powered" stat={20000} className="md:mt-[2rem]" />
+      <Card title="Players Powered" stat={50000} className="md:mt-[2rem]" />
       <Card
         title="Saved by Partners"
-        stat={450000}
+        stat={750000}
         className="md:w-[24rem]"
         formatAsMoney
       />
-      <Card title="Teams Onboarded" stat={200} className="md:mt-[2rem]" />
+      <Card title="Teams Onboarded" stat={600} className="md:mt-[2rem]" />
     </div>
   );
 }
