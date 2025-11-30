@@ -41,7 +41,7 @@ export default function Home() {
         <ParallaxText baseVelocity={-3}>Access The Moment</ParallaxText>
         <ParallaxText baseVelocity={3}>Unlock your Potential</ParallaxText>
       </div>
-      <Partners />
+      {/* <Partners /> */}
       <Services />
       <Press />
       <Suspense fallback={<div>Loading latest news...</div>}>
