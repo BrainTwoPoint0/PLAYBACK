@@ -45,7 +45,7 @@
     "meshline": "^3.3.1",
     "mini-svg-data-uri": "^1.4.4",
     "motion": "^12.23.22",
-    "next": "^15.5.6",
+    "next": "15.5.7",
     "next-sanity": "^11.5.5",
     "node-fetch": "^3.3.2",
     "react": "^19.2.0",
