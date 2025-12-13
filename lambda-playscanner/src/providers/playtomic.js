@@ -8,7 +8,7 @@ const { URL } = require('url');
 
 class PlaytomicProvider {
   constructor() {
-    this.baseUrl = 'https://playtomic.com';
+    this.baseUrl = 'https://api.playtomic.io';
     this.userAgent =
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36';
 
@@ -99,7 +99,7 @@ class PlaytomicProvider {
    */
   async searchVenuesAPI(location) {
     const coordinates = this.getLocationCoordinates(location);
-    const url = `${this.baseUrl}/api/v1/tenants`;
+    const url = `${this.baseUrl}/v1/tenants`;
 
     const searchParams = new URLSearchParams({
       coordinate: `${coordinates.lat},${coordinates.lng}`,
@@ -186,7 +186,7 @@ class PlaytomicProvider {
    */
   async getVenueAvailability(venue, date) {
     // Use the exact working implementation from local-collector.js
-    const availabilityUrl = 'https://playtomic.com/api/v1/availability';
+    const availabilityUrl = 'https://api.playtomic.io/v1/availability';
 
     // Use correct date format from working script
     const dateStr = date; // date is already in YYYY-MM-DD format
