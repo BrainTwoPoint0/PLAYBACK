@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier . --write",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "release": "npm run format && npm run build"
   },
   "dependencies": {
     "@motionone/utils": "^10.17.0",
