@@ -22,7 +22,7 @@ const pressLogos = [
     src: '/media/startup-awards.png',
     className: 'w-32 h-32',
   },
-  { name: 'PSG', src: '/media/PSG.png', className: 'w-24 h-24' },
+  { name: 'PSG Lab', src: '/media/PSG_LAB.png', className: 'w-42 h-42' },
   { name: 'SFS', src: '/media/SFS.png', className: 'w-44 h-44' },
   { name: 'UmmaHub', src: '/media/ummahub.png', className: 'w-40 h-40' },
   { name: 'Santander', src: '/media/santander.png', className: 'w-44 h-44' },
@@ -150,11 +150,11 @@ export default function Press() {
           className="md:w-32 md:h-32 object-contain"
         />
         <Image
-          alt="PSG Logo"
-          src="/media/PSG.png"
+          alt="PSG Lab Logo"
+          src="/media/PSG_LAB.png"
           height={100}
           width={100}
-          className="md:w-28 md:h-28 object-contain"
+          className="md:w-32 md:h-32 object-contain"
         />
         <Image
           alt="SFS Logo"
