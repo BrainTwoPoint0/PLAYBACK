@@ -1,4 +1,4 @@
-import { createClient } from './client';
+import { createClient } from '@braintwopoint0/playback-commons/supabase';
 
 // Type assertion helper to work around Supabase type generation issues
 const getSupabase = () => createClient() as any;

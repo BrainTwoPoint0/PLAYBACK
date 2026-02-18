@@ -3,11 +3,12 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
-import { validatePassword, getAuthErrorMessage } from '@/lib/auth/shared';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { createClient } from '@braintwopoint0/playback-commons/supabase';
+import {
+  validatePassword,
+  getAuthErrorMessage,
+} from '@braintwopoint0/playback-commons/auth';
+import { Button, Input, Label } from '@braintwopoint0/playback-commons/ui';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { AlertCircle, Lock, CheckCircle, Eye, EyeOff } from 'lucide-react';
 
@@ -193,7 +194,9 @@ function ResetPasswordForm() {
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter your new password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setPassword(e.target.value)
+                  }
                   className="h-12 pl-12 pr-12 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-xl"
                   style={{
                     color: 'var(--timberwolf)',
@@ -237,7 +240,9 @@ function ResetPasswordForm() {
                   type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="Re-enter your new password"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setConfirmPassword(e.target.value)
+                  }
                   className="h-12 pl-12 pr-12 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-xl"
                   style={{
                     color: 'var(--timberwolf)',

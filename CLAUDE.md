@@ -85,21 +85,18 @@ src/
 ### Key Features Implementation
 
 1. **Authentication Flow**
-
    - Middleware protection in `src/middleware.ts`
    - Auth context provider in `src/components/auth/auth-provider.tsx`
    - Protected routes require authentication
    - Email verification and password reset flows
 
 2. **User Registration & Profile Creation**
-
    - Streamlined registration with username and full name collection
    - Direct-to-dashboard experience after email verification
    - Automatic profile creation via database trigger
    - Organic profile building within dashboard
 
 3. **New Modular Profile System (2025-01-16)**
-
    - **Multi-Profile Architecture**: Users can have multiple profile variants (player, coach, scout, etc.)
    - **Sport-Specific Profiles**: Dedicated tables for football, basketball, tennis with sport-specific fields
    - **Realistic Experience Levels**: From "recreational" to "professional" with sport-specific terminology
@@ -158,21 +155,18 @@ SANITY_API_READ_TOKEN=
 ### Development Guidelines
 
 1. **Component Development**
-
    - Use shadcn/ui components as base
    - Follow existing component patterns
    - Keep components in `src/components` directory
    - Use TypeScript interfaces for props
 
 2. **API Routes**
-
    - Use Next.js App Router conventions
    - Implement proper error handling
    - Return appropriate HTTP status codes
    - Use Supabase client for database operations
 
 3. **Styling**
-
    - Use Tailwind CSS classes
    - Follow the existing dark theme
    - Use `cn()` utility for conditional classes

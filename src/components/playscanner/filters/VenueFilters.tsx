@@ -1,8 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
+import { Label, Button, Badge } from '@braintwopoint0/playback-commons/ui';
 import {
   Select,
   SelectContent,
@@ -10,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { MapPinIcon, XIcon } from 'lucide-react';
 import { CourtSlot } from '@/lib/playscanner/types';
 

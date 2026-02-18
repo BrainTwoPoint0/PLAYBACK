@@ -1,9 +1,13 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useAuth, useProfile, useOnboardingStatus } from '@/lib/auth/context';
+import {
+  useAuth,
+  useProfile,
+  useOnboardingStatus,
+} from '@braintwopoint0/playback-commons/auth';
 import { ProtectedRoute } from '@/components/auth/protected-route';
-import { Button } from '@/components/ui/button';
+import { Button } from '@braintwopoint0/playback-commons/ui';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { AvatarDisplay } from '@/components/avatar/avatar-upload';
 import {

@@ -3,17 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/lib/auth/context';
-import { createClient } from '@/lib/supabase/client';
 import {
+  useAuth,
   validateEmail,
   validatePassword,
   validateUsername,
   getAuthErrorMessage,
-} from '@/lib/auth/shared';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from '@braintwopoint0/playback-commons/auth';
+import { createClient } from '@braintwopoint0/playback-commons/supabase';
+import { Button, Input, Label } from '@braintwopoint0/playback-commons/ui';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { AlertCircle, Mail, Lock, Check, X, Loader2 } from 'lucide-react';
 
@@ -232,7 +230,9 @@ export default function RegisterPage() {
                 type="text"
                 placeholder="Your full name"
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setFullName(e.target.value)
+                }
                 className="h-12 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-xl"
                 style={{
                   color: 'var(--timberwolf)',
@@ -259,7 +259,9 @@ export default function RegisterPage() {
                   type="text"
                   placeholder="Choose a username"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setUsername(e.target.value)
+                  }
                   className={`h-12 pr-12 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-xl ${
                     usernameStatus === 'taken'
                       ? 'border-red-500'
@@ -328,7 +330,9 @@ export default function RegisterPage() {
                   type="email"
                   placeholder="athlete@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setEmail(e.target.value)
+                  }
                   className="h-12 pl-12 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-xl"
                   style={{
                     color: 'var(--timberwolf)',
@@ -359,7 +363,9 @@ export default function RegisterPage() {
                   type="password"
                   placeholder="Create a password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setPassword(e.target.value)
+                  }
                   className="h-12 pl-12 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-xl"
                   style={{
                     color: 'var(--timberwolf)',
@@ -390,7 +396,9 @@ export default function RegisterPage() {
                   type="password"
                   placeholder="Re-enter password"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setConfirmPassword(e.target.value)
+                  }
                   className="h-12 pl-12 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-xl"
                   style={{
                     color: 'var(--timberwolf)',

@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth/context';
-import { Button } from '@/components/ui/button';
+import { useAuth } from '@braintwopoint0/playback-commons/auth';
+import { Button } from '@braintwopoint0/playback-commons/ui';
 
 export default function VerifyEmailPage() {
   const { user, signOut } = useAuth();

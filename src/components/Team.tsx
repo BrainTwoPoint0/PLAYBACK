@@ -1,5 +1,5 @@
 import React from 'react';
-import { AnimatedTooltip } from './ui/animated-tooltip';
+import { AnimatedTooltip } from '@braintwopoint0/playback-commons/ui';
 import SectionTitle from './ui/section-title';
 
 export default function Team() {

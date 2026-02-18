@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Label } from './ui/label';
-import { Input } from './ui/input';
+import { Label, Input } from '@braintwopoint0/playback-commons/ui';
 import { cn } from '@/lib/utils';
 import { Textarea } from './ui/textarea';
 import SectionTitle from './ui/section-title';

@@ -1,9 +1,8 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Label } from '@/components/ui/label';
+import { Button, Label } from '@braintwopoint0/playback-commons/ui';
 import { TimePicker } from '@/components/ui/time-picker';
-import { Button } from '@/components/ui/button';
 import { ClockIcon } from 'lucide-react';
 import { CourtSlot } from '@/lib/playscanner/types';
 

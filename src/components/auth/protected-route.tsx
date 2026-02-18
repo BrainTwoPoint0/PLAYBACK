@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth/context';
+import { useAuth } from '@braintwopoint0/playback-commons/auth';
 import { LoadingSpinner } from '@/components/ui/loading';
 
 interface ProtectedRouteProps {

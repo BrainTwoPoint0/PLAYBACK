@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@braintwopoint0/playback-commons/ui';
 import {
   Play,
   Pause,

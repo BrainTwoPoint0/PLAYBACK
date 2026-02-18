@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@braintwopoint0/playback-commons/supabase';
 
 export interface VideoUploadResult {
   success: boolean;
