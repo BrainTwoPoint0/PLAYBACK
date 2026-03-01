@@ -41,3 +41,6 @@ next-env.d.ts
 /scripts
 
 .env
+.eslintcache
+test-results/
+supabase/.temp/

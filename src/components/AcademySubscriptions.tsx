@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { HoverEffect } from '@braintwopoint0/playback-commons/ui';
+import { Button, HoverEffect } from '@braintwopoint0/playback-commons/ui';
 import SectionTitle from './ui/section-title';
 
 export function AcademySubscriptions() {
@@ -8,10 +8,9 @@ export function AcademySubscriptions() {
       <SectionTitle title="PLAYBACK Academy Services" />
       <HoverEffect items={teams} />
       <Link href="https://billing.stripe.com/p/login/cN29D13rV5X84UgdQQ">
-        <button className="bg-gradient-to-br border border-neutral-400/[0.5] relative group/btn from-[var(--night)] to-[var(--night)] block bg-[var(--night)] w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]">
+        <Button variant="playback" className="w-full">
           Billing Management &rarr;
-          <BottomGradient />
-        </button>
+        </Button>
       </Link>
 
       <div className="my-4 " />
@@ -69,12 +68,3 @@ export const teams = [
   //   logoUrl: '/branding/PB-icon.png',
   // },
 ];
-
-const BottomGradient = () => {
-  return (
-    <>
-      <span className="group-hover/btn:opacity-100 block transition duration-500 opacity-0 absolute h-px w-full -bottom-px inset-x-0 bg-gradient-to-r from-transparent via-[var(--timberwolf)] to-transparent" />
-      <span className="group-hover/btn:opacity-100 blur-sm block transition duration-500 opacity-0 absolute h-px w-1/2 mx-auto -bottom-px inset-x-10 bg-gradient-to-r from-transparent via-[var(--timberwolf)] to-transparent" />
-    </>
-  );
-};

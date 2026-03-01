@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   useAuth,
   useProfile,
@@ -10,6 +10,16 @@ import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Button } from '@braintwopoint0/playback-commons/ui';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { AvatarDisplay } from '@/components/avatar/avatar-upload';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { PlayerProfileForm } from '@/components/profile/player-profile-form';
+import { ProfileEditForm } from '@/components/profile/profile-edit-form';
+import { createBrowserClient } from '@supabase/ssr';
 import {
   User,
   Trophy,
@@ -87,6 +97,50 @@ function DashboardContent() {
   const { profile } = useProfile();
   const onboardingStatus = useOnboardingStatus();
   const [loadingCounts, setLoadingCounts] = useState(false);
+  const [showPlayerForm, setShowPlayerForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [hasPlayerVariant, setHasPlayerVariant] = useState(false);
+  const [footballData, setFootballData] = useState<{
+    experience_level: string;
+    preferred_foot: string | null;
+    primary_position: string | null;
+    secondary_positions: string[] | null;
+    preferred_jersey_number: number | null;
+  } | null>(null);
+
+  // Check if user has a player variant and fetch football data
+  const checkPlayerVariant = useCallback(async () => {
+    if (!profile.data?.id) return;
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const { data: variant } = await supabase
+      .from('profile_variants')
+      .select('id')
+      .eq('profile_id', profile.data.id)
+      .eq('variant_type', 'player')
+      .single();
+    setHasPlayerVariant(!!variant);
+
+    if (variant) {
+      const typedVariant = variant as unknown as { id: string };
+      const { data: football } = await supabase
+        .from('football_player_profiles')
+        .select(
+          'experience_level, preferred_foot, primary_position, secondary_positions, preferred_jersey_number'
+        )
+        .eq('profile_variant_id', typedVariant.id)
+        .single();
+      if (football) {
+        setFootballData(football as unknown as typeof footballData);
+      }
+    }
+  }, [profile.data?.id]);
+
+  useEffect(() => {
+    checkPlayerVariant();
+  }, [checkPlayerVariant]);
 
   // Calculate profile completion
   const profileCompletion = useMemo(() => {
@@ -350,6 +404,14 @@ function DashboardContent() {
                             Base Profile Active
                           </span>
                         </div>
+                        {hasPlayerVariant && (
+                          <div className="flex items-center gap-2 px-3 py-1.5 bg-green-400/10 border border-green-400/30 rounded-full">
+                            <CheckCircle className="h-3 w-3 text-green-400" />
+                            <span className="text-xs font-medium text-green-400">
+                              Player Profile
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -359,11 +421,12 @@ function DashboardContent() {
                         variant="outline"
                         size="sm"
                         className="border-neutral-600 hover:bg-neutral-800/50 group"
-                        onClick={() =>
-                          alert(
-                            'Public profiles will be rebuilt for new schema'
-                          )
-                        }
+                        onClick={() => {
+                          if (profile.data?.username) {
+                            window.location.href = `/player/${profile.data.username}`;
+                          }
+                        }}
+                        disabled={!hasPlayerVariant}
                       >
                         <Share2
                           className="h-4 w-4 mr-2"
@@ -376,11 +439,13 @@ function DashboardContent() {
                       <Button
                         size="sm"
                         className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white group"
-                        onClick={() =>
-                          alert(
-                            'Profile editing will be rebuilt for new schema'
-                          )
-                        }
+                        onClick={() => {
+                          if (hasPlayerVariant && footballData) {
+                            setShowEditForm(true);
+                          } else {
+                            setShowPlayerForm(true);
+                          }
+                        }}
                       >
                         <Edit3 className="h-4 w-4 mr-2" />
                         Edit Profile
@@ -393,7 +458,7 @@ function DashboardContent() {
                 <div className="grid grid-cols-3 gap-6 pt-6 border-t border-neutral-700/50">
                   <div className="text-center">
                     <p className="text-2xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
-                      0
+                      {hasPlayerVariant ? 1 : 0}
                     </p>
                     <p className="text-xs" style={{ color: 'var(--ash-grey)' }}>
                       Profile Variants
@@ -437,12 +502,16 @@ function DashboardContent() {
 
               {/* Available Profile Types */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Player Profile - Active */}
+                {/* Player Profile */}
                 <div
                   className="bg-neutral-800/30 border border-neutral-700/50 rounded-xl p-4 hover:bg-neutral-700/30 hover:border-green-400/30 transition-all duration-300 cursor-pointer group"
-                  onClick={() =>
-                    alert('Player profiles will be rebuilt for new schema')
-                  }
+                  onClick={() => {
+                    if (hasPlayerVariant) {
+                      window.location.href = `/player/${profile.data?.username}`;
+                    } else {
+                      setShowPlayerForm(true);
+                    }
+                  }}
                 >
                   <div className="flex items-center gap-3 mb-3">
                     <div className="p-2 bg-gradient-to-r from-yellow-400/10 to-green-400/10 rounded-lg">
@@ -459,15 +528,24 @@ function DashboardContent() {
                         className="text-xs h-8 flex items-start"
                         style={{ color: 'var(--ash-grey)' }}
                       >
-                        Showcasing your skills and achievements
+                        {hasPlayerVariant
+                          ? 'View your public player profile'
+                          : 'Showcasing your skills and achievements'}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center justify-between pt-2 border-t border-neutral-700/30">
                     <div className="h-6"></div>
-                    <div className="bg-green-400/10 text-green-400 border border-green-400/30 px-3 py-1 rounded-full text-xs">
-                      Available
-                    </div>
+                    {hasPlayerVariant ? (
+                      <div className="flex items-center gap-1.5 bg-green-400/10 text-green-400 border border-green-400/30 px-3 py-1 rounded-full text-xs">
+                        <CheckCircle className="h-3 w-3" />
+                        Active
+                      </div>
+                    ) : (
+                      <div className="bg-green-400/10 text-green-400 border border-green-400/30 px-3 py-1 rounded-full text-xs">
+                        Create
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -552,9 +630,11 @@ function DashboardContent() {
                 <Button
                   variant="ghost"
                   className="w-full justify-start bg-neutral-800/30 hover:bg-neutral-800/50 border border-neutral-700/50 hover:border-neutral-600/50 transition-all duration-300 group"
-                  onClick={() =>
-                    alert('Profile settings will be rebuilt for new schema')
-                  }
+                  onClick={() => {
+                    if (hasPlayerVariant && footballData) {
+                      setShowEditForm(true);
+                    }
+                  }}
                 >
                   <Settings className="h-4 w-4 mr-3 text-gray-400" />
                   <span style={{ color: 'var(--timberwolf)' }}>
@@ -606,6 +686,57 @@ function DashboardContent() {
           </div>
         </div>
       </div>
+
+      {/* Player Profile Creation Dialog */}
+      <Dialog open={showPlayerForm} onOpenChange={setShowPlayerForm}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create Player Profile</DialogTitle>
+            <DialogDescription>
+              Set up your football player profile to showcase your skills.
+            </DialogDescription>
+          </DialogHeader>
+          <PlayerProfileForm
+            onSuccess={() => {
+              setShowPlayerForm(false);
+              setHasPlayerVariant(true);
+              checkPlayerVariant();
+            }}
+            onCancel={() => setShowPlayerForm(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Profile Edit Dialog */}
+      <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Profile</DialogTitle>
+            <DialogDescription>
+              Update your profile details across different sections.
+            </DialogDescription>
+          </DialogHeader>
+          {profile.data && footballData && (
+            <ProfileEditForm
+              profileData={{
+                bio: profile.data.bio ?? null,
+                social_links:
+                  (profile.data.social_links as Record<string, string>) ?? null,
+                height_cm: profile.data.height_cm ?? null,
+                weight_kg: profile.data.weight_kg ?? null,
+                date_of_birth: profile.data.date_of_birth ?? null,
+                location: profile.data.location ?? null,
+                nationality: profile.data.nationality ?? null,
+              }}
+              footballData={footballData}
+              onSaved={() => {
+                setShowEditForm(false);
+                checkPlayerVariant();
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

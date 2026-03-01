@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Label, Input } from '@braintwopoint0/playback-commons/ui';
+import { Button, Label, Input } from '@braintwopoint0/playback-commons/ui';
 import { cn } from '@/lib/utils';
 import { Textarea } from './ui/textarea';
 import SectionTitle from './ui/section-title';
@@ -115,14 +115,14 @@ export function ContactForm() {
           <Textarea id="message" placeholder="Hi..." name="message" />
         </LabelInputContainer>
         {status !== 'ok' && (
-          <button
-            className="bg-gradient-to-br relative group/btn from-zinc-900 to-zinc-900 block bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
+          <Button
+            variant="playback"
+            className="w-full"
             disabled={status === 'pending'}
             type="submit"
           >
             {status === 'pending' ? 'Loading...' : <>Send &rarr;</>}
-            <BottomGradient />
-          </button>
+          </Button>
         )}
         <div className="bg-gradient-to-r from-transparent via-neutral-700 to-transparent my-8 h-[1.5px] w-full" />
         {status !== null && (
@@ -141,15 +141,6 @@ export function ContactForm() {
     </div>
   );
 }
-
-const BottomGradient = () => {
-  return (
-    <>
-      <span className="group-hover/btn:opacity-100 block transition duration-500 opacity-0 absolute h-px w-full -bottom-px inset-x-0 bg-gradient-to-r from-transparent via-[var(--timberwolf)] to-transparent" />
-      <span className="group-hover/btn:opacity-100 blur-sm block transition duration-500 opacity-0 absolute h-px w-1/2 mx-auto -bottom-px inset-x-10 bg-gradient-to-r from-transparent via-[var(--timberwolf)] to-transparent" />
-    </>
-  );
-};
 
 const LabelInputContainer = ({
   children,
