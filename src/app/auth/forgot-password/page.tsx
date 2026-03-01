@@ -195,11 +195,7 @@ export default function ForgotPasswordPage() {
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setEmail(e.target.value)
                   }
-                  className="h-12 pl-12 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-xl"
-                  style={{
-                    color: 'var(--timberwolf)',
-                    borderColor: 'var(--ash-grey)',
-                  }}
+                  className="h-12 pl-12"
                   disabled={loading}
                   autoComplete="email"
                   autoFocus

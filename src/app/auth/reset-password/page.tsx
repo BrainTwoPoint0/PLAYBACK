@@ -197,11 +197,7 @@ function ResetPasswordForm() {
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setPassword(e.target.value)
                   }
-                  className="h-12 pl-12 pr-12 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-xl"
-                  style={{
-                    color: 'var(--timberwolf)',
-                    borderColor: 'var(--ash-grey)',
-                  }}
+                  className="h-12 pl-12 pr-12"
                   disabled={loading}
                   autoComplete="new-password"
                 />
@@ -243,11 +239,7 @@ function ResetPasswordForm() {
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setConfirmPassword(e.target.value)
                   }
-                  className="h-12 pl-12 pr-12 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-xl"
-                  style={{
-                    color: 'var(--timberwolf)',
-                    borderColor: 'var(--ash-grey)',
-                  }}
+                  className="h-12 pl-12 pr-12"
                   disabled={loading}
                   autoComplete="new-password"
                 />

@@ -233,12 +233,7 @@ export default function RegisterPage() {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setFullName(e.target.value)
                 }
-                className="h-12 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-xl"
-                style={{
-                  color: 'var(--timberwolf)',
-                  borderColor: 'var(--ash-grey)',
-                  paddingLeft: '12px',
-                }}
+                className="h-12"
                 disabled={loading}
                 autoComplete="name"
               />
@@ -262,23 +257,13 @@ export default function RegisterPage() {
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setUsername(e.target.value)
                   }
-                  className={`h-12 pr-12 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-xl ${
-                    usernameStatus === 'taken'
-                      ? 'border-red-500'
+                  className={`h-12 pr-12 ${
+                    usernameStatus === 'taken' || usernameStatus === 'invalid'
+                      ? 'ring-2 ring-red-500'
                       : usernameStatus === 'available'
-                        ? 'border-green-500'
+                        ? 'ring-2 ring-green-500'
                         : ''
                   }`}
-                  style={{
-                    color: 'var(--timberwolf)',
-                    borderColor:
-                      usernameStatus === 'taken'
-                        ? '#ef4444'
-                        : usernameStatus === 'available'
-                          ? '#10b981'
-                          : 'var(--ash-grey)',
-                    paddingLeft: '12px',
-                  }}
                   disabled={loading}
                   autoComplete="username"
                 />
@@ -333,11 +318,7 @@ export default function RegisterPage() {
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setEmail(e.target.value)
                   }
-                  className="h-12 pl-12 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-xl"
-                  style={{
-                    color: 'var(--timberwolf)',
-                    borderColor: 'var(--ash-grey)',
-                  }}
+                  className="h-12 pl-12"
                   disabled={loading}
                   autoComplete="email"
                 />
@@ -366,11 +347,7 @@ export default function RegisterPage() {
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setPassword(e.target.value)
                   }
-                  className="h-12 pl-12 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-xl"
-                  style={{
-                    color: 'var(--timberwolf)',
-                    borderColor: 'var(--ash-grey)',
-                  }}
+                  className="h-12 pl-12"
                   disabled={loading}
                   autoComplete="new-password"
                 />
@@ -399,11 +376,7 @@ export default function RegisterPage() {
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setConfirmPassword(e.target.value)
                   }
-                  className="h-12 pl-12 bg-neutral-700/50 border-neutral-600 placeholder:text-neutral-400 rounded-xl"
-                  style={{
-                    color: 'var(--timberwolf)',
-                    borderColor: 'var(--ash-grey)',
-                  }}
+                  className="h-12 pl-12"
                   disabled={loading}
                   autoComplete="new-password"
                 />
