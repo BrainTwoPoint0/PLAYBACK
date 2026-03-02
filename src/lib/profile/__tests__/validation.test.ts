@@ -3,6 +3,7 @@ import {
   validateCreatePlayerVariant,
   validateUpdateBaseProfile,
   validateUpdateFootballProfile,
+  validateCreateHighlight,
   type CreatePlayerVariantInput,
 } from '../validation';
 
@@ -281,5 +282,74 @@ describe('validateUpdateFootballProfile', () => {
       preferred_jersey_number: 100,
     });
     expect(result.valid).toBe(false);
+  });
+});
+
+describe('validateCreateHighlight', () => {
+  it('accepts valid input', () => {
+    const result = validateCreateHighlight({
+      title: 'My Goal',
+      video_url: 'https://storage.example.com/video.mp4',
+    });
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it('accepts valid input with optional fields', () => {
+    const result = validateCreateHighlight({
+      title: 'My Goal',
+      video_url: 'https://storage.example.com/video.mp4',
+      thumbnail_url: 'https://storage.example.com/thumb.jpg',
+      description: 'A great goal from the final',
+    });
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects missing title', () => {
+    const result = validateCreateHighlight({
+      title: '',
+      video_url: 'https://storage.example.com/video.mp4',
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain('Title is required');
+  });
+
+  it('rejects title over 100 characters', () => {
+    const result = validateCreateHighlight({
+      title: 'x'.repeat(101),
+      video_url: 'https://storage.example.com/video.mp4',
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain('Title must be 100 characters or less');
+  });
+
+  it('rejects missing video URL', () => {
+    const result = validateCreateHighlight({
+      title: 'My Goal',
+      video_url: '',
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain('Video URL is required');
+  });
+
+  it('rejects description over 500 characters', () => {
+    const result = validateCreateHighlight({
+      title: 'My Goal',
+      video_url: 'https://storage.example.com/video.mp4',
+      description: 'x'.repeat(501),
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain(
+      'Description must be 500 characters or less'
+    );
+  });
+
+  it('accepts null description', () => {
+    const result = validateCreateHighlight({
+      title: 'My Goal',
+      video_url: 'https://storage.example.com/video.mp4',
+      description: null,
+    });
+    expect(result.valid).toBe(true);
   });
 });

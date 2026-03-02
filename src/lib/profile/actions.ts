@@ -5,9 +5,11 @@ import {
   validateCreatePlayerVariant,
   validateUpdateBaseProfile,
   validateUpdateFootballProfile,
+  validateCreateHighlight,
   type CreatePlayerVariantInput,
   type UpdateBaseProfileInput,
   type UpdateFootballProfileInput,
+  type CreateHighlightInput,
 } from './validation';
 
 interface ActionResult {
@@ -248,6 +250,217 @@ export async function updateFootballProfile(
 
   if (error) {
     return { success: false, error: error.message };
+  }
+
+  return { success: true };
+}
+
+// --- Highlight actions ---
+
+export async function createHighlight(
+  input: CreateHighlightInput & {
+    duration?: number | null;
+    metadata?: Record<string, unknown>;
+  }
+): Promise<ActionResult> {
+  const validation = validateCreateHighlight(input);
+  if (!validation.valid) {
+    return {
+      success: false,
+      error: validation.errors[0],
+      errors: validation.errors,
+    };
+  }
+
+  const auth = await getAuthenticatedProfileId();
+  if ('error' in auth) {
+    return { success: false, error: auth.error };
+  }
+
+  const supabase = await createClient();
+
+  // Get player variant
+  const { data: variantData } = await supabase
+    .from('profile_variants')
+    .select('id, sport_id')
+    .eq('profile_id', auth.profileId)
+    .eq('variant_type', 'player')
+    .single();
+
+  if (!variantData) {
+    return { success: false, error: 'No player profile found' };
+  }
+
+  const variant = variantData as unknown as { id: string; sport_id: string };
+
+  const { error: insertError } = await (
+    supabase.from('highlights') as any
+  ).insert({
+    profile_id: auth.profileId,
+    profile_variant_id: variant.id,
+    sport_id: variant.sport_id,
+    title: input.title.trim(),
+    description: input.description?.trim() || null,
+    video_url: input.video_url,
+    thumbnail_url: input.thumbnail_url || null,
+    duration: input.duration || null,
+    is_public: true,
+    metadata: input.metadata || {},
+  });
+
+  if (insertError) {
+    return { success: false, error: 'Failed to create highlight' };
+  }
+
+  return { success: true };
+}
+
+export async function deleteHighlight(
+  highlightId: string
+): Promise<ActionResult> {
+  if (!highlightId) {
+    return { success: false, error: 'Highlight ID is required' };
+  }
+
+  const auth = await getAuthenticatedProfileId();
+  if ('error' in auth) {
+    return { success: false, error: auth.error };
+  }
+
+  const supabase = await createClient();
+
+  // Verify ownership by checking profile_id matches
+  const { data: highlight } = await supabase
+    .from('highlights')
+    .select('id, profile_id')
+    .eq('id', highlightId)
+    .single();
+
+  if (!highlight) {
+    return { success: false, error: 'Highlight not found' };
+  }
+
+  const typedHighlight = highlight as unknown as {
+    id: string;
+    profile_id: string;
+  };
+
+  if (typedHighlight.profile_id !== auth.profileId) {
+    return { success: false, error: 'Not authorized to delete this highlight' };
+  }
+
+  // Delete from database (RLS also protects this)
+  const { error: deleteError } = await supabase
+    .from('highlights')
+    .delete()
+    .eq('id', highlightId);
+
+  if (deleteError) {
+    return { success: false, error: 'Failed to delete highlight' };
+  }
+
+  return { success: true };
+}
+
+export async function importRecordingAsHighlight(
+  recordingId: string
+): Promise<ActionResult> {
+  if (!recordingId) {
+    return { success: false, error: 'Recording ID is required' };
+  }
+
+  const auth = await getAuthenticatedProfileId();
+  if ('error' in auth) {
+    return { success: false, error: auth.error };
+  }
+
+  const supabase = await createClient();
+
+  // Verify user has access to this recording
+  const { data: access } = await supabase
+    .from('playhub_access_rights')
+    .select('id')
+    .eq('user_id', auth.userId)
+    .eq('match_recording_id', recordingId)
+    .eq('is_active', true)
+    .single();
+
+  if (!access) {
+    return { success: false, error: 'No access to this recording' };
+  }
+
+  // Fetch recording details
+  const { data: recording } = await supabase
+    .from('playhub_match_recordings')
+    .select('id, title, thumbnail_url, duration_seconds, home_team, away_team')
+    .eq('id', recordingId)
+    .single();
+
+  if (!recording) {
+    return { success: false, error: 'Recording not found' };
+  }
+
+  const typedRecording = recording as unknown as {
+    id: string;
+    title: string;
+    thumbnail_url: string | null;
+    duration_seconds: number | null;
+    home_team: string;
+    away_team: string;
+  };
+
+  // Get player variant
+  const { data: variantData } = await supabase
+    .from('profile_variants')
+    .select('id, sport_id')
+    .eq('profile_id', auth.profileId)
+    .eq('variant_type', 'player')
+    .single();
+
+  if (!variantData) {
+    return { success: false, error: 'No player profile found' };
+  }
+
+  const variant = variantData as unknown as { id: string; sport_id: string };
+
+  // Check if already imported
+  const { data: existing } = await supabase
+    .from('highlights')
+    .select('id')
+    .eq('profile_variant_id', variant.id)
+    .contains('metadata', { source: 'playhub', recording_id: recordingId });
+
+  if (existing && existing.length > 0) {
+    return {
+      success: false,
+      error: 'This recording is already in your highlights',
+    };
+  }
+
+  // Create highlight from recording
+  const title =
+    typedRecording.title ||
+    `${typedRecording.home_team} vs ${typedRecording.away_team}`;
+
+  const { error: insertError } = await (
+    supabase.from('highlights') as any
+  ).insert({
+    profile_id: auth.profileId,
+    profile_variant_id: variant.id,
+    sport_id: variant.sport_id,
+    title,
+    video_url: `playhub://recording/${recordingId}`,
+    thumbnail_url: typedRecording.thumbnail_url,
+    duration: typedRecording.duration_seconds,
+    is_public: true,
+    metadata: {
+      source: 'playhub',
+      recording_id: recordingId,
+    },
+  });
+
+  if (insertError) {
+    return { success: false, error: 'Failed to import recording' };
   }
 
   return { success: true };

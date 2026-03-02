@@ -123,6 +123,41 @@ export function validateUpdateBaseProfile(
   return { valid: errors.length === 0, errors };
 }
 
+// --- Highlight validation ---
+
+export interface CreateHighlightInput {
+  title: string;
+  video_url: string;
+  thumbnail_url?: string | null;
+  description?: string | null;
+}
+
+export function validateCreateHighlight(
+  input: CreateHighlightInput
+): ValidationResult {
+  const errors: string[] = [];
+
+  if (!input.title || input.title.trim().length === 0) {
+    errors.push('Title is required');
+  } else if (input.title.length > 100) {
+    errors.push('Title must be 100 characters or less');
+  }
+
+  if (!input.video_url || input.video_url.trim().length === 0) {
+    errors.push('Video URL is required');
+  }
+
+  if (
+    input.description !== undefined &&
+    input.description !== null &&
+    input.description.length > 500
+  ) {
+    errors.push('Description must be 500 characters or less');
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+
 export interface UpdateFootballProfileInput {
   experience_level?: string;
   preferred_foot?: string;

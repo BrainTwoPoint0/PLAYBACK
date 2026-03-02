@@ -33,7 +33,7 @@ export function ProfileHero({
   return (
     <div className="relative">
       {/* Cover / gradient background */}
-      <div className="h-48 md:h-56 rounded-t-2xl overflow-hidden">
+      <div className="h-36 sm:h-48 md:h-56 rounded-t-2xl overflow-hidden">
         {coverImageUrl ? (
           <img
             src={coverImageUrl}

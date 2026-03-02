@@ -60,7 +60,9 @@ async function getPlayerProfile(username: string) {
   // Fetch highlights
   const { data: highlights } = await supabase
     .from('highlights')
-    .select('id, title, thumbnail_url, video_url, duration, view_count')
+    .select(
+      'id, title, thumbnail_url, video_url, duration, view_count, metadata'
+    )
     .eq('profile_variant_id', typedVariant.id)
     .eq('is_public', true)
     .order('created_at', { ascending: false })
@@ -78,10 +80,10 @@ async function getPlayerProfile(username: string) {
     profile: typedProfile,
     variant: typedVariant,
     football: typedFootball,
-    highlights: (highlights || []) as unknown as Pick<
-      Highlight,
-      'id' | 'title' | 'thumbnail_url' | 'video_url' | 'duration' | 'view_count'
-    >[],
+    highlights: (highlights || []).map((h: any) => ({
+      ...h,
+      metadata: (h.metadata as Record<string, unknown>) || null,
+    })),
     stats: (stats || []) as unknown as Pick<
       Stat,
       'id' | 'stat_type' | 'stat_date' | 'metrics' | 'competition' | 'opponent'

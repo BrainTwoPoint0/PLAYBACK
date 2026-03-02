@@ -180,7 +180,6 @@ function CalendarDayButton({
   }, [modifiers.focused]);
 
   return (
-    // @ts-expect-error csstype version mismatch between PLAYBACK (3.1.3) and commons (3.2.3)
     <Button
       ref={ref}
       variant="ghost"

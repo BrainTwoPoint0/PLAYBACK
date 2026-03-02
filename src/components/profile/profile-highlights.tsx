@@ -7,6 +7,7 @@ interface Highlight {
   video_url: string;
   duration: number | null;
   view_count: number | null;
+  metadata: Record<string, unknown> | null;
 }
 
 interface ProfileHighlightsProps {
@@ -60,6 +61,11 @@ export function ProfileHighlights({ highlights }: ProfileHighlightsProps) {
                     <Play className="h-6 w-6 text-white" />
                   </div>
                 </div>
+                {highlight.metadata?.source === 'playhub' && (
+                  <span className="absolute top-2 left-2 bg-blue-500/90 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                    PLAYHUB
+                  </span>
+                )}
                 {highlight.duration && (
                   <span className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded">
                     {formatDuration(highlight.duration)}
