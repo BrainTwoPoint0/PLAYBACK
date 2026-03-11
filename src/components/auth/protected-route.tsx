@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@braintwopoint0/playback-commons/auth';
-import { LoadingSpinner } from '@/components/ui/loading';
+import { LumaSpin } from '@braintwopoint0/playback-commons/ui';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -39,7 +39,7 @@ export function ProtectedRoute({
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <LoadingSpinner size="lg" className="mb-4" />
+          <LumaSpin />
           <p className="text-muted-foreground">Checking authentication...</p>
         </div>
       </div>

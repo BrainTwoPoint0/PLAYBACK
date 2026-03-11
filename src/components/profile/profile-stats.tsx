@@ -15,63 +15,75 @@ interface ProfileStatsProps {
 
 export function ProfileStats({ stats }: ProfileStatsProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <h2
-        className="text-lg font-semibold"
-        style={{ color: 'var(--timberwolf)' }}
+        className="text-xs font-semibold uppercase tracking-widest"
+        style={{ color: 'var(--ash-grey)' }}
       >
         Statistics
       </h2>
 
       {stats.length === 0 ? (
-        <div className="text-center py-12 rounded-xl bg-neutral-800/20 border border-neutral-700/30">
+        <div className="text-center py-16 rounded-xl border border-neutral-800/50">
           <BarChart3
-            className="h-8 w-8 mx-auto mb-3"
+            className="h-6 w-6 mx-auto mb-2 opacity-30"
             style={{ color: 'var(--ash-grey)' }}
           />
-          <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
+          <p
+            className="text-sm opacity-50"
+            style={{ color: 'var(--ash-grey)' }}
+          >
             No stats yet
           </p>
-          <p className="text-xs mt-1" style={{ color: 'var(--ash-grey)' }}>
+          <p
+            className="text-xs mt-1 opacity-30"
+            style={{ color: 'var(--ash-grey)' }}
+          >
             Stats from PlayerData and manual entries will appear here.
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {stats.map((stat) => (
             <div
               key={stat.id}
-              className="p-4 rounded-xl bg-neutral-800/30 border border-neutral-700/30"
+              className="p-4 rounded-xl bg-neutral-900/40 border border-neutral-800/40"
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-3">
                 <span
-                  className="text-sm font-medium"
+                  className="text-sm font-semibold"
                   style={{ color: 'var(--timberwolf)' }}
                 >
                   {stat.stat_type}
                 </span>
-                <span className="text-xs" style={{ color: 'var(--ash-grey)' }}>
+                <span
+                  className="text-xs tabular-nums"
+                  style={{ color: 'var(--ash-grey)' }}
+                >
                   {new Date(stat.stat_date).toLocaleDateString()}
                 </span>
               </div>
               {stat.opponent && (
                 <p
-                  className="text-xs mb-2"
+                  className="text-xs mb-3 opacity-70"
                   style={{ color: 'var(--ash-grey)' }}
                 >
                   vs {stat.opponent}
-                  {stat.competition && ` • ${stat.competition}`}
+                  {stat.competition && ` · ${stat.competition}`}
                 </p>
               )}
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-6">
                 {Object.entries(stat.metrics as Record<string, unknown>).map(
                   ([key, value]) => (
-                    <div key={key} className="text-center">
-                      <p className="text-lg font-bold text-green-400">
+                    <div key={key}>
+                      <p
+                        className="text-xl font-bold leading-tight"
+                        style={{ color: 'var(--timberwolf)' }}
+                      >
                         {String(value)}
                       </p>
                       <p
-                        className="text-xs"
+                        className="text-[11px] uppercase tracking-wide mt-0.5"
                         style={{ color: 'var(--ash-grey)' }}
                       >
                         {key.replace(/_/g, ' ')}

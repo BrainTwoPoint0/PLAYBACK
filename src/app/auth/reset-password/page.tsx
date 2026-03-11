@@ -8,7 +8,12 @@ import {
   validatePassword,
   getAuthErrorMessage,
 } from '@braintwopoint0/playback-commons/auth';
-import { Button, Input, Label } from '@braintwopoint0/playback-commons/ui';
+import {
+  Button,
+  Input,
+  Label,
+  LumaSpin,
+} from '@braintwopoint0/playback-commons/ui';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { AlertCircle, Lock, CheckCircle, Eye, EyeOff } from 'lucide-react';
 
@@ -314,7 +319,7 @@ export default function ResetPasswordPage() {
           className="min-h-screen flex items-center justify-center"
           style={{ backgroundColor: 'var(--night)' }}
         >
-          <LoadingSpinner size="lg" />
+          <LumaSpin />
         </div>
       }
     >

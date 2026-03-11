@@ -11,15 +11,7 @@ import {
   formatFileSize,
   formatDuration,
 } from '@/lib/video/utils';
-import {
-  Upload,
-  X,
-  Play,
-  Trash2,
-  AlertCircle,
-  CheckCircle,
-  Film,
-} from 'lucide-react';
+import { X, AlertCircle, CheckCircle, Film } from 'lucide-react';
 
 interface VideoUploadProps {
   userId: string;
@@ -213,8 +205,8 @@ export function VideoUpload({
       <div
         className={`relative border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-300 ${
           dragActive
-            ? 'border-green-400 bg-green-400/5'
-            : 'border-neutral-600 hover:border-green-400/50'
+            ? 'border-[var(--timberwolf)] bg-white/5'
+            : 'border-neutral-700 hover:border-neutral-500'
         } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -224,34 +216,24 @@ export function VideoUpload({
       >
         <div className="space-y-4">
           <div className="flex justify-center">
-            <div className="p-4 bg-gradient-to-r from-purple-400/10 to-blue-400/10 rounded-2xl">
-              <Film className="h-12 w-12 text-purple-400" />
+            <div className="p-4 bg-neutral-800/60 rounded-2xl">
+              <Film
+                className="h-10 w-10"
+                style={{ color: 'var(--ash-grey)' }}
+              />
             </div>
           </div>
 
           <div>
-            <h3
-              className="text-lg font-semibold mb-2"
-              style={{ color: 'var(--timberwolf)' }}
-            >
-              Upload Highlight Videos
-            </h3>
             <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
-              Drag and drop your videos here, or click to browse
+              Drag and drop your video here, or click to browse
             </p>
-          </div>
-
-          <div className="flex justify-center">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={disabled}
-              className="border-green-400 text-green-400 hover:bg-green-400/10"
+            <p
+              className="text-xs mt-1 opacity-60"
+              style={{ color: 'var(--ash-grey)' }}
             >
-              <Upload className="h-4 w-4 mr-2" />
-              Choose Videos
-            </Button>
+              MP4, WebM, MOV up to 100MB
+            </p>
           </div>
         </div>
 
@@ -265,26 +247,6 @@ export function VideoUpload({
           className="hidden"
           disabled={disabled}
         />
-      </div>
-
-      {/* Upload Guidelines */}
-      <div className="bg-gradient-to-br from-neutral-800/40 to-neutral-700/30 backdrop-blur-xl border border-neutral-700/50 rounded-xl p-4">
-        <h4
-          className="text-sm font-semibold mb-3 flex items-center gap-2"
-          style={{ color: 'var(--timberwolf)' }}
-        >
-          <div className="p-1 bg-blue-400/10 rounded-lg">
-            <AlertCircle className="h-4 w-4 text-blue-400" />
-          </div>
-          Upload Guidelines
-        </h4>
-        <ul className="text-xs space-y-1" style={{ color: 'var(--ash-grey)' }}>
-          <li>• Supported formats: MP4, WebM, OGG, MOV, AVI</li>
-          <li>• Maximum file size: 100MB per video</li>
-          <li>• Maximum {maxFiles} videos at once</li>
-          <li>• Best quality: 1080p or higher, good lighting</li>
-          <li>• Keep videos under 2 minutes for best engagement</li>
-        </ul>
       </div>
 
       {/* Uploading Videos */}
@@ -349,8 +311,11 @@ export function VideoUpload({
                     <div className="mt-2">
                       <div className="w-full bg-neutral-700 rounded-full h-1.5">
                         <div
-                          className="bg-gradient-to-r from-green-400 to-blue-400 h-1.5 rounded-full transition-all duration-300"
-                          style={{ width: `${video.progress}%` }}
+                          className="h-1.5 rounded-full transition-all duration-300"
+                          style={{
+                            backgroundColor: 'var(--timberwolf)',
+                            width: `${video.progress}%`,
+                          }}
                         ></div>
                       </div>
                       <p

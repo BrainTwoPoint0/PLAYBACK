@@ -6,6 +6,9 @@ import { ProfileKeyInfo } from '@/components/profile/profile-key-info';
 import { ProfilePositions } from '@/components/profile/profile-positions';
 import { ProfileHighlights } from '@/components/profile/profile-highlights';
 import { ProfileStats } from '@/components/profile/profile-stats';
+import { ProfileCareer } from '@/components/profile/profile-career';
+import { ProfileEducation } from '@/components/profile/profile-education';
+import { ProfileLayout } from './profile-layout';
 import type { Tables } from '@/lib/supabase/types';
 import type { Metadata } from 'next';
 
@@ -76,14 +79,41 @@ async function getPlayerProfile(username: string) {
     .order('stat_date', { ascending: false })
     .limit(10);
 
+  // Fetch career history
+  const { data: career } = await supabase
+    .from('career_history')
+    .select(
+      'id, organization_name, role, start_date, end_date, is_current, description'
+    )
+    .eq('profile_variant_id', typedVariant.id)
+    .order('display_order', { ascending: true });
+
+  // Fetch education
+  const { data: education } = await supabase
+    .from('education')
+    .select(
+      'id, institution_name, institution_type, degree_or_program, field_of_study, start_date, end_date, is_current, description'
+    )
+    .eq('profile_id', typedProfile.id)
+    .order('display_order', { ascending: true });
+
+  const typedHighlights = (highlights || []).map((h: any) => ({
+    ...h,
+    metadata: (h.metadata as Record<string, unknown>) || null,
+  }));
+
+  // Featured highlight = most recent public highlight (first in the list)
+  const featuredHighlight =
+    typedHighlights.length > 0 ? typedHighlights[0] : null;
+
   return {
     profile: typedProfile,
     variant: typedVariant,
     football: typedFootball,
-    highlights: (highlights || []).map((h: any) => ({
-      ...h,
-      metadata: (h.metadata as Record<string, unknown>) || null,
-    })),
+    highlights: typedHighlights,
+    featuredHighlight,
+    career: (career || []) as any[],
+    education: (education || []) as any[],
     stats: (stats || []) as unknown as Pick<
       Stat,
       'id' | 'stat_type' | 'stat_date' | 'metrics' | 'competition' | 'opponent'
@@ -127,13 +157,38 @@ export default async function PlayerProfilePage({ params }: PageProps) {
     notFound();
   }
 
-  const { profile, football, highlights, stats } = data;
+  const {
+    profile,
+    football,
+    highlights,
+    featuredHighlight,
+    career,
+    education,
+    stats,
+  } = data;
+
+  // Get current team from career history for the hero
+  const currentTeam = career.find((c: any) => c.is_current);
+  const organizationName = currentTeam?.organization_name || null;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--night)' }}>
-      <div className="max-w-3xl mx-auto pb-16">
-        {/* Hero */}
-        <div className="bg-gradient-to-br from-neutral-900/90 to-neutral-800/50 border border-neutral-700/50 rounded-2xl overflow-hidden">
+    <div
+      className="min-h-screen relative"
+      style={{ backgroundColor: 'var(--night)' }}
+    >
+      {/* Subtle dot pattern background */}
+      <div
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            'radial-gradient(circle, var(--timberwolf) 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+        }}
+      />
+
+      <div className="relative z-10 max-w-4xl mx-auto pb-20">
+        {/* Hero — full width, no card wrapper */}
+        <ProfileLayout delay={0}>
           <ProfileHero
             fullName={profile.full_name || username}
             username={profile.username}
@@ -141,68 +196,84 @@ export default async function PlayerProfilePage({ params }: PageProps) {
             coverImageUrl={profile.cover_image_url}
             jerseyNumber={football.preferred_jersey_number}
             experienceLevel={football.experience_level}
+            organizationName={organizationName}
             location={profile.location}
+            featuredHighlight={
+              featuredHighlight
+                ? {
+                    id: featuredHighlight.id,
+                    videoUrl: featuredHighlight.video_url,
+                    thumbnailUrl: featuredHighlight.thumbnail_url,
+                    title: featuredHighlight.title,
+                    metadata: featuredHighlight.metadata,
+                  }
+                : undefined
+            }
           />
-        </div>
+        </ProfileLayout>
 
-        {/* Content sections */}
-        <div className="mt-6 space-y-6 px-4 md:px-0">
-          {/* About */}
-          <Section>
-            <ProfileAbout
-              bio={profile.bio}
-              socialLinks={
-                profile.social_links as Record<string, string> | null
-              }
-            />
-          </Section>
+        {/* Content — two-column on desktop */}
+        <div className="mt-8 px-4 md:px-0 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          {/* Left column — info */}
+          <div className="lg:col-span-2 space-y-8">
+            <ProfileLayout delay={100}>
+              <ProfileAbout
+                bio={profile.bio}
+                socialLinks={
+                  profile.social_links as Record<string, string> | null
+                }
+              />
+            </ProfileLayout>
 
-          {/* Key Info */}
-          <Section>
-            <ProfileKeyInfo
-              preferredFoot={football.preferred_foot}
-              heightCm={profile.height_cm}
-              weightKg={profile.weight_kg}
-              dateOfBirth={profile.date_of_birth}
-              experienceLevel={football.experience_level}
-              jerseyNumber={football.preferred_jersey_number}
-              primaryPosition={football.primary_position}
-            />
-          </Section>
+            <ProfileLayout delay={150}>
+              <ProfileKeyInfo
+                preferredFoot={football.preferred_foot}
+                heightCm={profile.height_cm}
+                weightKg={profile.weight_kg}
+                dateOfBirth={profile.date_of_birth}
+                experienceLevel={football.experience_level}
+                jerseyNumber={football.preferred_jersey_number}
+                primaryPosition={football.primary_position}
+              />
+            </ProfileLayout>
 
-          {/* Positions */}
-          <Section>
-            <ProfilePositions
-              primaryPosition={football.primary_position}
-              secondaryPositions={football.secondary_positions}
-            />
-          </Section>
+            <ProfileLayout delay={200}>
+              <ProfilePositions
+                primaryPosition={football.primary_position}
+                secondaryPositions={football.secondary_positions}
+              />
+            </ProfileLayout>
 
-          {/* Highlights */}
-          <Section>
-            <ProfileHighlights highlights={highlights} />
-          </Section>
+            {career.length > 0 && (
+              <ProfileLayout delay={250}>
+                <ProfileCareer entries={career} />
+              </ProfileLayout>
+            )}
 
-          {/* Stats */}
-          <Section>
-            <ProfileStats
-              stats={stats.map((s) => ({
-                ...s,
-                metrics: s.metrics as Record<string, unknown>,
-              }))}
-            />
-          </Section>
+            {education.length > 0 && (
+              <ProfileLayout delay={300}>
+                <ProfileEducation entries={education} />
+              </ProfileLayout>
+            )}
+          </div>
+
+          {/* Right column — highlights + stats */}
+          <div className="lg:col-span-3 space-y-8">
+            <ProfileLayout delay={150}>
+              <ProfileHighlights highlights={highlights} />
+            </ProfileLayout>
+
+            <ProfileLayout delay={250}>
+              <ProfileStats
+                stats={stats.map((s) => ({
+                  ...s,
+                  metrics: s.metrics as Record<string, unknown>,
+                }))}
+              />
+            </ProfileLayout>
+          </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function Section({ children }: { children: React.ReactNode }) {
-  if (!children) return null;
-  return (
-    <div className="bg-gradient-to-br from-neutral-900/90 to-neutral-800/50 border border-neutral-700/50 rounded-2xl p-6">
-      {children}
     </div>
   );
 }

@@ -81,6 +81,7 @@ export function validateCreatePlayerVariant(
 // --- Update validation ---
 
 export interface UpdateBaseProfileInput {
+  full_name?: string | null;
   bio?: string | null;
   social_links?: Record<string, string> | null;
   height_cm?: number | null;
@@ -94,6 +95,14 @@ export function validateUpdateBaseProfile(
   input: UpdateBaseProfileInput
 ): ValidationResult {
   const errors: string[] = [];
+
+  if (input.full_name !== undefined && input.full_name !== null) {
+    if (input.full_name.trim().length < 2) {
+      errors.push('Full name must be at least 2 characters');
+    } else if (input.full_name.length > 100) {
+      errors.push('Full name must be 100 characters or less');
+    }
+  }
 
   if (input.bio !== undefined && input.bio !== null && input.bio.length > 500) {
     errors.push('Bio must be 500 characters or less');

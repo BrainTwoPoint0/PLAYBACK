@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   useAuth,
   useProfile,
   useOnboardingStatus,
 } from '@braintwopoint0/playback-commons/auth';
 import { ProtectedRoute } from '@/components/auth/protected-route';
-import { Button } from '@braintwopoint0/playback-commons/ui';
+import { Button, LumaSpin } from '@braintwopoint0/playback-commons/ui';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { AvatarUpload } from '@/components/avatar/avatar-upload';
 import {
@@ -20,16 +20,28 @@ import {
 import { PlayerProfileForm } from '@/components/profile/player-profile-form';
 import { ProfileEditForm } from '@/components/profile/profile-edit-form';
 import { VideoUpload } from '@/components/video/video-upload';
+import { HighlightVideoDialog } from '@/components/video/highlight-video-dialog';
 import {
   createHighlight,
   deleteHighlight,
   importRecordingAsHighlight,
+  updateCoverImage,
+  addCareerEntry,
+  updateCareerEntry,
+  deleteCareerEntry,
+  addEducationEntry,
+  updateEducationEntry,
+  deleteEducationEntry,
+  type CareerEntryInput,
+  type EducationEntryInput,
 } from '@/lib/profile/actions';
 import { createBrowserClient } from '@supabase/ssr';
+import { FadeIn } from '@/components/FadeIn';
 import {
   User,
   Trophy,
   LogOut,
+  Camera,
   Instagram,
   Twitter,
   Linkedin,
@@ -37,16 +49,14 @@ import {
   ExternalLink,
   Edit3,
   Share2,
-  Target,
-  Zap,
-  Crown,
-  Sparkles,
   ChevronRight,
   Play,
   Plus,
   Trash2,
   Film,
-  Settings,
+  Crown,
+  Briefcase,
+  GraduationCap,
 } from 'lucide-react';
 
 // SocialLink Component (from public profile)
@@ -96,6 +106,345 @@ function SocialLink({
       </span>
       <ExternalLink className="h-4 w-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
     </a>
+  );
+}
+
+function CareerEntryForm({
+  initial,
+  onSave,
+  onCancel,
+}: {
+  initial: any | null;
+  onSave: (
+    input: CareerEntryInput
+  ) => Promise<{ success: boolean; error?: string }>;
+  onCancel: () => void;
+}) {
+  const [orgName, setOrgName] = useState(initial?.organization_name || '');
+  const [role, setRole] = useState(initial?.role || '');
+  const [startDate, setStartDate] = useState(initial?.start_date || '');
+  const [endDate, setEndDate] = useState(initial?.end_date || '');
+  const [isCurrent, setIsCurrent] = useState(initial?.is_current || false);
+  const [description, setDescription] = useState(initial?.description || '');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async () => {
+    if (!orgName.trim()) {
+      setError('Organization name is required');
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    const result = await onSave({
+      organization_name: orgName,
+      role: role || null,
+      start_date: startDate || null,
+      end_date: endDate || null,
+      is_current: isCurrent,
+      description: description || null,
+    });
+    setSaving(false);
+    if (!result.success) {
+      setError(result.error || 'Failed to save');
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {error && <p className="text-sm text-red-400">{error}</p>}
+      <div className="space-y-2">
+        <label
+          className="text-sm font-medium"
+          style={{ color: 'var(--timberwolf)' }}
+        >
+          Organization *
+        </label>
+        <input
+          value={orgName}
+          onChange={(e) => setOrgName(e.target.value)}
+          maxLength={255}
+          className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300"
+          placeholder="e.g. Chelsea FC Academy"
+        />
+      </div>
+      <div className="space-y-2">
+        <label
+          className="text-sm font-medium"
+          style={{ color: 'var(--timberwolf)' }}
+        >
+          Role
+        </label>
+        <input
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          maxLength={100}
+          className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300"
+          placeholder="e.g. Midfielder, U18 Captain"
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label
+            className="text-sm font-medium"
+            style={{ color: 'var(--timberwolf)' }}
+          >
+            Start Date
+          </label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] focus:outline-none focus:ring-1 focus:ring-zinc-300"
+          />
+        </div>
+        <div className="space-y-2">
+          <label
+            className="text-sm font-medium"
+            style={{ color: 'var(--timberwolf)' }}
+          >
+            End Date
+          </label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            disabled={isCurrent}
+            className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] focus:outline-none focus:ring-1 focus:ring-zinc-300 disabled:opacity-40"
+          />
+        </div>
+      </div>
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={isCurrent}
+          onChange={(e) => setIsCurrent(e.target.checked)}
+          className="rounded border-neutral-600"
+        />
+        <span className="text-sm" style={{ color: 'var(--timberwolf)' }}>
+          Currently here
+        </span>
+      </label>
+      <div className="space-y-2">
+        <label
+          className="text-sm font-medium"
+          style={{ color: 'var(--timberwolf)' }}
+        >
+          Description
+        </label>
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          maxLength={500}
+          rows={2}
+          className="flex w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300 resize-none"
+          placeholder="Brief description..."
+        />
+      </div>
+      <div className="flex justify-end gap-2 pt-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onCancel}
+          style={{ color: 'var(--ash-grey)' }}
+        >
+          Cancel
+        </Button>
+        <Button
+          size="sm"
+          disabled={saving}
+          onClick={handleSubmit}
+          className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white"
+        >
+          {saving ? <LoadingSpinner size="sm" /> : 'Save'}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function EducationEntryForm({
+  initial,
+  onSave,
+  onCancel,
+}: {
+  initial: any | null;
+  onSave: (
+    input: EducationEntryInput
+  ) => Promise<{ success: boolean; error?: string }>;
+  onCancel: () => void;
+}) {
+  const [institutionName, setInstitutionName] = useState(
+    initial?.institution_name || ''
+  );
+  const [institutionType, setInstitutionType] = useState(
+    initial?.institution_type || ''
+  );
+  const [degree, setDegree] = useState(initial?.degree_or_program || '');
+  const [fieldOfStudy, setFieldOfStudy] = useState(
+    initial?.field_of_study || ''
+  );
+  const [startDate, setStartDate] = useState(initial?.start_date || '');
+  const [endDate, setEndDate] = useState(initial?.end_date || '');
+  const [isCurrent, setIsCurrent] = useState(initial?.is_current || false);
+  const [description, setDescription] = useState(initial?.description || '');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async () => {
+    if (!institutionName.trim()) {
+      setError('Institution name is required');
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    const result = await onSave({
+      institution_name: institutionName,
+      institution_type: institutionType || null,
+      degree_or_program: degree || null,
+      field_of_study: fieldOfStudy || null,
+      start_date: startDate || null,
+      end_date: endDate || null,
+      is_current: isCurrent,
+      description: description || null,
+    });
+    setSaving(false);
+    if (!result.success) {
+      setError(result.error || 'Failed to save');
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {error && <p className="text-sm text-red-400">{error}</p>}
+      <div className="space-y-2">
+        <label
+          className="text-sm font-medium"
+          style={{ color: 'var(--timberwolf)' }}
+        >
+          Institution *
+        </label>
+        <input
+          value={institutionName}
+          onChange={(e) => setInstitutionName(e.target.value)}
+          maxLength={255}
+          className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300"
+          placeholder="e.g. University of Manchester"
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label
+            className="text-sm font-medium"
+            style={{ color: 'var(--timberwolf)' }}
+          >
+            Type
+          </label>
+          <select
+            value={institutionType}
+            onChange={(e) => setInstitutionType(e.target.value)}
+            className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] focus:outline-none focus:ring-1 focus:ring-zinc-300"
+          >
+            <option value="">Select type</option>
+            <option value="school">School</option>
+            <option value="college">College</option>
+            <option value="university">University</option>
+            <option value="academy">Academy</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div className="space-y-2">
+          <label
+            className="text-sm font-medium"
+            style={{ color: 'var(--timberwolf)' }}
+          >
+            Degree/Program
+          </label>
+          <input
+            value={degree}
+            onChange={(e) => setDegree(e.target.value)}
+            maxLength={255}
+            className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300"
+            placeholder="e.g. BSc"
+          />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <label
+          className="text-sm font-medium"
+          style={{ color: 'var(--timberwolf)' }}
+        >
+          Field of Study
+        </label>
+        <input
+          value={fieldOfStudy}
+          onChange={(e) => setFieldOfStudy(e.target.value)}
+          maxLength={255}
+          className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300"
+          placeholder="e.g. Sport Science"
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label
+            className="text-sm font-medium"
+            style={{ color: 'var(--timberwolf)' }}
+          >
+            Start Date
+          </label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] focus:outline-none focus:ring-1 focus:ring-zinc-300"
+          />
+        </div>
+        <div className="space-y-2">
+          <label
+            className="text-sm font-medium"
+            style={{ color: 'var(--timberwolf)' }}
+          >
+            End Date
+          </label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            disabled={isCurrent}
+            className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] focus:outline-none focus:ring-1 focus:ring-zinc-300 disabled:opacity-40"
+          />
+        </div>
+      </div>
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={isCurrent}
+          onChange={(e) => setIsCurrent(e.target.checked)}
+          className="rounded border-neutral-600"
+        />
+        <span className="text-sm" style={{ color: 'var(--timberwolf)' }}>
+          Currently attending
+        </span>
+      </label>
+      <div className="flex justify-end gap-2 pt-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onCancel}
+          style={{ color: 'var(--ash-grey)' }}
+        >
+          Cancel
+        </Button>
+        <Button
+          size="sm"
+          disabled={saving}
+          onClick={handleSubmit}
+          className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white"
+        >
+          {saving ? <LoadingSpinner size="sm" /> : 'Save'}
+        </Button>
+      </div>
+    </div>
   );
 }
 
@@ -150,6 +499,27 @@ function DashboardContent() {
   const [loadingRecordings, setLoadingRecordings] = useState(false);
   const [importingId, setImportingId] = useState<string | null>(null);
 
+  // Career & Education state
+  const [careerEntries, setCareerEntries] = useState<any[]>([]);
+  const [educationEntries, setEducationEntries] = useState<any[]>([]);
+  const [showCareerDialog, setShowCareerDialog] = useState(false);
+  const [showEducationDialog, setShowEducationDialog] = useState(false);
+  const [editingCareerEntry, setEditingCareerEntry] = useState<any | null>(
+    null
+  );
+  const [editingEducationEntry, setEditingEducationEntry] = useState<
+    any | null
+  >(null);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const [activeHighlight, setActiveHighlight] = useState<{
+    id: string;
+    title: string;
+    video_url: string;
+    thumbnail_url: string | null;
+    metadata: Record<string, unknown> | null;
+  } | null>(null);
+
   // Check if user has a player variant and fetch football data
   const checkPlayerVariant = useCallback(async () => {
     if (!profile.data?.id) return;
@@ -190,6 +560,28 @@ function DashboardContent() {
         .limit(20);
       setHighlightsCount(count || 0);
       setHighlights((highlightsData as unknown as typeof highlights) || []);
+
+      // Fetch career history
+      const { data: careerData } = await supabase
+        .from('career_history')
+        .select(
+          'id, organization_name, role, start_date, end_date, is_current, description'
+        )
+        .eq('profile_variant_id', typedVariant.id)
+        .order('display_order', { ascending: true });
+      setCareerEntries((careerData as any[]) || []);
+    }
+
+    // Fetch education (uses profile_id, not variant_id)
+    if (profile.data?.id) {
+      const { data: educationData } = await supabase
+        .from('education')
+        .select(
+          'id, institution_name, institution_type, degree_or_program, field_of_study, start_date, end_date, is_current, description'
+        )
+        .eq('profile_id', profile.data.id)
+        .order('display_order', { ascending: true });
+      setEducationEntries((educationData as any[]) || []);
     }
   }, [profile.data?.id]);
 
@@ -228,6 +620,48 @@ function DashboardContent() {
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) return;
+
+    setUploadingCover(true);
+    try {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      const ext = file.name.split('.').pop();
+      const path = `${user.id}/${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('covers')
+        .upload(path, file, { cacheControl: '3600', upsert: false });
+
+      if (uploadError) {
+        console.error('Cover upload failed:', uploadError);
+        setUploadingCover(false);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('covers')
+        .getPublicUrl(path);
+
+      const result = await updateCoverImage(urlData.publicUrl);
+      if (result.success) {
+        refreshProfile(true);
+      }
+    } catch {
+      console.error('Cover upload failed');
+    }
+    setUploadingCover(false);
+    // Reset input so same file can be re-selected
+    if (coverInputRef.current) coverInputRef.current.value = '';
   };
 
   const handleSaveHighlight = async () => {
@@ -290,494 +724,530 @@ function DashboardContent() {
   if (loading || onboardingStatus.loading) {
     return (
       <div className="flex items-center justify-center min-h-64">
-        <LoadingSpinner size="lg" />
+        <LumaSpin />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--night)' }}>
-      <div className="container mx-auto px-4 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-yellow-400" />
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
-                  Welcome back,{' '}
-                  {profile.data?.full_name?.split(' ')[0] || 'User'}
-                </h1>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex items-center gap-2 hover:bg-neutral-800/50"
-              onClick={handleSignOut}
-              style={{ color: 'var(--ash-grey)' }}
-            >
-              <LogOut className="h-4 w-4" />
-              Sign Out
-            </Button>
-          </div>
-          <p className="text-base" style={{ color: 'var(--ash-grey)' }}>
-            Continue building your sports profile with cutting-edge tools and
-            insights.
-          </p>
-        </div>
+    <div
+      className="min-h-screen relative"
+      style={{ backgroundColor: 'var(--night)' }}
+    >
+      {/* Subtle dot pattern */}
+      <div
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            'radial-gradient(circle, var(--timberwolf) 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+        }}
+      />
 
-        {/* Quick Stats Grid */}
-        <div className="grid grid-cols-2 gap-4 md:gap-6 mb-8">
-          {/* Profile Completion */}
-          <div className="bg-gradient-to-br from-neutral-900/90 to-neutral-800/50 backdrop-blur-xl border border-neutral-700/50 rounded-2xl p-4 md:p-6 hover:border-green-400/30 transition-all duration-300 group">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-2 bg-green-400/10 rounded-xl">
-                <Target className="h-5 w-5 text-green-400" />
-              </div>
-              <ChevronRight className="h-4 w-4 text-neutral-600 group-hover:text-green-400 transition-colors" />
-            </div>
-            <h3
-              className="text-sm font-medium mb-1"
-              style={{ color: 'var(--ash-grey)' }}
-            >
-              Profile Completion
-            </h3>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-green-400">
-                {profileCompletion}%
-              </span>
-              <span
-                className={`text-xs px-2 py-1 rounded-full ${
-                  profileCompletion >= 90
-                    ? 'bg-yellow-400/10 text-yellow-400'
-                    : profileCompletion >= 70
-                      ? 'bg-green-400/10 text-green-400'
-                      : profileCompletion >= 50
-                        ? 'bg-blue-400/10 text-blue-400'
-                        : profileCompletion >= 30
-                          ? 'bg-blue-400/10 text-blue-400'
-                          : 'bg-red-400/10 text-red-400'
-                }`}
+      <div className="relative z-10 max-w-4xl mx-auto px-4 py-8">
+        {/* Header */}
+        <FadeIn>
+          <div className="flex items-center justify-between mb-10">
+            <div>
+              <h1
+                className="text-3xl font-extrabold tracking-tight"
+                style={{ color: 'var(--timberwolf)' }}
               >
-                {profileCompletion >= 90
-                  ? 'Complete'
-                  : profileCompletion >= 70
-                    ? 'Strong'
-                    : profileCompletion >= 50
-                      ? 'Good'
-                      : profileCompletion >= 30
-                        ? 'Basic'
-                        : 'Starting'}
-              </span>
+                Welcome back, {profile.data?.full_name?.split(' ')[0] || 'User'}
+              </h1>
+              <p className="text-sm mt-1" style={{ color: 'var(--ash-grey)' }}>
+                Manage your profile and highlights
+              </p>
             </div>
-          </div>
-
-          {/* Highlights */}
-          <div className="bg-gradient-to-br from-neutral-900/90 to-neutral-800/50 backdrop-blur-xl border border-neutral-700/50 rounded-2xl p-4 md:p-6 hover:border-purple-400/30 transition-all duration-300 group">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-2 bg-purple-400/10 rounded-xl">
-                <Play className="h-5 w-5 text-purple-400" />
-              </div>
-              <ChevronRight className="h-4 w-4 text-neutral-600 group-hover:text-purple-400 transition-colors" />
-            </div>
-            <h3
-              className="text-sm font-medium mb-1"
+            <button
+              onClick={handleSignOut}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs hover:bg-neutral-800/50 transition-colors"
               style={{ color: 'var(--ash-grey)' }}
             >
-              Highlights
-            </h3>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-purple-400">
-                {highlightsCount}
-              </span>
-              <span className="text-xs bg-purple-400/10 text-purple-400 px-2 py-1 rounded-full">
-                {highlightsCount === 1 ? 'Video' : 'Videos'}
-              </span>
-            </div>
+              <LogOut className="h-3.5 w-3.5" />
+              Sign Out
+            </button>
           </div>
-        </div>
+        </FadeIn>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Profile Section - Takes up 2 columns */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Profile Header Card */}
-            <div className="bg-gradient-to-br from-neutral-900/90 to-neutral-800/50 backdrop-blur-xl border border-neutral-700/50 rounded-2xl p-8 relative overflow-hidden">
-              {/* Background Pattern */}
-              <div className="absolute inset-0 opacity-5">
-                <div className="absolute inset-0 bg-gradient-to-br from-green-400/20 to-blue-400/20"></div>
-              </div>
-
-              <div className="relative z-10">
-                {/* Profile Content */}
-                <div className="flex flex-col items-center md:flex-row md:items-start gap-4 md:gap-8 mb-6">
-                  {/* Left Column - Profile Picture */}
-                  <div className="relative flex-shrink-0">
-                    {user && (
-                      <AvatarUpload
-                        userId={user.id}
-                        currentAvatarUrl={profile.data?.avatar_url}
-                        fullName={profile.data?.full_name || 'User'}
-                        onAvatarUpdate={() => refreshProfile(true)}
-                        size="lg"
-                      />
-                    )}
-                  </div>
-
-                  {/* Right Column - Profile Info */}
-                  <div className="flex-1 min-w-0 space-y-4 text-center md:text-left">
-                    {/* Row 1: Name */}
-                    <div className="flex items-center justify-center md:justify-start gap-3">
-                      <h2
-                        className="text-2xl font-bold"
-                        style={{ color: 'var(--timberwolf)' }}
-                      >
-                        {profile.data?.full_name || 'Your Name'}
-                      </h2>
-                    </div>
-
-                    {/* Row 2: Username */}
-                    {profile.data?.username && (
-                      <div>
-                        <p
-                          className="text-sm"
-                          style={{ color: 'var(--ash-grey)' }}
-                        >
-                          @{profile.data.username}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Row 3: Bio */}
-                    {profile.data?.bio && (
-                      <div>
-                        <p
-                          className="text-sm leading-relaxed"
-                          style={{ color: 'var(--ash-grey)' }}
-                        >
-                          {profile.data.bio}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Row 4: Profile Variants (New Schema) */}
-                    <div className="pt-2">
-                      <p
-                        className="text-xs font-medium mb-2"
-                        style={{ color: 'var(--ash-grey)' }}
-                      >
-                        Profile Status:
-                      </p>
-                      <div className="flex flex-wrap justify-center md:justify-start gap-2">
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-neutral-800/30 border border-neutral-700/50 rounded-full">
-                          <Trophy className="h-3 w-3 text-green-400" />
-                          <span
-                            className="text-xs font-medium"
-                            style={{ color: 'var(--timberwolf)' }}
-                          >
-                            Base Profile Active
-                          </span>
-                        </div>
-                        {hasPlayerVariant && (
-                          <div className="flex items-center gap-2 px-3 py-1.5 bg-green-400/10 border border-green-400/30 rounded-full">
-                            <CheckCircle className="h-3 w-3 text-green-400" />
-                            <span className="text-xs font-medium text-green-400">
-                              Player Profile
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Row 5: Action Buttons */}
-                    <div className="flex flex-col sm:flex-row items-center gap-3 pt-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="border-neutral-600 hover:bg-neutral-800/50 group"
-                        onClick={() => {
-                          if (profile.data?.username) {
-                            window.location.href = `/player/${profile.data.username}`;
-                          }
-                        }}
-                        disabled={!hasPlayerVariant}
-                      >
-                        <Share2
-                          className="h-4 w-4 mr-2"
-                          style={{ color: 'var(--ash-grey)' }}
-                        />
-                        <span style={{ color: 'var(--ash-grey)' }}>
-                          View Public
-                        </span>
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white group"
-                        onClick={() => {
-                          if (hasPlayerVariant && footballData) {
-                            setShowEditForm(true);
-                          } else {
-                            setShowPlayerForm(true);
-                          }
-                        }}
-                      >
-                        <Edit3 className="h-4 w-4 mr-2" />
-                        Edit Profile
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Profile Stats */}
-                <div className="grid grid-cols-2 gap-6 pt-6 border-t border-neutral-700/50">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
-                      {hasPlayerVariant ? 1 : 0}
-                    </p>
-                    <p className="text-xs" style={{ color: 'var(--ash-grey)' }}>
-                      Profile Variants
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                      {highlightsCount}
-                    </p>
-                    <p className="text-xs" style={{ color: 'var(--ash-grey)' }}>
-                      Highlights
-                    </p>
-                  </div>
-                </div>
-              </div>
+        {/* Profile Card with mini hero */}
+        <FadeIn delay={100}>
+          <div className="rounded-2xl border border-neutral-800/50 overflow-hidden mb-8">
+            {/* Mini banner */}
+            <div className="h-24 sm:h-32 relative bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 group/cover">
+              {profile.data?.cover_image_url && (
+                <img
+                  src={profile.data.cover_image_url}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-[var(--night)] to-transparent" />
+              {/* Cover upload button */}
+              <button
+                onClick={() => coverInputRef.current?.click()}
+                disabled={uploadingCover}
+                className="absolute top-3 right-3 p-2 rounded-full bg-black/40 backdrop-blur-sm opacity-0 group-hover/cover:opacity-100 transition-opacity hover:bg-black/60"
+              >
+                {uploadingCover ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  <Camera className="h-4 w-4 text-white" />
+                )}
+              </button>
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handleCoverUpload}
+              />
             </div>
 
-            {/* Profile Modules Section */}
-            <div className="bg-gradient-to-br from-neutral-900/90 to-neutral-800/50 backdrop-blur-xl border border-neutral-700/50 rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-yellow-400/10 rounded-xl">
-                    <Trophy className="h-5 w-5 text-yellow-400" />
-                  </div>
-                  <h3
-                    className="text-lg font-semibold"
+            <div className="px-6 pb-6 -mt-12 relative z-10">
+              <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+                {/* Avatar */}
+                <div className="flex-shrink-0">
+                  {user && (
+                    <AvatarUpload
+                      userId={user.id}
+                      currentAvatarUrl={profile.data?.avatar_url}
+                      fullName={profile.data?.full_name || 'User'}
+                      onAvatarUpdate={() => refreshProfile(true)}
+                      size="lg"
+                    />
+                  )}
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0 pb-1">
+                  <h2
+                    className="text-xl font-bold"
                     style={{ color: 'var(--timberwolf)' }}
                   >
-                    Profile Modules
-                  </h3>
+                    {profile.data?.full_name || 'Your Name'}
+                  </h2>
+                  {profile.data?.username && (
+                    <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
+                      @{profile.data.username}
+                    </p>
+                  )}
+                  {profile.data?.bio && (
+                    <p
+                      className="text-sm mt-1 leading-relaxed line-clamp-2"
+                      style={{ color: 'var(--ash-grey)' }}
+                    >
+                      {profile.data.bio}
+                    </p>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-neutral-700 hover:bg-neutral-800/50"
+                    onClick={() => {
+                      if (profile.data?.username) {
+                        window.location.href = `/player/${profile.data.username}`;
+                      }
+                    }}
+                    disabled={!hasPlayerVariant}
+                  >
+                    <Share2
+                      className="h-3.5 w-3.5 mr-1.5"
+                      style={{ color: 'var(--ash-grey)' }}
+                    />
+                    <span style={{ color: 'var(--ash-grey)' }}>
+                      View Public
+                    </span>
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="bg-neutral-800 hover:bg-neutral-700 border border-neutral-700"
+                    onClick={() => {
+                      if (hasPlayerVariant && footballData) {
+                        setShowEditForm(true);
+                      } else {
+                        setShowPlayerForm(true);
+                      }
+                    }}
+                  >
+                    <Edit3
+                      className="h-3.5 w-3.5 mr-1.5"
+                      style={{ color: 'var(--timberwolf)' }}
+                    />
+                    <span style={{ color: 'var(--timberwolf)' }}>
+                      Edit Profile
+                    </span>
+                  </Button>
                 </div>
               </div>
+            </div>
 
-              {/* Available Profile Types */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Player Profile */}
-                <div
-                  className="bg-neutral-800/30 border border-neutral-700/50 rounded-xl p-4 hover:bg-neutral-700/30 hover:border-green-400/30 transition-all duration-300 cursor-pointer group"
-                  onClick={() => {
-                    if (hasPlayerVariant) {
-                      window.location.href = `/player/${profile.data?.username}`;
-                    } else {
-                      setShowPlayerForm(true);
-                    }
-                  }}
+            {/* Slim stats bar */}
+            <div className="px-6 py-3 border-t border-neutral-800/50 flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-sm font-bold"
+                  style={{ color: 'var(--timberwolf)' }}
                 >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="p-2 bg-gradient-to-r from-yellow-400/10 to-green-400/10 rounded-lg">
-                      <Trophy className="h-4 w-4 text-yellow-400" />
-                    </div>
-                    <div className="flex-1">
-                      <h4
-                        className="font-medium group-hover:text-green-400 transition-colors"
+                  {profileCompletion}%
+                </span>
+                <div className="w-24 h-1.5 rounded-full bg-neutral-800 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-green-400/70 transition-all duration-500"
+                    style={{ width: `${profileCompletion}%` }}
+                  />
+                </div>
+                <span className="text-xs" style={{ color: 'var(--ash-grey)' }}>
+                  Profile
+                </span>
+              </div>
+              <div
+                className="w-px h-4"
+                style={{ backgroundColor: 'var(--ash-grey)', opacity: 0.2 }}
+              />
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-sm font-bold"
+                  style={{ color: 'var(--timberwolf)' }}
+                >
+                  {highlightsCount}
+                </span>
+                <span className="text-xs" style={{ color: 'var(--ash-grey)' }}>
+                  {highlightsCount === 1 ? 'Highlight' : 'Highlights'}
+                </span>
+              </div>
+              {hasPlayerVariant && (
+                <>
+                  <div
+                    className="w-px h-4"
+                    style={{ backgroundColor: 'var(--ash-grey)', opacity: 0.2 }}
+                  />
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle className="h-3 w-3 text-green-400" />
+                    <span className="text-xs text-green-400 font-medium">
+                      Player Profile
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </FadeIn>
+
+        {/* Two-column layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          {/* Left column — Modules + Social */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Profile Modules */}
+            <FadeIn delay={200}>
+              <div>
+                <h3
+                  className="text-xs font-semibold uppercase tracking-widest mb-4"
+                  style={{ color: 'var(--ash-grey)' }}
+                >
+                  Profile Modules
+                </h3>
+                <div className="space-y-2">
+                  {/* Player Profile */}
+                  <button
+                    className="w-full flex items-center gap-3 p-3 rounded-xl border border-neutral-800/50 hover:border-neutral-600/50 transition-all duration-200 text-left group"
+                    onClick={() => {
+                      if (hasPlayerVariant) {
+                        window.location.href = `/player/${profile.data?.username}`;
+                      } else {
+                        setShowPlayerForm(true);
+                      }
+                    }}
+                  >
+                    <Trophy className="h-4 w-4 text-green-400 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className="text-sm font-medium group-hover:text-green-400 transition-colors"
                         style={{ color: 'var(--timberwolf)' }}
                       >
                         Player Profile
-                      </h4>
-                      <p
-                        className="text-xs h-8 flex items-start"
-                        style={{ color: 'var(--ash-grey)' }}
-                      >
-                        {hasPlayerVariant
-                          ? 'View your public player profile'
-                          : 'Showcasing your skills and achievements'}
                       </p>
                     </div>
-                  </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-neutral-700/30">
-                    <div className="h-6"></div>
                     {hasPlayerVariant ? (
-                      <div className="flex items-center gap-1.5 bg-green-400/10 text-green-400 border border-green-400/30 px-3 py-1 rounded-full text-xs">
-                        <CheckCircle className="h-3 w-3" />
+                      <span className="text-[11px] text-green-400 font-medium">
                         Active
-                      </div>
+                      </span>
                     ) : (
-                      <div className="bg-green-400/10 text-green-400 border border-green-400/30 px-3 py-1 rounded-full text-xs">
+                      <span
+                        className="text-[11px] font-medium"
+                        style={{ color: 'var(--ash-grey)' }}
+                      >
                         Create
-                      </div>
+                      </span>
                     )}
-                  </div>
-                </div>
+                    <ChevronRight className="h-3.5 w-3.5 text-neutral-600 group-hover:text-green-400 transition-colors" />
+                  </button>
 
-                {/* Coach Profile - Coming Soon */}
-                <div className="bg-neutral-800/30 border border-neutral-700/50 rounded-xl p-4 opacity-50">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="p-2 bg-gradient-to-r from-green-400/10 to-blue-400/10 rounded-lg">
-                      <User className="h-4 w-4 text-green-400" />
-                    </div>
-                    <div className="flex-1">
-                      <h4
-                        className="font-medium"
-                        style={{ color: 'var(--timberwolf)' }}
-                      >
-                        Coach Profile
-                      </h4>
-                      <p
-                        className="text-xs h-8 flex items-start"
-                        style={{ color: 'var(--ash-grey)' }}
-                      >
-                        Build coaching portfolio
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-neutral-700/30">
-                    <div className="h-6"></div>
-                    <div className="bg-blue-400/10 text-blue-400 border border-blue-400/30 px-3 py-1 rounded-full text-xs">
-                      Coming Soon
-                    </div>
-                  </div>
-                </div>
-
-                {/* Club Admin Profile - Coming Soon */}
-                <div className="bg-neutral-800/30 border border-neutral-700/50 rounded-xl p-4 opacity-50">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="p-2 bg-gradient-to-r from-orange-400/10 to-yellow-400/10 rounded-lg">
-                      <Crown className="h-4 w-4 text-blue-400" />
-                    </div>
-                    <div className="flex-1">
-                      <h4
-                        className="font-medium"
-                        style={{ color: 'var(--timberwolf)' }}
-                      >
-                        Club Admin
-                      </h4>
-                      <p
-                        className="text-xs h-8 flex items-start"
-                        style={{ color: 'var(--ash-grey)' }}
-                      >
-                        Manage clubs and teams
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-neutral-700/30">
-                    <div className="h-6"></div>
-                    <div className="bg-blue-400/10 text-blue-400 border border-blue-400/30 px-3 py-1 rounded-full text-xs">
-                      Coming Soon
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Highlights Section */}
-            {hasPlayerVariant && (
-              <div className="bg-gradient-to-br from-neutral-900/90 to-neutral-800/50 backdrop-blur-xl border border-neutral-700/50 rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-purple-400/10 rounded-xl">
-                      <Film className="h-5 w-5 text-purple-400" />
-                    </div>
-                    <h3
-                      className="text-lg font-semibold"
-                      style={{ color: 'var(--timberwolf)' }}
-                    >
-                      Highlights
-                    </h3>
-                    <span
-                      className="text-sm"
-                      style={{ color: 'var(--ash-grey)' }}
-                    >
-                      ({highlightsCount})
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-blue-400/50 text-blue-400 hover:bg-blue-400/10"
-                      onClick={() => setShowPlayhubPicker(true)}
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      <span className="hidden sm:inline">From PLAYHUB</span>
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white"
-                      onClick={() => setShowUploadDialog(true)}
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Upload
-                    </Button>
-                  </div>
-                </div>
-
-                {highlights.length === 0 ? (
-                  <div className="text-center py-12 rounded-xl bg-neutral-800/20 border border-neutral-700/30">
-                    <Play
-                      className="h-8 w-8 mx-auto mb-3"
+                  {/* Coach Profile */}
+                  <div className="flex items-center gap-3 p-3 rounded-xl border border-neutral-800/50 opacity-40">
+                    <User
+                      className="h-4 w-4 flex-shrink-0"
                       style={{ color: 'var(--ash-grey)' }}
                     />
                     <p
-                      className="text-sm mb-1"
+                      className="text-sm flex-1"
                       style={{ color: 'var(--ash-grey)' }}
                     >
-                      No highlights yet
+                      Coach Profile
                     </p>
-                    <p className="text-xs" style={{ color: 'var(--ash-grey)' }}>
-                      Upload videos or import from PLAYHUB
+                    <span
+                      className="text-[11px]"
+                      style={{ color: 'var(--ash-grey)' }}
+                    >
+                      Soon
+                    </span>
+                  </div>
+
+                  {/* Club Admin */}
+                  <div className="flex items-center gap-3 p-3 rounded-xl border border-neutral-800/50 opacity-40">
+                    <Crown
+                      className="h-4 w-4 flex-shrink-0"
+                      style={{ color: 'var(--ash-grey)' }}
+                    />
+                    <p
+                      className="text-sm flex-1"
+                      style={{ color: 'var(--ash-grey)' }}
+                    >
+                      Club Admin
+                    </p>
+                    <span
+                      className="text-[11px]"
+                      style={{ color: 'var(--ash-grey)' }}
+                    >
+                      Soon
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </FadeIn>
+
+            {/* Social Links */}
+            {profile.data?.social_links &&
+              Object.values(profile.data.social_links).some((link) => link) && (
+                <FadeIn delay={300}>
+                  <div>
+                    <h3
+                      className="text-xs font-semibold uppercase tracking-widest mb-4"
+                      style={{ color: 'var(--ash-grey)' }}
+                    >
+                      Connect
+                    </h3>
+                    <div className="space-y-2">
+                      {profile.data.social_links.instagram && (
+                        <SocialLink
+                          platform="instagram"
+                          username={profile.data.social_links.instagram}
+                        />
+                      )}
+                      {profile.data.social_links.twitter && (
+                        <SocialLink
+                          platform="twitter"
+                          username={profile.data.social_links.twitter}
+                        />
+                      )}
+                      {profile.data.social_links.linkedin && (
+                        <SocialLink
+                          platform="linkedin"
+                          username={profile.data.social_links.linkedin}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </FadeIn>
+              )}
+
+            {/* Career History */}
+            {hasPlayerVariant && (
+              <FadeIn delay={350}>
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3
+                      className="text-xs font-semibold uppercase tracking-widest"
+                      style={{ color: 'var(--ash-grey)' }}
+                    >
+                      Career
+                    </h3>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-neutral-700 text-xs h-7"
+                      onClick={() => {
+                        setEditingCareerEntry(null);
+                        setShowCareerDialog(true);
+                      }}
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      <span style={{ color: 'var(--ash-grey)' }}>Add</span>
+                    </Button>
+                  </div>
+                  {careerEntries.length === 0 ? (
+                    <div className="text-center py-8 rounded-xl border border-neutral-800/50">
+                      <Briefcase
+                        className="h-5 w-5 mx-auto mb-2 opacity-30"
+                        style={{ color: 'var(--ash-grey)' }}
+                      />
+                      <p
+                        className="text-xs opacity-50"
+                        style={{ color: 'var(--ash-grey)' }}
+                      >
+                        No career entries yet
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {careerEntries.map((entry: any) => (
+                        <div
+                          key={entry.id}
+                          className="flex items-center gap-3 p-3 rounded-xl border border-neutral-800/50 group"
+                        >
+                          <Briefcase className="h-4 w-4 text-green-400 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className="text-sm font-medium truncate"
+                              style={{ color: 'var(--timberwolf)' }}
+                            >
+                              {entry.organization_name}
+                            </p>
+                            {entry.role && (
+                              <p
+                                className="text-xs truncate"
+                                style={{ color: 'var(--ash-grey)' }}
+                              >
+                                {entry.role}
+                              </p>
+                            )}
+                          </div>
+                          {entry.is_current && (
+                            <span className="text-[10px] text-green-400 font-medium flex-shrink-0">
+                              Current
+                            </span>
+                          )}
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                            <button
+                              onClick={() => {
+                                setEditingCareerEntry(entry);
+                                setShowCareerDialog(true);
+                              }}
+                              className="p-1 rounded hover:bg-neutral-800"
+                            >
+                              <Edit3
+                                className="h-3.5 w-3.5"
+                                style={{ color: 'var(--ash-grey)' }}
+                              />
+                            </button>
+                            <button
+                              onClick={async () => {
+                                await deleteCareerEntry(entry.id);
+                                checkPlayerVariant();
+                              }}
+                              className="p-1 rounded hover:bg-red-900/30"
+                            >
+                              <Trash2 className="h-3.5 w-3.5 text-red-400" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </FadeIn>
+            )}
+
+            {/* Education */}
+            <FadeIn delay={400}>
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3
+                    className="text-xs font-semibold uppercase tracking-widest"
+                    style={{ color: 'var(--ash-grey)' }}
+                  >
+                    Education
+                  </h3>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-neutral-700 text-xs h-7"
+                    onClick={() => {
+                      setEditingEducationEntry(null);
+                      setShowEducationDialog(true);
+                    }}
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    <span style={{ color: 'var(--ash-grey)' }}>Add</span>
+                  </Button>
+                </div>
+                {educationEntries.length === 0 ? (
+                  <div className="text-center py-8 rounded-xl border border-neutral-800/50">
+                    <GraduationCap
+                      className="h-5 w-5 mx-auto mb-2 opacity-30"
+                      style={{ color: 'var(--ash-grey)' }}
+                    />
+                    <p
+                      className="text-xs opacity-50"
+                      style={{ color: 'var(--ash-grey)' }}
+                    >
+                      No education entries yet
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {highlights.map((h) => (
+                  <div className="space-y-2">
+                    {educationEntries.map((entry: any) => (
                       <div
-                        key={h.id}
-                        className="group rounded-xl overflow-hidden bg-neutral-800/30 border border-neutral-700/30 hover:border-neutral-600 transition-all"
+                        key={entry.id}
+                        className="flex items-center gap-3 p-3 rounded-xl border border-neutral-800/50 group"
                       >
-                        <a
-                          href={h.video_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block"
-                        >
-                          <div className="relative aspect-video bg-neutral-900">
-                            {h.thumbnail_url ? (
-                              <img
-                                src={h.thumbnail_url}
-                                alt={h.title}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <Play className="h-8 w-8 text-neutral-600" />
-                              </div>
-                            )}
-                            {h.metadata?.source === 'playhub' && (
-                              <span className="absolute top-2 left-2 bg-blue-500/90 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
-                                PLAYHUB
-                              </span>
-                            )}
-                          </div>
-                        </a>
-                        <div className="p-3 flex items-center justify-between">
+                        <GraduationCap className="h-4 w-4 text-blue-400 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
                           <p
-                            className="text-sm font-medium truncate flex-1"
+                            className="text-sm font-medium truncate"
                             style={{ color: 'var(--timberwolf)' }}
                           >
-                            {h.title}
+                            {entry.institution_name}
                           </p>
+                          {entry.degree_or_program && (
+                            <p
+                              className="text-xs truncate"
+                              style={{ color: 'var(--ash-grey)' }}
+                            >
+                              {entry.degree_or_program}
+                            </p>
+                          )}
+                        </div>
+                        {entry.is_current && (
+                          <span className="text-[10px] text-blue-400 font-medium flex-shrink-0">
+                            Current
+                          </span>
+                        )}
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                           <button
-                            onClick={() => handleDeleteHighlight(h.id)}
-                            className="ml-2 p-1 rounded hover:bg-red-900/30 transition-colors opacity-0 group-hover:opacity-100"
+                            onClick={() => {
+                              setEditingEducationEntry(entry);
+                              setShowEducationDialog(true);
+                            }}
+                            className="p-1 rounded hover:bg-neutral-800"
                           >
-                            <Trash2 className="h-4 w-4 text-red-400" />
+                            <Edit3
+                              className="h-3.5 w-3.5"
+                              style={{ color: 'var(--ash-grey)' }}
+                            />
+                          </button>
+                          <button
+                            onClick={async () => {
+                              await deleteEducationEntry(entry.id);
+                              checkPlayerVariant();
+                            }}
+                            className="p-1 rounded hover:bg-red-900/30"
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-red-400" />
                           </button>
                         </div>
                       </div>
@@ -785,82 +1255,127 @@ function DashboardContent() {
                   </div>
                 )}
               </div>
-            )}
+            </FadeIn>
           </div>
 
-          {/* Sidebar - Quick Actions and Social */}
-          <div className="space-y-6">
-            {/* Quick Actions */}
-            <div className="bg-gradient-to-br from-neutral-900/90 to-neutral-800/50 backdrop-blur-xl border border-neutral-700/50 rounded-2xl p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-purple-400/10 rounded-xl">
-                  <Zap className="h-5 w-5 text-yellow-400" />
-                </div>
-                <h3
-                  className="text-lg font-semibold"
-                  style={{ color: 'var(--timberwolf)' }}
-                >
-                  Quick Actions
-                </h3>
-              </div>
-
-              <div className="space-y-3">
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start bg-neutral-800/30 hover:bg-neutral-800/50 border border-neutral-700/50 hover:border-neutral-600/50 transition-all duration-300 group"
-                  onClick={() => {
-                    if (hasPlayerVariant && footballData) {
-                      setShowEditForm(true);
-                    }
-                  }}
-                >
-                  <Settings className="h-4 w-4 mr-3 text-gray-400" />
-                  <span style={{ color: 'var(--timberwolf)' }}>
-                    Profile Settings
-                  </span>
-                  <ChevronRight className="h-4 w-4 ml-auto text-neutral-600 group-hover:text-green-400" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Social Links */}
-            {profile.data?.social_links &&
-              Object.values(profile.data.social_links).some((link) => link) && (
-                <div className="bg-gradient-to-br from-neutral-900/90 to-neutral-800/50 backdrop-blur-xl border border-neutral-700/50 rounded-2xl p-6">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-pink-400/10 rounded-xl">
-                      <Share2 className="h-5 w-5 text-pink-400" />
-                    </div>
+          {/* Right column — Highlights */}
+          <div className="lg:col-span-3">
+            {hasPlayerVariant && (
+              <FadeIn delay={200}>
+                <div>
+                  <div className="flex items-center justify-between mb-4">
                     <h3
-                      className="text-lg font-semibold"
-                      style={{ color: 'var(--timberwolf)' }}
+                      className="text-xs font-semibold uppercase tracking-widest"
+                      style={{ color: 'var(--ash-grey)' }}
                     >
-                      Connect
+                      Highlights
+                      <span className="ml-2 normal-case tracking-normal font-normal">
+                        ({highlightsCount})
+                      </span>
                     </h3>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-neutral-700 text-xs h-7"
+                        onClick={() => setShowPlayhubPicker(true)}
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        <span
+                          className="hidden sm:inline"
+                          style={{ color: 'var(--ash-grey)' }}
+                        >
+                          PLAYHUB
+                        </span>
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-xs h-7"
+                        onClick={() => setShowUploadDialog(true)}
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        <span style={{ color: 'var(--timberwolf)' }}>
+                          Upload
+                        </span>
+                      </Button>
+                    </div>
                   </div>
 
-                  <div className="space-y-3">
-                    {profile.data.social_links.instagram && (
-                      <SocialLink
-                        platform="instagram"
-                        username={profile.data.social_links.instagram}
+                  {highlights.length === 0 ? (
+                    <div className="text-center py-16 rounded-xl border border-neutral-800/50">
+                      <Play
+                        className="h-6 w-6 mx-auto mb-2 opacity-30"
+                        style={{ color: 'var(--ash-grey)' }}
                       />
-                    )}
-                    {profile.data.social_links.twitter && (
-                      <SocialLink
-                        platform="twitter"
-                        username={profile.data.social_links.twitter}
-                      />
-                    )}
-                    {profile.data.social_links.linkedin && (
-                      <SocialLink
-                        platform="linkedin"
-                        username={profile.data.social_links.linkedin}
-                      />
-                    )}
-                  </div>
+                      <p
+                        className="text-sm opacity-50"
+                        style={{ color: 'var(--ash-grey)' }}
+                      >
+                        No highlights yet
+                      </p>
+                      <p
+                        className="text-xs mt-1 opacity-30"
+                        style={{ color: 'var(--ash-grey)' }}
+                      >
+                        Upload videos or import from PLAYHUB
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {highlights.map((h) => (
+                        <div
+                          key={h.id}
+                          className="group rounded-xl overflow-hidden bg-neutral-900/50 border border-neutral-800/50 hover:border-neutral-600/50 transition-all duration-300"
+                        >
+                          <button
+                            onClick={() => setActiveHighlight(h)}
+                            className="block w-full text-left"
+                          >
+                            <div className="relative aspect-video bg-neutral-900">
+                              {h.thumbnail_url ? (
+                                <img
+                                  src={h.thumbnail_url}
+                                  alt={h.title}
+                                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <Play className="h-8 w-8 text-neutral-700" />
+                                </div>
+                              )}
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
+                                <div className="bg-white/10 backdrop-blur-sm rounded-full p-3 scale-75 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300">
+                                  <Play className="h-5 w-5 text-white" />
+                                </div>
+                              </div>
+                              {h.metadata?.source === 'playhub' && (
+                                <span className="absolute top-2 left-2 bg-blue-500/90 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                                  PLAYHUB
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                          <div className="p-3 flex items-center justify-between">
+                            <p
+                              className="text-sm font-medium truncate flex-1"
+                              style={{ color: 'var(--timberwolf)' }}
+                            >
+                              {h.title}
+                            </p>
+                            <button
+                              onClick={() => handleDeleteHighlight(h.id)}
+                              className="ml-2 p-1 rounded hover:bg-red-900/30 transition-colors opacity-0 group-hover:opacity-100"
+                            >
+                              <Trash2 className="h-4 w-4 text-red-400" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
+              </FadeIn>
+            )}
           </div>
         </div>
       </div>
@@ -897,6 +1412,7 @@ function DashboardContent() {
           {profile.data && footballData && (
             <ProfileEditForm
               profileData={{
+                full_name: profile.data.full_name ?? null,
                 bio: profile.data.bio ?? null,
                 social_links:
                   (profile.data.social_links as Record<string, string>) ?? null,
@@ -1015,6 +1531,108 @@ function DashboardContent() {
         </DialogContent>
       </Dialog>
 
+      {/* Career Entry Dialog */}
+      <Dialog
+        open={showCareerDialog}
+        onOpenChange={(open) => {
+          setShowCareerDialog(open);
+          if (!open) setEditingCareerEntry(null);
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {editingCareerEntry ? 'Edit Career Entry' : 'Add Career Entry'}
+            </DialogTitle>
+            <DialogDescription>
+              Add your clubs, academies, or team history.
+            </DialogDescription>
+          </DialogHeader>
+          <CareerEntryForm
+            initial={editingCareerEntry}
+            onSave={async (input) => {
+              let result;
+              if (editingCareerEntry) {
+                result = await updateCareerEntry(editingCareerEntry.id, input);
+              } else {
+                result = await addCareerEntry(input);
+              }
+              if (result.success) {
+                setShowCareerDialog(false);
+                setEditingCareerEntry(null);
+                checkPlayerVariant();
+              }
+              return result;
+            }}
+            onCancel={() => {
+              setShowCareerDialog(false);
+              setEditingCareerEntry(null);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Education Entry Dialog */}
+      <Dialog
+        open={showEducationDialog}
+        onOpenChange={(open) => {
+          setShowEducationDialog(open);
+          if (!open) setEditingEducationEntry(null);
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {editingEducationEntry
+                ? 'Edit Education Entry'
+                : 'Add Education Entry'}
+            </DialogTitle>
+            <DialogDescription>
+              Add your schools, colleges, or courses.
+            </DialogDescription>
+          </DialogHeader>
+          <EducationEntryForm
+            initial={editingEducationEntry}
+            onSave={async (input) => {
+              let result;
+              if (editingEducationEntry) {
+                result = await updateEducationEntry(
+                  editingEducationEntry.id,
+                  input
+                );
+              } else {
+                result = await addEducationEntry(input);
+              }
+              if (result.success) {
+                setShowEducationDialog(false);
+                setEditingEducationEntry(null);
+                checkPlayerVariant();
+              }
+              return result;
+            }}
+            onCancel={() => {
+              setShowEducationDialog(false);
+              setEditingEducationEntry(null);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Highlight Video Player Dialog */}
+      {activeHighlight && (
+        <HighlightVideoDialog
+          highlightId={activeHighlight.id}
+          videoUrl={activeHighlight.video_url}
+          thumbnail={activeHighlight.thumbnail_url}
+          title={activeHighlight.title}
+          metadata={activeHighlight.metadata}
+          open={!!activeHighlight}
+          onOpenChange={(open) => {
+            if (!open) setActiveHighlight(null);
+          }}
+        />
+      )}
+
       {/* PLAYHUB Recording Picker Dialog */}
       <Dialog open={showPlayhubPicker} onOpenChange={setShowPlayhubPicker}>
         <DialogContent className="max-w-lg">
@@ -1027,7 +1645,7 @@ function DashboardContent() {
           <div className="space-y-3 max-h-[60vh] overflow-y-auto">
             {loadingRecordings ? (
               <div className="flex justify-center py-8">
-                <LoadingSpinner size="lg" />
+                <LumaSpin />
               </div>
             ) : playhubRecordings.length === 0 ? (
               <div className="text-center py-8">

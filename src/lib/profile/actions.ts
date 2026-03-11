@@ -177,6 +177,7 @@ export async function updateBaseProfile(
   const supabase = await createClient();
 
   const updateData: Record<string, unknown> = {};
+  if (input.full_name !== undefined) updateData.full_name = input.full_name;
   if (input.bio !== undefined) updateData.bio = input.bio;
   if (input.social_links !== undefined)
     updateData.social_links = input.social_links;
@@ -362,6 +363,27 @@ export async function deleteHighlight(
   return { success: true };
 }
 
+export async function updateCoverImage(
+  coverImageUrl: string | null
+): Promise<ActionResult> {
+  const auth = await getAuthenticatedProfileId();
+  if ('error' in auth) {
+    return { success: false, error: auth.error };
+  }
+
+  const supabase = await createClient();
+
+  const { error } = await (supabase.from('profiles') as any)
+    .update({ cover_image_url: coverImageUrl })
+    .eq('id', auth.profileId);
+
+  if (error) {
+    return { success: false, error: 'Failed to update cover image' };
+  }
+
+  return { success: true };
+}
+
 export async function importRecordingAsHighlight(
   recordingId: string
 ): Promise<ActionResult> {
@@ -389,10 +411,12 @@ export async function importRecordingAsHighlight(
     return { success: false, error: 'No access to this recording' };
   }
 
-  // Fetch recording details
+  // Fetch recording details including content delivery info
   const { data: recording } = await supabase
     .from('playhub_match_recordings')
-    .select('id, title, thumbnail_url, duration_seconds, home_team, away_team')
+    .select(
+      'id, title, thumbnail_url, duration_seconds, home_team, away_team, content_type, external_url'
+    )
     .eq('id', recordingId)
     .single();
 
@@ -407,6 +431,8 @@ export async function importRecordingAsHighlight(
     duration_seconds: number | null;
     home_team: string;
     away_team: string;
+    content_type: string | null;
+    external_url: string | null;
   };
 
   // Get player variant
@@ -442,6 +468,19 @@ export async function importRecordingAsHighlight(
     typedRecording.title ||
     `${typedRecording.home_team} vs ${typedRecording.away_team}`;
 
+  // Resolve the video URL based on content type:
+  // - External providers (veo, spiideo, youtube): store external_url directly
+  // - Hosted video (S3): leave video_url empty, resolve at view time via API
+  const contentType = typedRecording.content_type || 'hosted_video';
+  const isExternal = [
+    'veo_clubhouse',
+    'spiideo_link',
+    'youtube_embed',
+    'external_link',
+  ].includes(contentType);
+
+  const videoUrl = isExternal ? typedRecording.external_url || '' : ''; // S3 content resolved at view time
+
   const { error: insertError } = await (
     supabase.from('highlights') as any
   ).insert({
@@ -449,18 +488,285 @@ export async function importRecordingAsHighlight(
     profile_variant_id: variant.id,
     sport_id: variant.sport_id,
     title,
-    video_url: `playhub://recording/${recordingId}`,
+    video_url: videoUrl,
     thumbnail_url: typedRecording.thumbnail_url,
     duration: typedRecording.duration_seconds,
     is_public: true,
     metadata: {
       source: 'playhub',
       recording_id: recordingId,
+      content_type: contentType,
     },
   });
 
   if (insertError) {
     return { success: false, error: 'Failed to import recording' };
+  }
+
+  return { success: true };
+}
+
+// --- Career History actions ---
+
+export interface CareerEntryInput {
+  organization_name: string;
+  role?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  is_current?: boolean;
+  description?: string | null;
+}
+
+export async function addCareerEntry(
+  input: CareerEntryInput
+): Promise<ActionResult> {
+  if (!input.organization_name?.trim()) {
+    return { success: false, error: 'Organization name is required' };
+  }
+
+  const auth = await getAuthenticatedProfileId();
+  if ('error' in auth) {
+    return { success: false, error: auth.error };
+  }
+
+  const supabase = await createClient();
+
+  // Get player variant
+  const { data: variant } = await supabase
+    .from('profile_variants')
+    .select('id')
+    .eq('profile_id', auth.profileId)
+    .eq('variant_type', 'player')
+    .single();
+
+  if (!variant) {
+    return { success: false, error: 'No player profile found' };
+  }
+
+  const typedVariant = variant as unknown as { id: string };
+
+  // Get next display_order
+  const { count } = await supabase
+    .from('career_history')
+    .select('id', { count: 'exact', head: true })
+    .eq('profile_variant_id', typedVariant.id);
+
+  const { error } = await (supabase.from('career_history') as any).insert({
+    profile_variant_id: typedVariant.id,
+    organization_name: input.organization_name.trim(),
+    role: input.role?.trim() || null,
+    start_date: input.start_date || null,
+    end_date: input.is_current ? null : input.end_date || null,
+    is_current: input.is_current || false,
+    description: input.description?.trim() || null,
+    display_order: (count || 0) + 1,
+  });
+
+  if (error) {
+    return { success: false, error: 'Failed to add career entry' };
+  }
+
+  return { success: true };
+}
+
+export async function updateCareerEntry(
+  entryId: string,
+  input: CareerEntryInput
+): Promise<ActionResult> {
+  if (!entryId) {
+    return { success: false, error: 'Entry ID is required' };
+  }
+
+  const auth = await getAuthenticatedProfileId();
+  if ('error' in auth) {
+    return { success: false, error: auth.error };
+  }
+
+  const supabase = await createClient();
+
+  // Verify ownership: entry must belong to user's player variant
+  const { data: variant } = await supabase
+    .from('profile_variants')
+    .select('id')
+    .eq('profile_id', auth.profileId)
+    .eq('variant_type', 'player')
+    .single();
+
+  if (!variant) {
+    return { success: false, error: 'Profile variant not found' };
+  }
+
+  const { error } = await (supabase.from('career_history') as any)
+    .update({
+      organization_name: input.organization_name.trim(),
+      role: input.role?.trim() || null,
+      start_date: input.start_date || null,
+      end_date: input.is_current ? null : input.end_date || null,
+      is_current: input.is_current || false,
+      description: input.description?.trim() || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', entryId)
+    .eq('profile_variant_id', (variant as any).id);
+
+  if (error) {
+    return { success: false, error: 'Failed to update career entry' };
+  }
+
+  return { success: true };
+}
+
+export async function deleteCareerEntry(
+  entryId: string
+): Promise<ActionResult> {
+  if (!entryId) {
+    return { success: false, error: 'Entry ID is required' };
+  }
+
+  const auth = await getAuthenticatedProfileId();
+  if ('error' in auth) {
+    return { success: false, error: auth.error };
+  }
+
+  const supabase = await createClient();
+
+  // Verify ownership: entry must belong to user's player variant
+  const { data: variant } = await supabase
+    .from('profile_variants')
+    .select('id')
+    .eq('profile_id', auth.profileId)
+    .eq('variant_type', 'player')
+    .single();
+
+  if (!variant) {
+    return { success: false, error: 'Profile variant not found' };
+  }
+
+  const { error } = await supabase
+    .from('career_history')
+    .delete()
+    .eq('id', entryId)
+    .eq('profile_variant_id', (variant as any).id);
+
+  if (error) {
+    return { success: false, error: 'Failed to delete career entry' };
+  }
+
+  return { success: true };
+}
+
+// --- Education actions ---
+
+export interface EducationEntryInput {
+  institution_name: string;
+  institution_type?: string | null;
+  degree_or_program?: string | null;
+  field_of_study?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  is_current?: boolean;
+  description?: string | null;
+}
+
+export async function addEducationEntry(
+  input: EducationEntryInput
+): Promise<ActionResult> {
+  if (!input.institution_name?.trim()) {
+    return { success: false, error: 'Institution name is required' };
+  }
+
+  const auth = await getAuthenticatedProfileId();
+  if ('error' in auth) {
+    return { success: false, error: auth.error };
+  }
+
+  const supabase = await createClient();
+
+  // Get next display_order
+  const { count } = await supabase
+    .from('education')
+    .select('id', { count: 'exact', head: true })
+    .eq('profile_id', auth.profileId);
+
+  const { error } = await (supabase.from('education') as any).insert({
+    profile_id: auth.profileId,
+    institution_name: input.institution_name.trim(),
+    institution_type: input.institution_type?.trim() || null,
+    degree_or_program: input.degree_or_program?.trim() || null,
+    field_of_study: input.field_of_study?.trim() || null,
+    start_date: input.start_date || null,
+    end_date: input.is_current ? null : input.end_date || null,
+    is_current: input.is_current || false,
+    description: input.description?.trim() || null,
+    display_order: (count || 0) + 1,
+  });
+
+  if (error) {
+    return { success: false, error: 'Failed to add education entry' };
+  }
+
+  return { success: true };
+}
+
+export async function updateEducationEntry(
+  entryId: string,
+  input: EducationEntryInput
+): Promise<ActionResult> {
+  if (!entryId) {
+    return { success: false, error: 'Entry ID is required' };
+  }
+
+  const auth = await getAuthenticatedProfileId();
+  if ('error' in auth) {
+    return { success: false, error: auth.error };
+  }
+
+  const supabase = await createClient();
+
+  const { error } = await (supabase.from('education') as any)
+    .update({
+      institution_name: input.institution_name.trim(),
+      institution_type: input.institution_type?.trim() || null,
+      degree_or_program: input.degree_or_program?.trim() || null,
+      field_of_study: input.field_of_study?.trim() || null,
+      start_date: input.start_date || null,
+      end_date: input.is_current ? null : input.end_date || null,
+      is_current: input.is_current || false,
+      description: input.description?.trim() || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', entryId)
+    .eq('profile_id', auth.profileId);
+
+  if (error) {
+    return { success: false, error: 'Failed to update education entry' };
+  }
+
+  return { success: true };
+}
+
+export async function deleteEducationEntry(
+  entryId: string
+): Promise<ActionResult> {
+  if (!entryId) {
+    return { success: false, error: 'Entry ID is required' };
+  }
+
+  const auth = await getAuthenticatedProfileId();
+  if ('error' in auth) {
+    return { success: false, error: auth.error };
+  }
+
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from('education')
+    .delete()
+    .eq('id', entryId)
+    .eq('profile_id', auth.profileId);
+
+  if (error) {
+    return { success: false, error: 'Failed to delete education entry' };
   }
 
   return { success: true };

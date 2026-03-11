@@ -16,6 +16,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { LoadingSpinner } from '@/components/ui/loading';
 import {
@@ -29,9 +42,34 @@ import {
   FOOTBALL_EXPERIENCE_LABELS,
   PREFERRED_FOOT_OPTIONS,
 } from '@/lib/profile/constants';
-import { Edit3, Save } from 'lucide-react';
+import { Edit3, Save, ChevronsUpDown, Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { countries } from 'country-data-list';
+import { CircleFlag } from 'react-circle-flags';
+
+// Filtered & sorted country list for the nationality selector
+const COUNTRY_OPTIONS = countries.all
+  .filter(
+    (c: { alpha2: string; emoji?: string; status: string; name: string }) =>
+      c.emoji && c.status !== 'deleted' && c.name
+  )
+  .sort((a: { name: string }, b: { name: string }) =>
+    a.name.localeCompare(b.name)
+  ) as Array<{ alpha2: string; name: string }>;
+
+// Lookup map: alpha2 → country name
+const ALPHA2_TO_NAME: Record<string, string> = {};
+for (const c of COUNTRY_OPTIONS) {
+  ALPHA2_TO_NAME[c.alpha2] = c.name;
+}
+
+export function getCountryName(alpha2: string | null): string | null {
+  if (!alpha2) return null;
+  return ALPHA2_TO_NAME[alpha2.toUpperCase()] || alpha2;
+}
 
 interface ProfileData {
+  full_name: string | null;
   bio: string | null;
   social_links: Record<string, string> | null;
   height_cm: number | null;
@@ -55,7 +93,7 @@ interface ProfileEditFormProps {
   onSaved: () => void;
 }
 
-type EditSection = 'about' | 'physical' | 'football' | null;
+type EditSection = 'personal' | 'about' | 'physical' | 'football' | null;
 
 export function ProfileEditForm({
   profileData,
@@ -68,6 +106,18 @@ export function ProfileEditForm({
     <>
       {/* Editable sections list */}
       <div className="space-y-3">
+        <EditableSection
+          title="Personal"
+          description={
+            [
+              profileData.full_name || null,
+              getCountryName(profileData.nationality) || null,
+            ]
+              .filter(Boolean)
+              .join(' • ') || 'Add name, nationality'
+          }
+          onEdit={() => setEditSection('personal')}
+        />
         <EditableSection
           title="About"
           description={profileData.bio || 'Add a bio'}
@@ -102,6 +152,25 @@ export function ProfileEditForm({
       </div>
 
       {/* Edit dialogs */}
+      <Dialog
+        open={editSection === 'personal'}
+        onOpenChange={(open) => !open && setEditSection(null)}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Personal Info</DialogTitle>
+          </DialogHeader>
+          <PersonalEditor
+            initial={profileData}
+            onSave={() => {
+              setEditSection(null);
+              onSaved();
+            }}
+            onCancel={() => setEditSection(null)}
+          />
+        </DialogContent>
+      </Dialog>
+
       <Dialog
         open={editSection === 'about'}
         onOpenChange={(open) => !open && setEditSection(null)}
@@ -194,6 +263,59 @@ function EditableSection({
       </div>
       <Edit3 className="h-4 w-4 flex-shrink-0 ml-3 text-neutral-600 group-hover:text-green-400 transition-colors" />
     </button>
+  );
+}
+
+function PersonalEditor({
+  initial,
+  onSave,
+  onCancel,
+}: {
+  initial: ProfileData;
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  const [fullName, setFullName] = useState(initial.full_name || '');
+  const [nationality, setNationality] = useState(initial.nationality || '');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+
+    const result = await updateBaseProfile({
+      full_name: fullName.trim() || null,
+      nationality: nationality.trim() || null,
+    });
+
+    setSaving(false);
+    if (result.success) {
+      onSave();
+    } else {
+      setError(result.error || 'Failed to save');
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {error && <p className="text-sm text-red-400">{error}</p>}
+      <div className="space-y-2">
+        <Label>Full Name</Label>
+        <input
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          maxLength={100}
+          className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300"
+          placeholder="Your full name"
+        />
+      </div>
+      <div className="space-y-2">
+        <Label>Nationality</Label>
+        <NationalitySelector value={nationality} onChange={setNationality} />
+      </div>
+      <EditorFooter saving={saving} onCancel={onCancel} onSave={handleSave} />
+    </div>
   );
 }
 
@@ -528,6 +650,86 @@ function FootballEditor({
 
       <EditorFooter saving={saving} onCancel={onCancel} onSave={handleSave} />
     </div>
+  );
+}
+
+function NationalitySelector({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  const selectedCountry = COUNTRY_OPTIONS.find(
+    (c) => c.alpha2 === value?.toUpperCase()
+  );
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          role="combobox"
+          aria-expanded={open}
+          className="flex h-10 w-full items-center justify-between rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] focus:outline-none focus:ring-1 focus:ring-zinc-300"
+        >
+          {selectedCountry ? (
+            <div className="flex items-center gap-2">
+              <div className="inline-flex items-center justify-center w-5 h-5 shrink-0 overflow-hidden rounded-full">
+                <CircleFlag
+                  countryCode={selectedCountry.alpha2.toLowerCase()}
+                  height={20}
+                />
+              </div>
+              <span>{selectedCountry.name}</span>
+            </div>
+          ) : (
+            <span className="text-zinc-500">Select nationality</span>
+          )}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        collisionPadding={10}
+        className="z-[60] w-[--radix-popover-trigger-width] p-0"
+        align="start"
+      >
+        <Command>
+          <CommandInput placeholder="Search country..." />
+          <CommandList
+            className="max-h-[200px] overflow-y-auto"
+            onWheel={(e) => e.stopPropagation()}
+          >
+            <CommandEmpty>No country found.</CommandEmpty>
+            <CommandGroup>
+              {COUNTRY_OPTIONS.map((country) => (
+                <CommandItem
+                  key={country.alpha2}
+                  value={country.name}
+                  onSelect={() => {
+                    onChange(country.alpha2 === value ? '' : country.alpha2);
+                    setOpen(false);
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <div className="inline-flex items-center justify-center w-5 h-5 shrink-0 overflow-hidden rounded-full">
+                    <CircleFlag
+                      countryCode={country.alpha2.toLowerCase()}
+                      height={20}
+                    />
+                  </div>
+                  <span className="flex-1">{country.name}</span>
+                  {value === country.alpha2 && (
+                    <Check className="h-4 w-4 shrink-0" />
+                  )}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }
 

@@ -1,4 +1,8 @@
+'use client';
+
+import { useState } from 'react';
 import { Play } from 'lucide-react';
+import { HighlightVideoDialog } from '@/components/video/highlight-video-dialog';
 
 interface Highlight {
   id: string;
@@ -15,50 +19,56 @@ interface ProfileHighlightsProps {
 }
 
 export function ProfileHighlights({ highlights }: ProfileHighlightsProps) {
+  const [activeHighlight, setActiveHighlight] = useState<Highlight | null>(
+    null
+  );
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <h2
-        className="text-lg font-semibold"
-        style={{ color: 'var(--timberwolf)' }}
+        className="text-xs font-semibold uppercase tracking-widest"
+        style={{ color: 'var(--ash-grey)' }}
       >
         Highlights
       </h2>
 
       {highlights.length === 0 ? (
-        <div className="text-center py-12 rounded-xl bg-neutral-800/20 border border-neutral-700/30">
+        <div className="text-center py-16 rounded-xl border border-neutral-800/50">
           <Play
-            className="h-8 w-8 mx-auto mb-3"
+            className="h-6 w-6 mx-auto mb-2 opacity-30"
             style={{ color: 'var(--ash-grey)' }}
           />
-          <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
+          <p
+            className="text-sm opacity-50"
+            style={{ color: 'var(--ash-grey)' }}
+          >
             No highlights yet
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {highlights.map((highlight) => (
-            <a
+            <button
               key={highlight.id}
-              href={highlight.video_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group rounded-xl overflow-hidden bg-neutral-800/30 border border-neutral-700/30 hover:border-neutral-600 transition-all"
+              onClick={() => setActiveHighlight(highlight)}
+              className="group rounded-xl overflow-hidden bg-neutral-900/50 border border-neutral-800/50 hover:border-neutral-600/50 transition-all duration-300 text-left"
             >
               <div className="relative aspect-video bg-neutral-900">
                 {highlight.thumbnail_url ? (
                   <img
                     src={highlight.thumbnail_url}
                     alt={highlight.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <Play className="h-8 w-8 text-neutral-600" />
+                    <Play className="h-8 w-8 text-neutral-700" />
                   </div>
                 )}
-                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <div className="bg-white/20 backdrop-blur-sm rounded-full p-3">
-                    <Play className="h-6 w-6 text-white" />
+                {/* Hover overlay */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-full p-3 scale-75 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300">
+                    <Play className="h-5 w-5 text-white" />
                   </div>
                 </div>
                 {highlight.metadata?.source === 'playhub' && (
@@ -67,7 +77,7 @@ export function ProfileHighlights({ highlights }: ProfileHighlightsProps) {
                   </span>
                 )}
                 {highlight.duration && (
-                  <span className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded">
+                  <span className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded tabular-nums">
                     {formatDuration(highlight.duration)}
                   </span>
                 )}
@@ -81,16 +91,31 @@ export function ProfileHighlights({ highlights }: ProfileHighlightsProps) {
                 </p>
                 {highlight.view_count != null && highlight.view_count > 0 && (
                   <p
-                    className="text-xs mt-1"
+                    className="text-xs mt-0.5 opacity-60"
                     style={{ color: 'var(--ash-grey)' }}
                   >
-                    {highlight.view_count} views
+                    {highlight.view_count.toLocaleString()} views
                   </p>
                 )}
               </div>
-            </a>
+            </button>
           ))}
         </div>
+      )}
+
+      {/* Video Player Dialog */}
+      {activeHighlight && (
+        <HighlightVideoDialog
+          highlightId={activeHighlight.id}
+          videoUrl={activeHighlight.video_url}
+          thumbnail={activeHighlight.thumbnail_url}
+          title={activeHighlight.title}
+          metadata={activeHighlight.metadata}
+          open={!!activeHighlight}
+          onOpenChange={(open) => {
+            if (!open) setActiveHighlight(null);
+          }}
+        />
       )}
     </div>
   );

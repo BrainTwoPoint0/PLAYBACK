@@ -19,19 +19,22 @@ export function ProfilePositions({
     primaryPosition;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <h2
-        className="text-lg font-semibold"
-        style={{ color: 'var(--timberwolf)' }}
+        className="text-xs font-semibold uppercase tracking-widest"
+        style={{ color: 'var(--ash-grey)' }}
       >
         Positions
       </h2>
 
-      <div className="flex flex-wrap gap-2">
-        {/* Primary position */}
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-green-400/15 text-green-400 border border-green-400/30">
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Primary position — more prominent */}
+        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-green-400/10 text-green-400 border border-green-400/20">
           <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
-          {primaryPosition} — {primaryLabel}
+          {primaryLabel}
+          <span className="text-green-400/60 text-xs font-normal ml-1">
+            {primaryPosition}
+          </span>
         </span>
 
         {/* Secondary positions */}
@@ -42,10 +45,11 @@ export function ProfilePositions({
             return (
               <span
                 key={pos}
-                className="inline-flex items-center px-3 py-1.5 rounded-full text-sm bg-neutral-800/50 border border-neutral-700/50"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-neutral-800/40 border border-neutral-700/30"
                 style={{ color: 'var(--ash-grey)' }}
               >
-                {pos} — {label}
+                {label}
+                <span className="opacity-50 text-xs">{pos}</span>
               </span>
             );
           })}

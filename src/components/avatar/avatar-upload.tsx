@@ -4,6 +4,12 @@ import { useState, useRef, useCallback } from 'react';
 import { Button } from '@braintwopoint0/playback-commons/ui';
 import { LoadingSpinner } from '@/components/ui/loading';
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   uploadAvatar,
   deleteAvatar,
   updateProfileAvatar,
@@ -17,7 +23,6 @@ import {
   Trash2,
   AlertCircle,
   CheckCircle,
-  User,
 } from 'lucide-react';
 
 interface AvatarUploadProps {
@@ -42,18 +47,17 @@ export function AvatarUpload({
   const [dragActive, setDragActive] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Size configurations
   const sizeConfig = {
-    sm: { container: 'w-16 h-16', icon: 'h-6 w-6', text: 'text-xs' },
-    md: { container: 'w-24 h-24', icon: 'h-8 w-8', text: 'text-sm' },
-    lg: { container: 'w-32 h-32', icon: 'h-12 w-12', text: 'text-base' },
+    sm: { container: 'w-16 h-16', icon: 'h-6 w-6' },
+    md: { container: 'w-24 h-24', icon: 'h-8 w-8' },
+    lg: { container: 'w-32 h-32', icon: 'h-12 w-12' },
   };
 
   const config = sizeConfig[size];
 
-  // Clear messages after timeout
   const clearMessages = useCallback(() => {
     setTimeout(() => {
       setUploadError(null);
@@ -61,7 +65,6 @@ export function AvatarUpload({
     }, 3000);
   }, []);
 
-  // Handle file selection
   const handleFileSelect = useCallback(
     async (file: File) => {
       if (disabled) return;
@@ -71,10 +74,7 @@ export function AvatarUpload({
       setUploadSuccess(false);
 
       try {
-        // Process image (resize and optimize)
         const processedFile = await processImageFile(file, 400, 400, 0.8);
-
-        // Upload to storage
         const uploadResult = await uploadAvatar(processedFile, userId);
 
         if (!uploadResult.success) {
@@ -83,7 +83,6 @@ export function AvatarUpload({
           return;
         }
 
-        // Update profile in database
         const updateResult = await updateProfileAvatar(
           userId,
           uploadResult.url!
@@ -95,10 +94,10 @@ export function AvatarUpload({
           return;
         }
 
-        // Success - update parent component
         onAvatarUpdate(uploadResult.url!);
         setUploadSuccess(true);
         clearMessages();
+        setShowModal(false);
       } catch (error) {
         setUploadError(
           error instanceof Error ? error.message : 'Upload failed'
@@ -111,17 +110,14 @@ export function AvatarUpload({
     [userId, onAvatarUpdate, disabled, clearMessages]
   );
 
-  // Handle file input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       handleFileSelect(file);
     }
-    // Reset input value to allow re-uploading same file
     e.target.value = '';
   };
 
-  // Handle drag and drop
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -148,7 +144,6 @@ export function AvatarUpload({
     }
   };
 
-  // Handle avatar deletion
   const handleDelete = async () => {
     if (!currentAvatarUrl || disabled) return;
 
@@ -156,7 +151,6 @@ export function AvatarUpload({
     setUploadError(null);
 
     try {
-      // Delete from storage
       const deleteResult = await deleteAvatar(currentAvatarUrl);
       if (!deleteResult.success) {
         setUploadError(deleteResult.error || 'Failed to delete avatar');
@@ -164,7 +158,6 @@ export function AvatarUpload({
         return;
       }
 
-      // Update profile in database
       const updateResult = await updateProfileAvatar(userId, null);
       if (!updateResult.success) {
         setUploadError(updateResult.error || 'Failed to update profile');
@@ -172,10 +165,10 @@ export function AvatarUpload({
         return;
       }
 
-      // Success - update parent component
       onAvatarUpdate(null);
       setUploadSuccess(true);
       clearMessages();
+      setShowModal(false);
     } catch (error) {
       setUploadError(
         error instanceof Error ? error.message : 'Failed to delete avatar'
@@ -191,99 +184,125 @@ export function AvatarUpload({
     currentAvatarUrl && !currentAvatarUrl.includes('dicebear');
 
   return (
-    <div className="space-y-4">
-      {/* Avatar Display */}
-      <div className="flex items-center gap-4">
-        <div
-          className={`${config.container} relative rounded-full overflow-hidden bg-neutral-800 border-2 ${
-            dragActive ? 'border-green-400 border-dashed' : 'border-neutral-600'
-          } ${
-            disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-          } transition-all hover:border-green-400`}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-          onClick={() => !disabled && fileInputRef.current?.click()}
-        >
-          {/* Avatar Image */}
-          <img
-            src={avatarUrl}
-            alt={fullName}
-            className="w-full h-full object-cover"
-          />
+    <>
+      {/* Clickable Avatar */}
+      <div
+        className={`${config.container} relative rounded-full overflow-hidden bg-neutral-800 border-2 border-neutral-600 ${
+          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+        } transition-all hover:border-[var(--ash-grey)]`}
+        onClick={() => !disabled && setShowModal(true)}
+      >
+        <img
+          src={avatarUrl}
+          alt={fullName}
+          className="w-full h-full object-cover"
+        />
 
-          {/* Upload Overlay */}
-          {!disabled && (
-            <div
-              className={`absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity ${
-                dragActive ? 'opacity-100' : ''
-              }`}
-            >
-              {isUploading ? (
-                <LoadingSpinner size="sm" />
-              ) : (
-                <Camera className={`${config.icon} text-white`} />
-              )}
-            </div>
-          )}
+        {!disabled && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+            <Camera className={`${config.icon} text-white`} />
+          </div>
+        )}
 
-          {/* Success Indicator */}
-          {uploadSuccess && (
-            <div className="absolute inset-0 bg-green-500/80 flex items-center justify-center">
-              <CheckCircle className={`${config.icon} text-white`} />
-            </div>
-          )}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-col gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={disabled || isUploading || isDeleting}
-            className="flex items-center gap-2 border-neutral-600 hover:bg-neutral-800"
-            style={{ color: 'var(--ash-grey)' }}
-          >
-            {isUploading ? (
-              <>
-                <LoadingSpinner size="sm" />
-                Uploading...
-              </>
-            ) : (
-              <>
-                <Upload className="h-4 w-4" />
-                {hasCustomAvatar ? 'Change' : 'Upload'}
-              </>
-            )}
-          </Button>
-
-          {hasCustomAvatar && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleDelete}
-              disabled={disabled || isUploading || isDeleting}
-              className="flex items-center gap-2 border-red-600 text-red-400 hover:bg-red-900/20"
-            >
-              {isDeleting ? (
-                <>
-                  <LoadingSpinner size="sm" />
-                  Deleting...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="h-4 w-4" />
-                  Remove
-                </>
-              )}
-            </Button>
-          )}
-        </div>
+        {uploadSuccess && (
+          <div className="absolute inset-0 bg-green-500/80 flex items-center justify-center">
+            <CheckCircle className={`${config.icon} text-white`} />
+          </div>
+        )}
       </div>
 
-      {/* File Input */}
+      {/* Avatar Modal */}
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent
+          className="sm:max-w-sm border-neutral-800"
+          style={{ backgroundColor: 'var(--night)' }}
+        >
+          <DialogHeader>
+            <DialogTitle style={{ color: 'var(--timberwolf)' }}>
+              Profile Photo
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Preview */}
+            <div className="flex justify-center">
+              <div
+                className={`w-32 h-32 relative rounded-full overflow-hidden bg-neutral-800 border-2 ${
+                  dragActive
+                    ? 'border-green-400 border-dashed'
+                    : 'border-neutral-600'
+                } transition-all`}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+              >
+                <img
+                  src={avatarUrl}
+                  alt={fullName}
+                  className="w-full h-full object-cover"
+                />
+                {isUploading && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                    <LoadingSpinner size="sm" />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col gap-2">
+              <Button
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={disabled || isUploading || isDeleting}
+                className="w-full flex items-center justify-center gap-2 border-neutral-700 hover:bg-neutral-800"
+                style={{ color: 'var(--timberwolf)' }}
+              >
+                <Upload className="h-4 w-4" />
+                {hasCustomAvatar ? 'Change Photo' : 'Upload Photo'}
+              </Button>
+
+              {hasCustomAvatar && (
+                <Button
+                  variant="outline"
+                  onClick={handleDelete}
+                  disabled={disabled || isUploading || isDeleting}
+                  className="w-full flex items-center justify-center gap-2 border-red-800/50 text-red-400 hover:bg-red-900/20"
+                >
+                  {isDeleting ? (
+                    <>
+                      <LoadingSpinner size="sm" />
+                      Removing...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4" />
+                      Remove Photo
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+
+            {/* Error */}
+            {uploadError && (
+              <div className="flex items-center gap-2 text-red-400 bg-red-900/20 px-3 py-2 rounded-lg border border-red-800 text-sm">
+                <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                <span className="flex-1">{uploadError}</span>
+                <button
+                  onClick={() => setUploadError(null)}
+                  className="hover:text-red-300"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Hidden file input */}
       <input
         ref={fileInputRef}
         type="file"
@@ -292,40 +311,7 @@ export function AvatarUpload({
         className="hidden"
         disabled={disabled}
       />
-
-      {/* Upload Guidelines */}
-      <div className="text-xs space-y-1" style={{ color: 'var(--ash-grey)' }}>
-        <p>• Drag and drop an image or click to browse</p>
-        <p>• Supports JPEG, PNG, WebP, GIF up to 5MB</p>
-        <p>• Images will be automatically resized to 400x400px</p>
-      </div>
-
-      {/* Error Message */}
-      {uploadError && (
-        <div className="flex items-center gap-2 text-red-400 bg-red-900/20 px-3 py-2 rounded-lg border border-red-800">
-          <AlertCircle className="h-4 w-4 flex-shrink-0" />
-          <span className={config.text}>{uploadError}</span>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setUploadError(null)}
-            className="ml-auto p-1 h-auto hover:bg-red-800/20"
-          >
-            <X className="h-3 w-3" />
-          </Button>
-        </div>
-      )}
-
-      {/* Success Message */}
-      {uploadSuccess && (
-        <div className="flex items-center gap-2 text-green-400 bg-green-900/20 px-3 py-2 rounded-lg border border-green-800">
-          <CheckCircle className="h-4 w-4 flex-shrink-0" />
-          <span className={config.text}>
-            Avatar {hasCustomAvatar ? 'updated' : 'uploaded'} successfully!
-          </span>
-        </div>
-      )}
-    </div>
+    </>
   );
 }
 

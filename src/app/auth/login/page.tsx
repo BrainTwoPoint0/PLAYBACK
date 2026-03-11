@@ -8,7 +8,12 @@ import {
   validateEmail,
   getAuthErrorMessage,
 } from '@braintwopoint0/playback-commons/auth';
-import { Button, Input, Label } from '@braintwopoint0/playback-commons/ui';
+import {
+  Button,
+  Input,
+  Label,
+  LumaSpin,
+} from '@braintwopoint0/playback-commons/ui';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { AlertCircle, Eye, EyeOff, Mail, Lock } from 'lucide-react';
 
@@ -325,7 +330,7 @@ export default function LoginPage() {
           className="min-h-screen flex items-center justify-center"
           style={{ backgroundColor: 'var(--night)' }}
         >
-          <LoadingSpinner size="lg" />
+          <LumaSpin />
         </div>
       }
     >

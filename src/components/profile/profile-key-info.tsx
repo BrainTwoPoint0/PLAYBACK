@@ -4,14 +4,6 @@ import {
   type FootballExperienceLevel,
   type FootballPosition,
 } from '@/lib/profile/constants';
-import {
-  Footprints,
-  Ruler,
-  Weight,
-  Calendar,
-  Shield,
-  Hash,
-} from 'lucide-react';
 
 interface ProfileKeyInfoProps {
   preferredFoot: string | null;
@@ -37,78 +29,56 @@ export function ProfileKeyInfo({
     ? FOOTBALL_POSITION_LABELS[primaryPosition as FootballPosition] ||
       primaryPosition
     : null;
-  const expLabel =
-    FOOTBALL_EXPERIENCE_LABELS[experienceLevel as FootballExperienceLevel] ||
-    experienceLevel;
 
   const items = [
+    { label: 'Position', value: posLabel },
     {
-      icon: <Shield className="h-4 w-4" />,
-      label: 'Position',
-      value: posLabel,
-    },
-    {
-      icon: <Footprints className="h-4 w-4" />,
-      label: 'Preferred Foot',
+      label: 'Foot',
       value: preferredFoot
         ? preferredFoot.charAt(0).toUpperCase() + preferredFoot.slice(1)
         : null,
     },
-    {
-      icon: <Ruler className="h-4 w-4" />,
-      label: 'Height',
-      value: heightCm ? `${heightCm} cm` : null,
-    },
-    {
-      icon: <Weight className="h-4 w-4" />,
-      label: 'Weight',
-      value: weightKg ? `${weightKg} kg` : null,
-    },
-    {
-      icon: <Calendar className="h-4 w-4" />,
-      label: 'Age',
-      value: age !== null ? `${age}` : null,
-    },
-    {
-      icon: <Hash className="h-4 w-4" />,
-      label: 'Jersey',
-      value: jerseyNumber ? `#${jerseyNumber}` : null,
-    },
+    { label: 'Height', value: heightCm ? `${heightCm}cm` : null },
+    { label: 'Weight', value: weightKg ? `${weightKg}kg` : null },
+    { label: 'Age', value: age !== null ? `${age}` : null },
+    { label: 'Jersey', value: jerseyNumber ? `#${jerseyNumber}` : null },
   ];
 
-  // Only show items that have values
   const visibleItems = items.filter((item) => item.value);
 
   if (visibleItems.length === 0) return null;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <h2
-        className="text-lg font-semibold"
-        style={{ color: 'var(--timberwolf)' }}
+        className="text-xs font-semibold uppercase tracking-widest"
+        style={{ color: 'var(--ash-grey)' }}
       >
-        Key Information
+        Key Info
       </h2>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        {visibleItems.map((item) => (
-          <div
-            key={item.label}
-            className="flex items-center gap-3 p-3 rounded-xl bg-neutral-800/30 border border-neutral-700/30"
-          >
-            <div className="p-2 rounded-lg bg-neutral-700/30 text-green-400">
-              {item.icon}
-            </div>
-            <div>
-              <p className="text-xs" style={{ color: 'var(--ash-grey)' }}>
-                {item.label}
-              </p>
+      <div className="flex flex-wrap items-center gap-x-0">
+        {visibleItems.map((item, i) => (
+          <div key={item.label} className="flex items-center">
+            <div className="px-4 py-2 text-center">
               <p
-                className="text-sm font-medium"
+                className="text-lg font-bold leading-tight"
                 style={{ color: 'var(--timberwolf)' }}
               >
                 {item.value}
               </p>
+              <p
+                className="text-[11px] mt-0.5 uppercase tracking-wide"
+                style={{ color: 'var(--ash-grey)' }}
+              >
+                {item.label}
+              </p>
             </div>
+            {i < visibleItems.length - 1 && (
+              <div
+                className="w-px h-8 flex-shrink-0"
+                style={{ backgroundColor: 'var(--ash-grey)', opacity: 0.2 }}
+              />
+            )}
           </div>
         ))}
       </div>

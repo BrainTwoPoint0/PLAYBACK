@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@braintwopoint0/playback-commons/ui';
-import { LoadingSpinner } from '@/components/ui/loading';
+import { LumaSpin } from '@braintwopoint0/playback-commons/ui';
 import {
   getUserStatistics,
   getPersonalBests,
@@ -114,7 +114,7 @@ export function StatsDashboard({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <LoadingSpinner size="lg" />
+        <LumaSpin />
       </div>
     );
   }
