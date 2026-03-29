@@ -173,6 +173,7 @@ class PadelMatesProvider {
 
         slots.push({
           provider: 'padel_mates',
+          sport: 'padel',
           listingType: 'pitch_hire',
           venue: {
             id: club.id,

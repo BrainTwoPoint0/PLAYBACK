@@ -67,12 +67,13 @@ class BackgroundCollector {
     const results = [];
     const collectionId = `lambda_${Date.now()}`;
 
-    // Clear per-invocation caches (prevents stale data across Lambda container reuse)
+    // Clear ALL per-invocation caches (prevents stale data across Lambda container reuse)
     for (const p of this.providers) {
-      p.instance._facilitiesCache = undefined;
-      p.instance._allSlots = undefined;
-      p.instance._allGames = undefined;
-      p.instance._polled = false;
+      for (const key of Object.keys(p.instance)) {
+        if (key.startsWith('_')) {
+          p.instance[key] = undefined;
+        }
+      }
     }
 
     // Configuration
