@@ -1,202 +1,202 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
-import SectionTitle from '@/components/ui/section-title';
-import SportSelector from './SportSelector';
-import SearchForm from './SearchForm';
 import SearchResults from './SearchResults';
+import SportIcon from './SportIcon';
+import { MapPinIcon, ChevronDownIcon } from 'lucide-react';
 import { Sport, SearchParams, CourtSlot } from '@/lib/playscanner/types';
 import { playscannerAnalytics } from '@/lib/playscanner/analytics';
-import Link from 'next/link';
-import { BarChart3 } from 'lucide-react';
+
+const QUICK_DATES = (() => {
+  const dates: { label: string; value: string }[] = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    const value = d.toISOString().split('T')[0];
+    const label =
+      i === 0
+        ? 'Today'
+        : i === 1
+          ? 'Tomorrow'
+          : d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' });
+    dates.push({ label, value });
+  }
+  return dates;
+})();
 
 export default function PLAYScannerMain() {
-  const [selectedSport, setSelectedSport] = useState<Sport>('padel');
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // Initialize from URL params or defaults
+  const initialSport = (searchParams.get('sport') as Sport) || 'padel';
+  const initialDate = searchParams.get('date') || QUICK_DATES[0].value;
+
+  const [selectedSport, setSelectedSport] = useState<Sport>(
+    ['padel', 'football'].includes(initialSport) ? initialSport : 'padel'
+  );
+  const [selectedDate, setSelectedDate] = useState(
+    QUICK_DATES.some((d) => d.value === initialDate)
+      ? initialDate
+      : QUICK_DATES[0].value
+  );
   const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<CourtSlot[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [results, setResults] = useState<any | null>(null);
-  const [rawResults, setRawResults] = useState<CourtSlot[]>([]); // Store unfiltered results
-  const [currentSearchId, setCurrentSearchId] = useState<string | null>(null); // Track current search for conversions
+  const [rawResults, setRawResults] = useState<CourtSlot[]>([]);
+  const [currentSearchId, setCurrentSearchId] = useState<string | null>(null);
 
-  // Initialize analytics session on component mount
+  // Initialize analytics
   useEffect(() => {
     playscannerAnalytics.initSession().then(() => {
       playscannerAnalytics.trackPageView('search');
     });
-
-    // End session on page unload
-    const handleBeforeUnload = () => {
-      playscannerAnalytics.endSession();
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
+    const handleUnload = () => playscannerAnalytics.endSession();
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
   }, []);
 
-  // Stable sport change handler
-  const handleSportChange = useCallback((sport: Sport) => {
-    setSelectedSport(sport);
-  }, []);
-
-  const handleSearch = async (searchParams: SearchParams) => {
+  const handleSearch = useCallback(async (sport: Sport, date: string) => {
     setIsSearching(true);
     setError(null);
-    setResults(null);
-    const searchStartTime = Date.now();
+    const startTime = Date.now();
 
     try {
+      const searchParams: SearchParams = {
+        sport,
+        location: 'London',
+        date,
+      };
+
       const response = await fetch('/api/playscanner/search', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...searchParams,
-          cached: true, // Use cached mode for production reliability
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...searchParams, cached: true }),
       });
 
-      if (!response.ok) {
-        throw new Error(`Search failed: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`Search failed: ${response.status}`);
 
       const data = await response.json();
-      const searchDuration = Date.now() - searchStartTime;
+      const duration = Date.now() - startTime;
 
-      // Track search analytics
       const providers = [
-        ...new Set(
-          (data.results || []).map((slot: CourtSlot) => slot.provider)
-        ),
+        ...new Set((data.results || []).map((s: CourtSlot) => s.provider)),
       ] as string[];
+
       const searchId = await playscannerAnalytics.trackSearch(
         searchParams,
         data.results?.length || 0,
-        searchDuration,
+        duration,
         providers
       );
 
       setCurrentSearchId(searchId);
-      setResults(data);
       setRawResults(data.results || []);
-      setSearchResults(data.results || []);
       setHasSearched(true);
-
-      // Track results page view
       playscannerAnalytics.trackPageView('results');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Search failed');
     } finally {
       setIsSearching(false);
     }
-  };
-
-  // Default search for today's London padel bookings
-  useEffect(() => {
-    const performDefaultSearch = async () => {
-      const today = new Date().toISOString().split('T')[0];
-      const defaultSearchParams = {
-        sport: 'padel' as const,
-        location: 'London',
-        date: today,
-      };
-
-      await handleSearch(defaultSearchParams);
-    };
-
-    performDefaultSearch();
   }, []);
 
+  // Auto-search on mount, sport change, or date change + sync URL
+  useEffect(() => {
+    // Update URL without navigation
+    const params = new URLSearchParams();
+    params.set('sport', selectedSport);
+    params.set('date', selectedDate);
+    router.replace(`/playscanner?${params.toString()}`, { scroll: false });
+
+    handleSearch(selectedSport, selectedDate);
+  }, [selectedSport, selectedDate, handleSearch, router]);
+
   return (
-    <div className="relative z-20 my-12 max-w-7xl mx-auto px-4">
-      {/* Header */}
+    <div className="relative z-20 max-w-4xl mx-auto px-4 py-6">
+      {/* Header with shimmer */}
       <motion.div
-        className="text-center mb-12"
-        initial={{ opacity: 0, y: 20 }}
+        className="mb-6"
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 0.4 }}
       >
-        <div className="flex items-center justify-center gap-4 mb-4">
-          <h1 className="text-4xl md:text-6xl font-bold">
-            PLAY<span className="text-[#00FF88]">Scanner</span>
-          </h1>
-          {/* <Link
-            href="/playscanner/analytics"
-            className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition-colors text-sm"
-            title="View Analytics"
+        <h1 className="text-2xl font-bold tracking-tight">
+          PLAY
+          <motion.span
+            className="bg-[linear-gradient(110deg,#00FF88,35%,#a0ffd0,50%,#00FF88,75%,#00FF88)] bg-[length:200%_100%] bg-clip-text text-transparent"
+            initial={{ backgroundPosition: '200% 0' }}
+            animate={{ backgroundPosition: '-200% 0' }}
+            transition={{
+              repeat: Infinity,
+              duration: 3,
+              ease: 'linear',
+            }}
           >
-            <BarChart3 className="h-4 w-4" />
-            Analytics
-          </Link> */}
-        </div>
-        <p className="text-lg text-neutral-400 max-w-2xl mx-auto leading-relaxed">
-          Find and book sports courts and pitches across multiple providers.
-          Compare prices, check availability, and book instantly.
+            Scanner
+          </motion.span>
+        </h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Compare courts and pitches across London
         </p>
-        {/* <div className="md:hidden mt-4">
-          <Link
-            href="/playscanner/analytics"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition-colors text-sm"
-          >
-            <BarChart3 className="h-4 w-4" />
-            View Analytics
-          </Link>
-        </div> */}
       </motion.div>
 
-      {/* Sport Selector */}
+      {/* Search bar: sport toggle + date chips — sticky */}
       <motion.div
-        className="mb-12"
-        initial={{ opacity: 0, y: 20 }}
+        className="sticky top-0 z-30 -mx-4 bg-[var(--night)]/95 backdrop-blur-md px-4 pb-4 pt-2"
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 0.4, delay: 0.1 }}
       >
-        <SportSelector
-          selectedSport={selectedSport}
-          onSportChange={handleSportChange}
-        />
-      </motion.div>
+        {/* Sport toggle + location */}
+        <div className="flex items-center gap-2 mb-3">
+          {(['padel', 'football'] as Sport[]).map((sport) => (
+            <button
+              key={sport}
+              onClick={() => setSelectedSport(sport)}
+              className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                selectedSport === sport
+                  ? 'bg-[#00FF88] text-[#0a100d]'
+                  : 'bg-white/[0.06] text-gray-400 hover:text-white'
+              }`}
+            >
+              <SportIcon sport={sport} size={14} />
+              {sport === 'padel' ? 'Padel' : 'Football'}
+            </button>
+          ))}
+          <div className="ml-auto flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-gray-400 cursor-not-allowed">
+            <MapPinIcon className="h-3.5 w-3.5 shrink-0" />
+            <span>London</span>
+            <ChevronDownIcon className="h-3.5 w-3.5 shrink-0 text-gray-600" />
+          </div>
+        </div>
 
-      {/* Search Form */}
-      <motion.div
-        className="mb-12"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.4, ease: [0.4, 0, 0.2, 1] }}
-      >
-        <div className="border border-neutral-800 rounded-lg bg-neutral-950/50 backdrop-blur-sm">
-          <div className="p-6 border-b border-neutral-800">
-            <h2 className="text-2xl font-semibold mb-2">
-              Find{' '}
-              {selectedSport === 'padel' ? 'Padel Courts' : 'Football Pitches'}
-            </h2>
-            <p className="text-neutral-400">
-              {selectedSport === 'padel'
-                ? 'Search across Playtomic, MATCHi, and Padel Mates to find the perfect court'
-                : 'Search across PowerLeague, FC Urban, and more (coming soon)'}
-            </p>
-          </div>
-          <div className="p-6">
-            <SearchForm
-              sport={selectedSport}
-              onSearch={handleSearch}
-              isSearching={isSearching}
-            />
-          </div>
+        {/* Date quick-select chips */}
+        <div className="flex justify-center gap-1.5 overflow-x-auto pb-1 -mb-1 no-visible-scrollbar">
+          {QUICK_DATES.map((d) => (
+            <button
+              key={d.value}
+              onClick={() => setSelectedDate(d.value)}
+              className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                selectedDate === d.value
+                  ? 'bg-white/10 text-white border border-white/20'
+                  : 'bg-white/[0.03] text-gray-500 border border-transparent hover:text-gray-300'
+              }`}
+            >
+              {d.label}
+            </button>
+          ))}
         </div>
       </motion.div>
 
-      {/* Search Results */}
+      {/* Results */}
       {hasSearched && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
         >
           <SearchResults
             results={rawResults}
@@ -204,24 +204,15 @@ export default function PLAYScannerMain() {
             sport={selectedSport}
             error={error ? { code: 'SEARCH_ERROR', message: error } : undefined}
             onConversion={(slot) => {
-              // Track booking conversion
               playscannerAnalytics.trackConversion(
                 {
                   provider_name: slot.provider,
-                  venue_name:
-                    typeof slot.venue === 'string'
-                      ? slot.venue
-                      : slot.venue.name,
-                  venue_location:
-                    typeof slot.venue === 'object' && slot.venue.location
-                      ? typeof slot.venue.location === 'string'
-                        ? slot.venue.location
-                        : `${slot.venue.location.city}, ${slot.venue.location.postcode}`
-                      : '',
+                  venue_name: slot.venue.name,
+                  venue_location: slot.venue.location?.city || '',
                   booking_url: slot.bookingUrl || '',
                   estimated_price: slot.price,
                   sport: selectedSport,
-                  estimated_commission: slot.price ? slot.price * 0.05 : 0, // 5% default commission
+                  estimated_commission: slot.price ? slot.price * 0.05 : 0,
                   commission_rate: 5,
                 },
                 currentSearchId || undefined

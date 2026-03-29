@@ -17,8 +17,8 @@ const sports = [
     name: 'Football',
     icon: '⚽',
     description: '5v5, 7v7, 11v11 pitches',
-    enabled: false,
-    providers: ['PowerLeague', 'FC Urban', 'Footy Addicts'],
+    enabled: true,
+    providers: ['PowerLeague', 'Goals', 'OpenActive'],
   },
 ] as const;
 

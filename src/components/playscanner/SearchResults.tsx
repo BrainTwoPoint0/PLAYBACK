@@ -1,33 +1,15 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Badge,
-  Button,
-} from '@braintwopoint0/playback-commons/ui';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { SearchResultsProps, SortBy, CourtSlot } from '@/lib/playscanner/types';
-import {
-  MapPinIcon,
-  ClockIcon,
-  PoundSterlingIcon,
-  ExternalLinkIcon,
-  ListIcon,
-  MapIcon,
-  ArrowUpDownIcon,
-} from 'lucide-react';
+import { useState, useMemo, useCallback } from 'react';
+import { Button } from '@braintwopoint0/playback-commons/ui';
+import { SearchResultsProps, CourtSlot } from '@/lib/playscanner/types';
+import { ListIcon, MapIcon } from 'lucide-react';
 import MapView from './MapView';
 import FilterPanel, { FilterState } from './filters/FilterPanel';
+import VenueCard, { groupSlotsByVenue } from './VenueCard';
+import SkeletonCard from './SkeletonCard';
+import BookingConfirm from './BookingConfirm';
+import SportIcon from './SportIcon';
 
 type ViewMode = 'list' | 'map';
 
@@ -39,34 +21,31 @@ export default function SearchResults({
   onConversion,
 }: SearchResultsProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [showCount, setShowCount] = useState(10);
-  const [sortBy, setSortBy] = useState<SortBy>('time-asc');
+  const [showCount, setShowCount] = useState(15);
+  const [sortMode, setSortMode] = useState<'soonest' | 'cheapest'>('soonest');
   const [filters, setFilters] = useState<FilterState>({});
+  const [selectedSlot, setSelectedSlot] = useState<CourtSlot | null>(null);
 
-  // Filter results based on selected filters
+  const isFootball = sport === 'football';
+
+  // Filter results
   const filteredResults = useMemo(() => {
     let filtered = [...results];
 
-    // Apply time filter
     if (filters.timeRange) {
       filtered = filtered.filter((slot) => {
         const slotTime = new Date(slot.startTime);
-        const slotHour = slotTime.getHours();
-        const slotMinutes = slotTime.getMinutes();
-        const slotTimeValue = slotHour * 60 + slotMinutes;
-
-        const [startHour, startMin] = filters
+        const slotMinutes = slotTime.getHours() * 60 + slotTime.getMinutes();
+        const [startH, startM] = filters
           .timeRange!.start.split(':')
           .map(Number);
-        const [endHour, endMin] = filters.timeRange!.end.split(':').map(Number);
-        const startTimeValue = startHour * 60 + startMin;
-        const endTimeValue = endHour * 60 + endMin;
-
-        return slotTimeValue >= startTimeValue && slotTimeValue <= endTimeValue;
+        const [endH, endM] = filters.timeRange!.end.split(':').map(Number);
+        return (
+          slotMinutes >= startH * 60 + startM && slotMinutes <= endH * 60 + endM
+        );
       });
     }
 
-    // Apply price filter
     if (filters.priceRange) {
       filtered = filtered.filter(
         (slot) =>
@@ -75,344 +54,211 @@ export default function SearchResults({
       );
     }
 
-    // Apply venue filter
-    if (filters.selectedVenues && filters.selectedVenues.length > 0) {
-      filtered = filtered.filter((slot) => {
-        const venueName =
-          typeof slot.venue === 'string' ? slot.venue : slot.venue.name;
-        return filters.selectedVenues!.includes(venueName);
-      });
+    if (filters.selectedVenues?.length) {
+      filtered = filtered.filter((slot) =>
+        filters.selectedVenues!.includes(slot.venue.name)
+      );
+    }
+
+    if (filters.selectedProviders?.length) {
+      filtered = filtered.filter((slot) =>
+        filters.selectedProviders!.includes(slot.provider)
+      );
     }
 
     return filtered;
   }, [results, filters]);
 
-  // Sort results based on selected option
+  // Sort results
   const sortedResults = useMemo(() => {
     const sorted = [...filteredResults];
-
-    switch (sortBy) {
-      case 'time-asc':
-        sorted.sort(
-          (a, b) =>
-            new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
-        );
-        break;
-      case 'time-desc':
-        sorted.sort(
-          (a, b) =>
-            new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
-        );
-        break;
-      case 'price-asc':
-        sorted.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        sorted.sort((a, b) => b.price - a.price);
-        break;
+    if (sortMode === 'cheapest') {
+      sorted.sort((a, b) => a.price - b.price);
+    } else {
+      sorted.sort(
+        (a, b) =>
+          new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+      );
     }
-
     return sorted;
-  }, [filteredResults, sortBy]);
+  }, [filteredResults, sortMode]);
 
-  // Paginated results for display
-  const displayedResults = sortedResults.slice(0, showCount);
-  const hasMoreResults = sortedResults.length > showCount;
-
-  const showMoreResults = () => {
-    setShowCount((prev) => Math.min(prev + 10, sortedResults.length));
-  };
-
-  const ViewModeToggle = () => (
-    <div className="flex items-center gap-1 border rounded-lg p-1">
-      <Button
-        variant={viewMode === 'list' ? 'default' : 'ghost'}
-        size="sm"
-        onClick={() => setViewMode('list')}
-        className="h-8 w-8 p-0"
-        title="List view"
-      >
-        <ListIcon className="h-4 w-4" />
-      </Button>
-      <Button
-        variant={viewMode === 'map' ? 'default' : 'ghost'}
-        size="sm"
-        onClick={() => setViewMode('map')}
-        className="h-8 w-8 p-0"
-        title="Map view"
-      >
-        <MapIcon className="h-4 w-4" />
-      </Button>
-    </div>
+  // Group by venue for display
+  const venueGroups = useMemo(
+    () => groupSlotsByVenue(sortedResults),
+    [sortedResults]
   );
 
-  const CourtCard = ({ slot, index }: { slot: any; index: number }) => (
-    <Card
-      key={`${slot.id}-${slot.venue.id}-${slot.startTime}-${index}`}
-      className="hover:shadow-md transition-shadow"
-    >
-      <CardContent className="p-4 md:p-6">
-        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start mb-4 space-y-4 lg:space-y-0">
-          <div className="flex-1">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-3">
-              <h3 className="text-lg md:text-xl font-semibold text-white mb-1 sm:mb-0">
-                {slot.venue.name}
-              </h3>
-              <Badge variant="outline" className="text-xs w-fit">
-                {slot.provider}
-              </Badge>
-            </div>
+  const displayedGroups = venueGroups.slice(0, showCount);
+  const hasMore = venueGroups.length > showCount;
 
-            <div className="flex items-center space-x-4 text-sm text-gray-300">
-              {(slot.venue.location?.city || slot.venue.address?.city) && (
-                <div className="flex items-center space-x-1">
-                  <MapPinIcon className="h-4 w-4 flex-shrink-0" />
-                  <span>
-                    {slot.venue.location?.city || slot.venue.address?.city}
-                  </span>
-                </div>
-              )}
-              <div className="flex items-center space-x-1">
-                <ClockIcon className="h-4 w-4 flex-shrink-0" />
-                <span>
-                  {new Date(slot.startTime).toLocaleTimeString('en-GB', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}{' '}
-                  -{' '}
-                  {new Date(slot.endTime).toLocaleTimeString('en-GB', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </span>
-              </div>
-            </div>
-          </div>
+  // Booking handler — opens confirmation overlay
+  const handleBook = useCallback((slot: CourtSlot) => {
+    setSelectedSlot(slot);
+  }, []);
 
-          <div className="flex flex-row lg:flex-col lg:text-right items-center lg:items-end justify-between lg:justify-start space-x-4 lg:space-x-0 lg:space-y-2">
-            <div className="text-xl lg:text-2xl font-bold text-[#00FF88]">
-              £{(slot.price / 100).toFixed(2)}
-            </div>
-            <Button
-              onClick={() => {
-                onConversion?.(slot);
-                window.open(slot.bookingUrl, '_blank');
-              }}
-              className="flex items-center space-x-2 bg-[#00FF88] hover:bg-[#00E077] text-[#0a100d]"
-              size="sm"
-            >
-              <span>Book</span>
-              <ExternalLinkIcon className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Court/Pitch Details */}
-        {((sport === 'padel' &&
-          slot.sportMeta &&
-          'courtType' in slot.sportMeta) ||
-          (sport !== 'padel' && slot.features?.surface)) && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {sport === 'padel'
-              ? slot.sportMeta &&
-                'courtType' in slot.sportMeta && (
-                  <Badge variant="secondary" className="text-xs">
-                    {slot.sportMeta.courtType.toUpperCase()}
-                  </Badge>
-                )
-              : slot.features?.surface && (
-                  <Badge variant="secondary" className="text-xs">
-                    {slot.features.surface.toUpperCase()}
-                  </Badge>
-                )}
-          </div>
-        )}
-
-        {/* Availability */}
-        {(slot.availability?.totalSpots || slot.lastUpdated) && (
-          <div className="flex items-center justify-between text-xs text-gray-400">
-            {slot.availability?.totalSpots && (
-              <div>
-                {slot.availability.spotsAvailable || 0} of{' '}
-                {slot.availability.totalSpots} spots available
-              </div>
-            )}
-            {slot.lastUpdated && (
-              <div>
-                Updated{' '}
-                {new Date(slot.lastUpdated).toLocaleString('en-GB', {
-                  timeZone: 'Europe/London',
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  second: '2-digit',
-                })}
-              </div>
-            )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
+  // Loading state
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            Searching for{' '}
-            {sport === 'padel' ? 'Padel Courts' : 'Football Pitches'}...
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {/* Loading skeletons */}
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="animate-pulse">
-                <div className="bg-gray-700 h-32 rounded-lg"></div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <div className="grid grid-cols-3 gap-2">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="h-20 animate-pulse rounded-lg border border-white/[0.06] bg-white/[0.02]"
+            />
+          ))}
+        </div>
+        {[0, 1, 2].map((i) => (
+          <SkeletonCard key={i} delay={i * 100} />
+        ))}
+      </div>
     );
   }
 
+  // Error state
   if (error) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-red-600">Search Error</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <p className="text-gray-300 mb-4">{error.message}</p>
-            <Button variant="outline" onClick={() => window.location.reload()}>
-              Try Again
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="rounded-xl border border-red-500/20 bg-red-500/[0.05] p-6 text-center">
+        <p className="text-red-400">{error.message}</p>
+        <Button
+          variant="outline"
+          onClick={() => window.location.reload()}
+          className="mt-4"
+        >
+          Try Again
+        </Button>
+      </div>
     );
   }
 
+  // Empty state
   if (results.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>No Results Found</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <div className="text-6xl mb-4">🎾</div>
-            <p className="text-gray-300 mb-4">
-              No {sport === 'padel' ? 'padel courts' : 'football pitches'} found
-              for your search criteria.
-            </p>
-            <div className="text-sm text-gray-400">
-              <p>Try adjusting your search criteria:</p>
-              <ul className="mt-2 space-y-1">
-                <li>• Search in a different location</li>
-                <li>• Try a different date</li>
-                <li>• Expand your time range</li>
-              </ul>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-8 text-center">
+        <div className="mb-4 flex justify-center text-gray-500">
+          <SportIcon sport={sport as 'padel' | 'football'} size={48} />
+        </div>
+        <h3 className="text-lg font-semibold text-white mb-2">
+          No {isFootball ? 'football pitches' : 'padel courts'} found
+        </h3>
+        <p className="text-sm text-gray-400 mb-4">
+          Try a different date or adjust your filters
+        </p>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <CardTitle>
-            Found {filteredResults.length}{' '}
-            {sport === 'padel' ? 'Padel Courts' : 'Football Pitches'}
-            {filters.timeRange ||
-            filters.priceRange ||
-            (filters.selectedVenues && filters.selectedVenues.length > 0)
-              ? ` (filtered from ${results.length})`
-              : ''}
-          </CardTitle>
-          <div className="flex items-center sm:gap-3 sm:justify-normal justify-between">
-            <Select
-              value={sortBy}
-              onValueChange={(value) => setSortBy(value as SortBy)}
-            >
-              <SelectTrigger className="w-[190px]">
-                <div className="flex items-center gap-2">
-                  <ArrowUpDownIcon className="h-4 w-4" />
-                  <SelectValue />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="time-asc">Time: Earliest</SelectItem>
-                <SelectItem value="time-desc">Time: Latest</SelectItem>
-                <SelectItem value="price-asc">Price: Low to High</SelectItem>
-                <SelectItem value="price-desc">Price: High to Low</SelectItem>
-              </SelectContent>
-            </Select>
-            <ViewModeToggle />
-          </div>
+    <div className="space-y-4">
+      {/* Row 1: Count + Live indicator */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-baseline gap-2">
+          <h3 className="text-lg font-semibold text-white">
+            {venueGroups.length} {venueGroups.length === 1 ? 'venue' : 'venues'}
+          </h3>
+          <span className="text-sm text-gray-500">
+            {filteredResults.length} slots
+          </span>
         </div>
-      </CardHeader>
+        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+          <div className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
+          Live
+        </div>
+      </div>
 
-      <CardContent>
-        {/* Filter Panel */}
-        <FilterPanel
-          sport={sport}
-          filters={filters}
-          onFiltersChange={setFilters}
-          searchResults={results} // Pass original unfiltered results
-          className="mb-6"
+      {/* Row 2: Sort + View toggle */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1 rounded-lg border border-white/[0.06] p-0.5 text-xs">
+          <button
+            onClick={() => setSortMode('soonest')}
+            className={`rounded-md px-3 py-1.5 transition-colors ${
+              sortMode === 'soonest'
+                ? 'bg-white/10 text-white'
+                : 'text-gray-500 hover:text-gray-300'
+            }`}
+          >
+            Soonest
+          </button>
+          <button
+            onClick={() => setSortMode('cheapest')}
+            className={`rounded-md px-3 py-1.5 transition-colors ${
+              sortMode === 'cheapest'
+                ? 'bg-white/10 text-white'
+                : 'text-gray-500 hover:text-gray-300'
+            }`}
+          >
+            Cheapest
+          </button>
+        </div>
+
+        <div className="flex items-center gap-1 rounded-lg border border-white/[0.06] p-0.5">
+          <button
+            onClick={() => setViewMode('list')}
+            className={`rounded-md p-1.5 transition-colors ${
+              viewMode === 'list'
+                ? 'bg-white/10 text-white'
+                : 'text-gray-500 hover:text-gray-300'
+            }`}
+          >
+            <ListIcon className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setViewMode('map')}
+            className={`rounded-md p-1.5 transition-colors ${
+              viewMode === 'map'
+                ? 'bg-white/10 text-white'
+                : 'text-gray-500 hover:text-gray-300'
+            }`}
+          >
+            <MapIcon className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Filter Panel */}
+      <FilterPanel
+        sport={sport}
+        filters={filters}
+        onFiltersChange={setFilters}
+        searchResults={results}
+      />
+
+      {/* Results */}
+      {viewMode === 'map' ? (
+        <MapView results={sortedResults} sport={sport} />
+      ) : (
+        <div className="space-y-3">
+          {displayedGroups.map((group) => (
+            <VenueCard
+              key={`${group.venueId}-${group.provider}`}
+              group={group}
+              onBook={handleBook}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Show More */}
+      {hasMore && viewMode !== 'map' && (
+        <div className="flex justify-center pt-2">
+          <button
+            onClick={() => setShowCount((p) => p + 10)}
+            className="rounded-lg border border-white/[0.08] px-6 py-2.5 text-sm text-gray-400 transition-colors hover:border-white/[0.15] hover:text-white"
+          >
+            Show more ({venueGroups.length - showCount} remaining)
+          </button>
+        </div>
+      )}
+
+      {/* Booking confirmation overlay */}
+      {selectedSlot && (
+        <BookingConfirm
+          slot={selectedSlot}
+          onClose={() => setSelectedSlot(null)}
+          onConversion={onConversion}
         />
-        {/* Results Count Info */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h3 className="text-2xl font-semibold">
-              {displayedResults.length}{' '}
-              {displayedResults.length === 1 ? 'Court' : 'Courts'} Available
-            </h3>
-            <p className="text-neutral-400">
-              Showing {displayedResults.length} of {sortedResults.length}{' '}
-              results in London
-            </p>
-          </div>
-
-          {/* Cached Data Indicator */}
-          <div className="hidden sm:flex items-center space-x-2 text-sm text-neutral-500">
-            <div className="h-2 w-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span>Live data</span>
-          </div>
-        </div>
-
-        {/* Results Display */}
-        {viewMode === 'map' ? (
-          <MapView results={sortedResults} sport={sport} />
-        ) : (
-          <div className="space-y-4">
-            {displayedResults.map((slot, index) => (
-              <CourtCard
-                key={`${slot.id}-${index}`}
-                slot={slot}
-                index={index}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Show More Button - Only show for list view */}
-        {hasMoreResults && viewMode !== 'map' && (
-          <div className="flex justify-center mt-8">
-            <Button onClick={showMoreResults} variant="outline" size="lg">
-              Show More Courts ({sortedResults.length - showCount} remaining)
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 }

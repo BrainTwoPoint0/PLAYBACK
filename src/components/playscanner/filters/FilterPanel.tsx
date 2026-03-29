@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Button,
   Card,
@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
   Badge,
+  Label,
 } from '@braintwopoint0/playback-commons/ui';
 import {
   Collapsible,
@@ -15,7 +16,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { ChevronDownIcon, SlidersHorizontalIcon, XIcon } from 'lucide-react';
-import { Sport, CourtSlot } from '@/lib/playscanner/types';
+import { Sport, CourtSlot, PROVIDER_CONFIG } from '@/lib/playscanner/types';
 import TimeFilters from './TimeFilters';
 import PriceFilters from './PriceFilters';
 import VenueFilters from './VenueFilters';
@@ -24,6 +25,7 @@ export interface FilterState {
   timeRange?: { start: string; end: string };
   priceRange?: { min: number; max: number };
   selectedVenues?: string[]; // Array of venue names
+  selectedProviders?: string[]; // Array of provider IDs
 }
 
 interface FilterPanelProps {
@@ -68,7 +70,26 @@ export default function FilterPanel({
     if (filters.timeRange) count++;
     if (filters.priceRange) count++;
     if (filters.selectedVenues && filters.selectedVenues.length > 0) count++;
+    if (filters.selectedProviders && filters.selectedProviders.length > 0)
+      count++;
     return count;
+  };
+
+  // Derive available providers + counts from search results
+  const providerCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    searchResults.forEach((slot) => {
+      counts[slot.provider] = (counts[slot.provider] || 0) + 1;
+    });
+    return counts;
+  }, [searchResults]);
+
+  const toggleProvider = (provider: string) => {
+    const current = filters.selectedProviders || [];
+    const updated = current.includes(provider)
+      ? current.filter((p) => p !== provider)
+      : [...current, provider];
+    updateFilter('selectedProviders', updated.length > 0 ? updated : undefined);
   };
 
   return (
@@ -114,6 +135,62 @@ export default function FilterPanel({
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Provider Filters */}
+              {Object.keys(providerCounts).length > 1 && (
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">Providers</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(providerCounts).map(([provider, count]) => {
+                      const config = PROVIDER_CONFIG[provider] || {
+                        displayName: provider,
+                        color: '#888888',
+                      };
+                      const isSelected =
+                        !filters.selectedProviders ||
+                        filters.selectedProviders.includes(provider);
+                      return (
+                        <button
+                          key={provider}
+                          type="button"
+                          onClick={() => toggleProvider(provider)}
+                          className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all border"
+                          style={
+                            isSelected
+                              ? {
+                                  backgroundColor: `${config.color}15`,
+                                  borderColor: `${config.color}40`,
+                                  color: config.color,
+                                }
+                              : {
+                                  backgroundColor: 'transparent',
+                                  borderColor: 'rgba(255,255,255,0.1)',
+                                  color: 'rgba(255,255,255,0.35)',
+                                }
+                          }
+                        >
+                          <span
+                            className="h-2 w-2 rounded-full flex-shrink-0"
+                            style={{
+                              backgroundColor: isSelected
+                                ? config.color
+                                : 'rgba(255,255,255,0.2)',
+                            }}
+                          />
+                          {config.displayName}
+                          <span
+                            style={{
+                              opacity: isSelected ? 0.7 : 0.5,
+                            }}
+                          >
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Venue Filters */}
               <VenueFilters
                 selectedVenues={filters.selectedVenues}
@@ -150,6 +227,23 @@ export default function FilterPanel({
             Active Filters:
           </div>
           <div className="flex flex-wrap gap-2">
+            {filters.selectedProviders &&
+              filters.selectedProviders.length > 0 && (
+                <Badge variant="secondary" className="gap-1">
+                  {filters.selectedProviders.length === 1
+                    ? PROVIDER_CONFIG[filters.selectedProviders[0]]
+                        ?.displayName || filters.selectedProviders[0]
+                    : `${filters.selectedProviders.length} providers`}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto p-0 w-4 h-4 hover:bg-transparent"
+                    onClick={() => updateFilter('selectedProviders', undefined)}
+                  >
+                    <XIcon className="h-3 w-3" />
+                  </Button>
+                </Badge>
+              )}
             {filters.selectedVenues && filters.selectedVenues.length > 0 && (
               <Badge variant="secondary" className="gap-1">
                 {filters.selectedVenues.length === 1

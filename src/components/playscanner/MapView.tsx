@@ -71,11 +71,17 @@ export default function MapView({ results, sport }: MapViewProps) {
         }
         .leaflet-popup-close-button {
           color: #00FF88 !important;
-          font-size: 16px !important;
-          font-weight: bold !important;
-          padding: 6px !important;
-          top: 6px !important;
-          right: 6px !important;
+          font-size: 20px !important;
+          font-weight: 300 !important;
+          width: 24px !important;
+          height: 24px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          line-height: 1 !important;
+          padding: 0 !important;
+          top: 8px !important;
+          right: 8px !important;
         }
         .leaflet-popup-close-button:hover {
           color: #00E077 !important;
@@ -90,7 +96,11 @@ export default function MapView({ results, sport }: MapViewProps) {
           align-items: center !important;
           justify-content: center !important;
           text-align: center !important;
-          line-height: 1 !important;
+          line-height: 26px !important;
+          font-size: 18px !important;
+          font-weight: 400 !important;
+          width: 30px !important;
+          height: 30px !important;
         }
         .leaflet-control-zoom a:hover {
           background: rgba(0, 255, 136, 0.1) !important;
@@ -130,37 +140,15 @@ export default function MapView({ results, sport }: MapViewProps) {
 
       import('leaflet').then((L) => {
         // Create custom green marker icon for sports venues
+        const { getSportIconHtml } = require('./SportIcon');
+        const iconHtml = getSportIconHtml(sport, 28);
+
         const customIcon = L.divIcon({
-          html: `
-            <div style="
-              background-color: #00FF88;
-              border: 3px solid white;
-              border-radius: 50%;
-              width: 24px;
-              height: 24px;
-              box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              position: relative;
-            ">
-              <div style="
-                color: #0a100d;
-                font-size: 12px;
-                font-weight: bold;
-                line-height: 1;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 100%;
-                height: 100%;
-              ">🎾</div>
-            </div>
-          `,
+          html: iconHtml,
           className: 'custom-venue-marker',
-          iconSize: [24, 24],
-          iconAnchor: [12, 12],
-          popupAnchor: [0, -12],
+          iconSize: [28, 28],
+          iconAnchor: [14, 14],
+          popupAnchor: [0, -14],
         });
 
         // Set as default marker
@@ -256,32 +244,27 @@ export default function MapView({ results, sport }: MapViewProps) {
           <h3 className="font-semibold text-sm text-white leading-tight">
             {venue.name}
           </h3>
-          <div className="flex items-center justify-between mt-1">
+        </div>
+
+        <div className="flex items-center justify-between text-xs mt-1.5 mb-2">
+          <div className="flex items-center text-[#b9baa3]">
+            <MapPinIcon className="h-3 w-3 mr-1 flex-shrink-0" />
+            <span className="truncate">
+              {venue.location?.city || venue.address?.city || 'London'}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
             <Badge
               variant="outline"
-              className="text-xs border-[#00FF88] text-[#00FF88] px-1.5 py-0.5 text-[10px]"
+              className="border-[#00FF88] text-[#00FF88] px-1.5 py-0.5 text-[10px]"
             >
               {cheapestSlot.provider}
             </Badge>
-            <span className="text-xs text-[#00FF88] bg-[#00FF88]/10 px-1 py-0.5 rounded text-[10px]">
-              {sport === 'padel' ? '🏓' : '⚽'}
-            </span>
-          </div>
-        </div>
-
-        {(venue.location?.city || venue.address?.city) && (
-          <div className="flex items-center justify-between text-xs text-[#b9baa3] mb-2">
-            <div className="flex items-center">
-              <MapPinIcon className="h-3 w-3 mr-1 flex-shrink-0" />
-              <span className="truncate text-xs">
-                {venue.location?.city || venue.address?.city}
-              </span>
-            </div>
-            <span className="text-xs ml-2 flex-shrink-0">
+            <span className="text-[10px] text-gray-500">
               {slots.length} slot{slots.length !== 1 ? 's' : ''}
             </span>
           </div>
-        )}
+        </div>
       </div>
 
       <div className="bg-[#1a2520] rounded-lg p-2 mb-2 border border-[#00FF88]/20 mx-2">
@@ -311,7 +294,27 @@ export default function MapView({ results, sport }: MapViewProps) {
 
       <div className="px-2">
         <button
-          onClick={() => window.open(cheapestSlot.bookingUrl, '_blank')}
+          onClick={async () => {
+            try {
+              const res = await fetch('/api/playscanner/redirect', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  provider: cheapestSlot.provider,
+                  venueName: cheapestSlot.venue.name,
+                  venueId: cheapestSlot.venue.id,
+                  bookingUrl: cheapestSlot.bookingUrl,
+                  price: cheapestSlot.price,
+                  sport: cheapestSlot.sport,
+                  startTime: cheapestSlot.startTime,
+                }),
+              });
+              const data = await res.json();
+              window.open(data.bookingUrl || cheapestSlot.bookingUrl, '_blank');
+            } catch {
+              window.open(cheapestSlot.bookingUrl, '_blank');
+            }
+          }}
           className="w-full bg-[#00FF88] hover:bg-[#00E077] text-[#0a100d] font-medium py-1.5 px-3 rounded-lg flex items-center justify-center space-x-1 transition-colors text-xs"
         >
           <span>Book</span>
