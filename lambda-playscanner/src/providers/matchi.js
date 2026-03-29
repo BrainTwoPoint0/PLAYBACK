@@ -66,8 +66,8 @@ class MatchiProvider {
           );
         }
 
-        // Rate limit: 1s between facility requests
-        await this.sleep(1000);
+        // Rate limit: 2s between facility requests (MATCHi aggressively 429s)
+        await this.sleep(2000);
       }
 
       if (allSlotIds.length === 0) {
@@ -261,11 +261,11 @@ class MatchiProvider {
         // Skip individual price failures silently
       }
 
-      // Delay to respect rate limits — longer pause every 10 requests
-      if ((i + 1) % 10 === 0 && i + 1 < uniqueIds.length) {
-        await this.sleep(1000);
+      // Delay to respect rate limits — longer pause every 5 requests
+      if ((i + 1) % 5 === 0 && i + 1 < uniqueIds.length) {
+        await this.sleep(2000);
       } else if (i + 1 < uniqueIds.length) {
-        await this.sleep(100);
+        await this.sleep(300);
       }
     }
 
