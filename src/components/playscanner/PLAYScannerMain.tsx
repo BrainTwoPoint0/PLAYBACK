@@ -191,8 +191,8 @@ export default function PLAYScannerMain() {
         </div>
       </motion.div>
 
-      {/* Results */}
-      {hasSearched && (
+      {/* Results — show immediately (skeleton while loading) */}
+      {(hasSearched || isSearching) && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
