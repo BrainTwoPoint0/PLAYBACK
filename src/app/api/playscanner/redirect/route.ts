@@ -18,6 +18,9 @@ const ALLOWED_DOMAINS = [
   'goalsfootball.co.uk',
   'footyaddicts.com',
   'www.footyaddicts.com',
+  'play.fcurban.com',
+  'fcurban.com',
+  'www.fcurban.com',
   'bookteq.com',
 ];
 

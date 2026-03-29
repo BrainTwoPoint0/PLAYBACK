@@ -9,6 +9,7 @@ const { PadelMatesProvider } = require('./providers/padel-mates');
 const { PowerLeagueProvider } = require('./providers/powerleague');
 const { GoalsProvider } = require('./providers/goals');
 const { FootyAddictsProvider } = require('./providers/footy-addicts');
+const { FCUrbanProvider } = require('./providers/fc-urban');
 const { setCachedData, logCollection } = require('./supabase');
 
 class BackgroundCollector {
@@ -21,6 +22,7 @@ class BackgroundCollector {
       { name: 'powerleague', instance: new PowerLeagueProvider() },
       { name: 'goals', instance: new GoalsProvider() },
       { name: 'footy_addicts', instance: new FootyAddictsProvider() },
+      { name: 'fc_urban', instance: new FCUrbanProvider() },
     ];
 
     // Allow filtering to a single provider (for debugging or selective runs)
@@ -175,7 +177,12 @@ class BackgroundCollector {
    * Collect data for a specific city, date, and provider
    */
   async collectCityDateProvider(city, date, provider) {
-    const footballProviders = ['powerleague', 'goals', 'footy_addicts'];
+    const footballProviders = [
+      'powerleague',
+      'goals',
+      'footy_addicts',
+      'fc_urban',
+    ];
     const params = {
       sport: footballProviders.includes(provider.name) ? 'football' : 'padel',
       location: city,
