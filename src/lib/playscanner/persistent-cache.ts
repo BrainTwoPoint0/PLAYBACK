@@ -538,7 +538,8 @@ export class PersistentCacheService {
       slot.provider === 'powerleague' ||
       slot.provider === 'goals' ||
       slot.provider === 'footy_addicts' ||
-      slot.provider === 'fc_urban';
+      slot.provider === 'fc_urban' ||
+      slot.provider === 'hireapitch';
     const sport = isFootball ? ('football' as const) : ('padel' as const);
     const provider = (slot.provider || 'playtomic') as Provider;
 

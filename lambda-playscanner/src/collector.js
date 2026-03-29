@@ -10,6 +10,7 @@ const { PowerLeagueProvider } = require('./providers/powerleague');
 const { GoalsProvider } = require('./providers/goals');
 const { FootyAddictsProvider } = require('./providers/footy-addicts');
 const { FCUrbanProvider } = require('./providers/fc-urban');
+const { HireAPitchProvider } = require('./providers/hireapitch');
 const { setCachedData, logCollection } = require('./supabase');
 
 class BackgroundCollector {
@@ -23,12 +24,27 @@ class BackgroundCollector {
       { name: 'goals', instance: new GoalsProvider() },
       { name: 'footy_addicts', instance: new FootyAddictsProvider() },
       { name: 'fc_urban', instance: new FCUrbanProvider() },
+      { name: 'hireapitch', instance: new HireAPitchProvider() },
     ];
 
-    // Allow filtering to a single provider (for debugging or selective runs)
+    // Filter by single provider or provider group
     if (options.provider) {
       this.providers = this.providers.filter(
         (p) => p.name === options.provider
+      );
+    } else if (options.group === 'padel') {
+      this.providers = this.providers.filter((p) =>
+        ['playtomic', 'matchi', 'padel_mates'].includes(p.name)
+      );
+    } else if (options.group === 'football') {
+      this.providers = this.providers.filter((p) =>
+        [
+          'powerleague',
+          'goals',
+          'footy_addicts',
+          'fc_urban',
+          'hireapitch',
+        ].includes(p.name)
       );
     }
   }
@@ -182,6 +198,7 @@ class BackgroundCollector {
       'goals',
       'footy_addicts',
       'fc_urban',
+      'hireapitch',
     ];
     const params = {
       sport: footballProviders.includes(provider.name) ? 'football' : 'padel',

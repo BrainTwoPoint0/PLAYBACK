@@ -71,12 +71,13 @@ export default function VenueCard({ group, onBook }: VenueCardProps) {
         ? uniqueCourts.slice(0, 2).join(', ')
         : '';
 
-  // Spots left for drop-in games
+  // Spots left for drop-in games — only show if we have real data (totalSpots > 1)
   const spotsLeft = isDropIn
-    ? group.slots.reduce(
-        (sum, s) => sum + (s.availability?.spotsAvailable || 0),
-        0
-      )
+    ? group.slots.reduce((sum, s) => {
+        const total = s.availability?.totalSpots || 0;
+        if (total <= 1) return sum; // Skip default/unknown availability
+        return sum + (s.availability?.spotsAvailable || 0);
+      }, 0) || null
     : null;
 
   return (

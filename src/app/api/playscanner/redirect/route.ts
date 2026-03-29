@@ -22,6 +22,8 @@ const ALLOWED_DOMAINS = [
   'fcurban.com',
   'www.fcurban.com',
   'bookteq.com',
+  'hireapitch.com',
+  'www.hireapitch.com',
 ];
 
 function isAllowedUrl(url: string): boolean {

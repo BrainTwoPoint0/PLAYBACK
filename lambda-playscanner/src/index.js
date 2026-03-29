@@ -25,9 +25,10 @@ exports.handler = async (event, context) => {
       }
     }
 
-    // Create collector instance (optionally filter to a single provider via event)
+    // Create collector instance — filter by provider group or single provider
     const collector = new BackgroundCollector({
       provider: event.provider || null,
+      group: event.group || null,
     });
 
     // Leave 30s buffer before Lambda hard timeout
