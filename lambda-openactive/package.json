@@ -1,0 +1,21 @@
+{
+  "name": "openactive-football-lambda",
+  "version": "1.0.0",
+  "description": "AWS Lambda for OpenActive football pitch availability collection",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node test-local.js",
+    "build": "npm ci --production",
+    "package": "zip -r function.zip . -x '*.git*' -x 'test-*' -x '*.md' -x 'deploy.sh' -x '*.zip' -x '.env'",
+    "deploy": "./deploy.sh"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.50.3"
+  },
+  "devDependencies": {
+    "dotenv": "^17.2.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
