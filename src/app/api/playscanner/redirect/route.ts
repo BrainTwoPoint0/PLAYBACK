@@ -24,6 +24,7 @@ const ALLOWED_DOMAINS = [
   'bookteq.com',
   'hireapitch.com',
   'www.hireapitch.com',
+  'flow.onl',
 ];
 
 function isAllowedUrl(url: string): boolean {

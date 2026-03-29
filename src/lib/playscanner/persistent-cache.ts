@@ -533,13 +533,18 @@ export class PersistentCacheService {
       slot.venue?.address?.city || slot.venue?.location?.city || 'London';
     const venueAddress = slot.venue?.address || slot.venue?.location || {};
 
+    // Determine sport from slot data — prefer explicit sport field if present
+    const footballProviders = [
+      'openactive',
+      'powerleague',
+      'goals',
+      'footy_addicts',
+      'fc_urban',
+      'hireapitch',
+    ];
     const isFootball =
-      slot.provider === 'openactive' ||
-      slot.provider === 'powerleague' ||
-      slot.provider === 'goals' ||
-      slot.provider === 'footy_addicts' ||
-      slot.provider === 'fc_urban' ||
-      slot.provider === 'hireapitch';
+      slot.sport === 'football' || footballProviders.includes(slot.provider);
+    // Flow is multi-sport — uses the sport field set by the collector
     const sport = isFootball ? ('football' as const) : ('padel' as const);
     const provider = (slot.provider || 'playtomic') as Provider;
 

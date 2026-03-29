@@ -11,6 +11,7 @@ const { GoalsProvider } = require('./providers/goals');
 const { FootyAddictsProvider } = require('./providers/footy-addicts');
 const { FCUrbanProvider } = require('./providers/fc-urban');
 const { HireAPitchProvider } = require('./providers/hireapitch');
+const { FlowProvider } = require('./providers/flow');
 const { setCachedData, logCollection } = require('./supabase');
 
 class BackgroundCollector {
@@ -25,6 +26,7 @@ class BackgroundCollector {
       { name: 'footy_addicts', instance: new FootyAddictsProvider() },
       { name: 'fc_urban', instance: new FCUrbanProvider() },
       { name: 'hireapitch', instance: new HireAPitchProvider() },
+      { name: 'flow', instance: new FlowProvider() },
     ];
 
     // Filter by single provider or provider group
@@ -34,7 +36,7 @@ class BackgroundCollector {
       );
     } else if (options.group === 'padel') {
       this.providers = this.providers.filter((p) =>
-        ['playtomic', 'matchi', 'padel_mates'].includes(p.name)
+        ['playtomic', 'matchi', 'padel_mates', 'flow'].includes(p.name)
       );
     } else if (options.group === 'football') {
       this.providers = this.providers.filter((p) =>
@@ -44,6 +46,7 @@ class BackgroundCollector {
           'footy_addicts',
           'fc_urban',
           'hireapitch',
+          'flow',
         ].includes(p.name)
       );
     }
@@ -199,6 +202,7 @@ class BackgroundCollector {
       'footy_addicts',
       'fc_urban',
       'hireapitch',
+      'flow',
     ];
     const params = {
       sport: footballProviders.includes(provider.name) ? 'football' : 'padel',
