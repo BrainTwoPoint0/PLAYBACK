@@ -161,6 +161,7 @@ class HireAPitchProvider {
 
       slots.push({
         provider: 'hireapitch',
+        sport: 'football',
         listingType: 'pitch_hire',
         venue: {
           id: String(venue.id),

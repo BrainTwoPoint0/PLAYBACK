@@ -195,6 +195,7 @@ class PowerLeagueProvider {
 
           slots.push({
             provider: 'powerleague',
+            sport: 'football',
             listingType: 'pitch_hire',
             venue: {
               id: venue.id,

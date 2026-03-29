@@ -120,6 +120,7 @@ class FCUrbanProvider {
 
       sessions.push({
         provider: 'fc_urban',
+        sport: 'football',
         listingType: 'drop_in',
         venue: {
           id: `fcurban-${district}-${i}`,

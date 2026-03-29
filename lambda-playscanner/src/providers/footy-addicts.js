@@ -140,6 +140,7 @@ class FootyAddictsProvider {
 
     return {
       provider: 'footy_addicts',
+      sport: 'football',
       listingType: 'drop_in',
       venue: {
         id: gameUrl.split('/').pop().split('-')[0], // game ID

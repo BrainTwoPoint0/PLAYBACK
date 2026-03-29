@@ -132,6 +132,7 @@ class BookteqProvider {
       slots.push({
         id: item.id,
         provider: 'openactive',
+        sport: 'football',
         listingType: 'pitch_hire',
         venue_slug: venue.slug,
         venue_name: venue.name,
