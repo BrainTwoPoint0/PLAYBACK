@@ -26,6 +26,7 @@ const VENUES = [
     name: 'Britannia Leisure Centre',
     slug: 'britannia-leisure-centre',
   },
+  { id: 511, name: 'Westway Sports Centre', slug: 'Westway' },
 ];
 
 class HireAPitchProvider {
