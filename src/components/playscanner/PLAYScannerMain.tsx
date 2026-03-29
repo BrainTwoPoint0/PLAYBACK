@@ -174,7 +174,7 @@ export default function PLAYScannerMain() {
         </div>
 
         {/* Date quick-select chips */}
-        <div className="flex justify-center gap-1.5 overflow-x-auto pb-1 -mb-1 no-visible-scrollbar">
+        <div className="flex sm:justify-center gap-1.5 overflow-x-auto pb-1 -mb-1 no-visible-scrollbar">
           {QUICK_DATES.map((d) => (
             <button
               key={d.value}

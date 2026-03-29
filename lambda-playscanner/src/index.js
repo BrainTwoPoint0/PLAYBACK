@@ -30,9 +30,9 @@ exports.handler = async (event, context) => {
       provider: event.provider || null,
     });
 
-    // Set Lambda-specific timeout (5 minutes max, leave 30s buffer)
+    // Leave 30s buffer before Lambda hard timeout
     const lambdaTimeout = context.getRemainingTimeInMillis() - 30000;
-    const collectionTimeout = Math.min(lambdaTimeout, 270000); // 4.5 minutes max
+    const collectionTimeout = Math.min(lambdaTimeout, 570000); // 9.5 minutes max
 
     console.log(
       `⏱️ Lambda timeout: ${lambdaTimeout}ms, Collection timeout: ${collectionTimeout}ms`
