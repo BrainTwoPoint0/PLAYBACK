@@ -28,23 +28,73 @@ function getSupabaseClient() {
 }
 
 /**
- * Store cached slot data
+ * Store cached slot data with multi-provider merge support.
+ * Reads existing cache entry, replaces slots from the given provider, and upserts the merged result.
+ *
+ * NOTE: This read-merge-write is NOT atomic. It is safe because all providers
+ * run sequentially within a single Lambda invocation. Do NOT run concurrent
+ * Lambdas writing to the same cache_key — the last write wins and drops data.
  */
-async function setCachedData(city, date, slots) {
+async function setCachedData(city, date, slots, providerName = 'playtomic') {
   const supabase = getSupabaseClient();
   const cacheKey = `${city.toLowerCase()}:${date}`;
   const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes TTL
+
+  // Stamp each new slot with collection time for staleness checks
+  const now = new Date().toISOString();
+  for (const s of slots) {
+    s._collectedAt = now;
+  }
+
+  // Read existing cache entry to merge with other providers' data
+  let mergedSlots = slots;
+  const { data: existing } = await supabase
+    .from('playscanner_cache')
+    .select('slots')
+    .eq('cache_key', cacheKey)
+    .single();
+
+  if (existing?.slots && Array.isArray(existing.slots)) {
+    // Keep slots from other providers, but discard if older than 60 minutes
+    const staleThreshold = Date.now() - 60 * 60 * 1000;
+    const otherSlots = existing.slots.filter((s) => {
+      if (!s.provider || s.provider === providerName) return false;
+      // Discard stale provider data
+      if (s._collectedAt && new Date(s._collectedAt).getTime() < staleThreshold)
+        return false;
+      return true;
+    });
+    mergedSlots = [...otherSlots, ...slots];
+  }
+
+  // Build per-provider stats for metadata
+  const providerStats = {};
+  for (const s of mergedSlots) {
+    const p = s.provider || 'unknown';
+    if (!providerStats[p]) providerStats[p] = { slots: 0, venues: new Set() };
+    providerStats[p].slots++;
+    providerStats[p].venues.add(s.venue?.id);
+  }
+  const providers = Object.keys(providerStats);
+  const providerDetails = {};
+  for (const p of providers) {
+    providerDetails[p] = {
+      slots: providerStats[p].slots,
+      venues: providerStats[p].venues.size,
+    };
+  }
 
   const cacheEntry = {
     cache_key: cacheKey,
     city: city.toLowerCase(),
     date,
-    slots,
+    slots: mergedSlots,
     metadata: {
-      totalSlots: slots.length,
-      uniqueVenues: [...new Set(slots.map((s) => s.venue.id))].length,
+      totalSlots: mergedSlots.length,
+      uniqueVenues: [...new Set(mergedSlots.map((s) => s.venue.id))].length,
       collectedAt: new Date().toISOString(),
-      provider: 'playtomic',
+      providers,
+      providerDetails,
     },
     expires_at: expiresAt.toISOString(),
   };
@@ -57,7 +107,9 @@ async function setCachedData(city, date, slots) {
     throw new Error(`Failed to cache data: ${error.message}`);
   }
 
-  console.log(`💾 Cached ${slots.length} slots for ${city} ${date}`);
+  console.log(
+    `💾 Cached ${slots.length} ${providerName} slots for ${city} ${date} (${mergedSlots.length} total)`
+  );
 }
 
 // storeVenue function removed - playscanner_venues table dropped as unused

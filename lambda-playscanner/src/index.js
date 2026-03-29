@@ -25,8 +25,10 @@ exports.handler = async (event, context) => {
       }
     }
 
-    // Create collector instance
-    const collector = new BackgroundCollector();
+    // Create collector instance (optionally filter to a single provider via event)
+    const collector = new BackgroundCollector({
+      provider: event.provider || null,
+    });
 
     // Set Lambda-specific timeout (5 minutes max, leave 30s buffer)
     const lambdaTimeout = context.getRemainingTimeInMillis() - 30000;

@@ -10,7 +10,8 @@
     "deploy": "./deploy.sh"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.50.3"
+    "@supabase/supabase-js": "^2.50.3",
+    "cheerio": "^1.0.0"
   },
   "engines": {
     "node": ">=18.0.0"

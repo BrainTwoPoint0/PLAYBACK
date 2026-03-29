@@ -72,23 +72,14 @@ class PlaytomicProvider {
    * Get venues for a location using multiple approaches (like working Next.js code)
    */
   async getVenues(location) {
-    // Try multiple search approaches like the working implementation
-    const searchApproaches = [
-      () => this.searchVenuesAPI(location),
-      () => this.searchVenuesWeb(location),
-    ];
-
-    for (const approach of searchApproaches) {
-      try {
-        const venues = await approach();
-        if (venues.length > 0) {
-          console.log(`Found ${venues.length} venues using approach`);
-          return venues;
-        }
-      } catch (error) {
-        console.log(`Search approach failed: ${error.message}`);
-        continue;
+    try {
+      const venues = await this.searchVenuesAPI(location);
+      if (venues.length > 0) {
+        console.log(`Found ${venues.length} venues via API`);
+        return venues;
       }
+    } catch (error) {
+      console.log(`Venue search failed: ${error.message}`);
     }
 
     return [];
@@ -153,22 +144,6 @@ class PlaytomicProvider {
   }
 
   /**
-   * Search venues using web scraping approach
-   */
-  async searchVenuesWeb(location) {
-    const searchUrl = `${this.baseUrl}/venues?location=${encodeURIComponent(location)}&sport=padel`;
-
-    try {
-      const response = await this.httpRequest(searchUrl);
-      // For now, return empty array as web scraping would be complex
-      // This is a fallback approach
-      return [];
-    } catch (error) {
-      throw new Error(`Web search failed: ${error.message}`);
-    }
-  }
-
-  /**
    * Get coordinates for a location (London coordinates for now)
    */
   getLocationCoordinates(location) {
@@ -213,7 +188,7 @@ class PlaytomicProvider {
         'Sec-Fetch-Dest': 'empty',
         'User-Agent': this.userAgent,
         'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
-        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Encoding': 'identity',
         'Cache-Control': 'no-cache',
         Pragma: 'no-cache',
       };
@@ -243,14 +218,17 @@ class PlaytomicProvider {
             price = priceMatch ? parseFloat(priceMatch[1]) : 0;
           }
 
-          // Create proper date-time strings
-          const startTime = `${startDate}T${timeSlot.start_time}`;
+          // Create proper date-time strings with explicit UTC
+          // Playtomic API returns times in UTC
+          const startTime = `${startDate}T${timeSlot.start_time}Z`;
           const startDateTime = new Date(startTime);
           const endDateTime = new Date(
             startDateTime.getTime() + timeSlot.duration * 60 * 1000
           );
 
           slots.push({
+            provider: 'playtomic',
+            listingType: 'pitch_hire',
             venue,
             court: {
               id: resourceId,

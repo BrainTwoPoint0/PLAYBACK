@@ -1,30 +1,58 @@
 /**
  * Background Data Collector for AWS Lambda
- * Simplified version optimized for Lambda execution
+ * Supports multiple providers (Playtomic, MATCHi, Padel Mates)
  */
 
 const { PlaytomicProvider } = require('./providers/playtomic');
-const { setCachedData, storeVenue, logCollection } = require('./supabase');
+const { MatchiProvider } = require('./providers/matchi');
+const { PadelMatesProvider } = require('./providers/padel-mates');
+const { PowerLeagueProvider } = require('./providers/powerleague');
+const { GoalsProvider } = require('./providers/goals');
+const { FootyAddictsProvider } = require('./providers/footy-addicts');
+const { setCachedData, logCollection } = require('./supabase');
 
 class BackgroundCollector {
-  constructor() {
-    this.provider = new PlaytomicProvider();
+  constructor(options = {}) {
+    // Register all available providers
+    this.providers = [
+      { name: 'playtomic', instance: new PlaytomicProvider() },
+      { name: 'matchi', instance: new MatchiProvider() },
+      { name: 'padel_mates', instance: new PadelMatesProvider() },
+      { name: 'powerleague', instance: new PowerLeagueProvider() },
+      { name: 'goals', instance: new GoalsProvider() },
+      { name: 'footy_addicts', instance: new FootyAddictsProvider() },
+    ];
+
+    // Allow filtering to a single provider (for debugging or selective runs)
+    if (options.provider) {
+      this.providers = this.providers.filter(
+        (p) => p.name === options.provider
+      );
+    }
   }
 
   /**
-   * Collect data for all configured cities and dates
+   * Collect data for all configured cities, dates, and providers
    */
   async collectAll() {
     const startTime = Date.now();
     const results = [];
     const collectionId = `lambda_${Date.now()}`;
 
+    // Clear per-invocation caches (prevents stale data across Lambda container reuse)
+    for (const p of this.providers) {
+      p.instance._facilitiesCache = undefined;
+      p.instance._allSlots = undefined;
+      p.instance._allGames = undefined;
+      p.instance._polled = false;
+    }
+
     // Configuration
-    const cities = ['London']; // Start with London, expand later
-    const daysAhead = 7; // Collect 7 days ahead
+    const cities = ['London'];
+    const daysAhead = 7;
 
     console.log(
-      `🤖 Starting collection ${collectionId} for ${cities.length} cities, ${daysAhead} days`
+      `🤖 Starting collection ${collectionId} for ${cities.length} cities, ${daysAhead} days, ${this.providers.length} providers`
     );
 
     for (const city of cities) {
@@ -32,90 +60,92 @@ class BackgroundCollector {
         const date = new Date();
         date.setDate(date.getDate() + dayOffset);
         const dateString = date.toISOString().split('T')[0];
-        const itemStartTime = Date.now();
 
-        try {
-          // Collect with timeout
-          const slots = await Promise.race([
-            this.collectCityDate(city, dateString),
-            this.timeout(35000, `Timeout for ${city} ${dateString}`), // Increased to 35 seconds
-          ]);
+        // Collect from each provider for this city/date
+        for (const provider of this.providers) {
+          const itemStartTime = Date.now();
 
-          const executionTime = Date.now() - itemStartTime;
-          const uniqueVenues = this.getUniqueVenues(slots);
+          try {
+            const rawSlots = await Promise.race([
+              this.collectCityDateProvider(city, dateString, provider),
+              this.timeout(
+                35000,
+                `Timeout for ${provider.name} ${city} ${dateString}`
+              ),
+            ]);
 
-          // Store in Supabase
-          await setCachedData(city, dateString, slots);
+            // Filter out past slots and short fragments (< 30 min)
+            const now = Date.now();
+            const slots = rawSlots.filter(
+              (s) =>
+                new Date(s.startTime).getTime() > now &&
+                (s.duration || 60) >= 30
+            );
 
-          // Store venue metadata - disabled to avoid schema cache issues
-          // Venue data is already stored within each slot, so this is redundant
-          // const venues = [...new Set(slots.map((slot) => slot.venue))];
-          // for (const venue of venues) {
-          //   try {
-          //     await storeVenue(venue, city);
-          //   } catch (venueError) {
-          //     console.warn(`Failed to store venue ${venue.id}:`, venueError.message);
-          //   }
-          // }
+            const executionTime = Date.now() - itemStartTime;
+            const uniqueVenues = this.getUniqueVenues(slots);
 
-          // Log successful collection
-          await logCollection({
-            collection_id: collectionId,
-            city,
-            date: dateString,
-            status: 'success',
-            slots_collected: slots.length,
-            venues_processed: uniqueVenues.length,
-            execution_time_ms: executionTime,
-            provider: 'playtomic',
-          });
+            // Store in Supabase (read-merge-write per provider)
+            await setCachedData(city, dateString, slots, provider.name);
 
-          results.push({
-            city,
-            date: dateString,
-            status: 'success',
-            slotsCount: slots.length,
-            venuesCount: uniqueVenues.length,
-            priceRange: this.getPriceRange(slots),
-            executionTime,
-          });
+            await logCollection({
+              collection_id: collectionId,
+              city,
+              date: dateString,
+              status: 'success',
+              slots_collected: slots.length,
+              venues_processed: uniqueVenues.length,
+              execution_time_ms: executionTime,
+              provider: provider.name,
+            });
 
-          console.log(
-            `✅ ${city} ${dateString}: ${slots.length} slots from ${uniqueVenues.length} venues (${executionTime}ms)`
-          );
+            results.push({
+              city,
+              date: dateString,
+              provider: provider.name,
+              status: 'success',
+              slotsCount: slots.length,
+              venuesCount: uniqueVenues.length,
+              priceRange: this.getPriceRange(slots),
+              executionTime,
+            });
 
-          // Adaptive delay
-          await this.sleep(1000 + Math.random() * 1000);
-        } catch (error) {
-          const executionTime = Date.now() - itemStartTime;
+            console.log(
+              `✅ ${provider.name} ${city} ${dateString}: ${slots.length} slots from ${uniqueVenues.length} venues (${executionTime}ms)`
+            );
 
-          // Log failed collection
-          await logCollection({
-            collection_id: collectionId,
-            city,
-            date: dateString,
-            status: 'error',
-            slots_collected: 0,
-            venues_processed: 0,
-            error_message: error.message,
-            execution_time_ms: executionTime,
-            provider: 'playtomic',
-          });
+            // Adaptive delay between requests
+            await this.sleep(1000 + Math.random() * 1000);
+          } catch (error) {
+            const executionTime = Date.now() - itemStartTime;
 
-          results.push({
-            city,
-            date: dateString,
-            status: 'error',
-            error: error.message,
-            executionTime,
-          });
+            await logCollection({
+              collection_id: collectionId,
+              city,
+              date: dateString,
+              status: 'error',
+              slots_collected: 0,
+              venues_processed: 0,
+              error_message: error.message,
+              execution_time_ms: executionTime,
+              provider: provider.name,
+            });
 
-          console.error(
-            `❌ ${city} ${dateString}: ${error.message} (${executionTime}ms)`
-          );
+            results.push({
+              city,
+              date: dateString,
+              provider: provider.name,
+              status: 'error',
+              error: error.message,
+              executionTime,
+            });
 
-          // Longer delay after errors
-          await this.sleep(2000);
+            console.error(
+              `❌ ${provider.name} ${city} ${dateString}: ${error.message} (${executionTime}ms)`
+            );
+
+            await this.sleep(2000);
+          }
         }
       }
     }
@@ -134,7 +164,7 @@ class BackgroundCollector {
         totalCollections: results.length,
         successfulCollections: successCount,
         totalSlots,
-        totalVenues: this.getTotalUniqueVenues(results),
+        totalVenues: this.getTotalVenueCount(results),
         collectionTime: totalTime,
         timestamp: new Date().toISOString(),
       },
@@ -142,16 +172,17 @@ class BackgroundCollector {
   }
 
   /**
-   * Collect data for a specific city and date
+   * Collect data for a specific city, date, and provider
    */
-  async collectCityDate(city, date) {
+  async collectCityDateProvider(city, date, provider) {
+    const footballProviders = ['powerleague', 'goals', 'footy_addicts'];
     const params = {
-      sport: 'padel',
+      sport: footballProviders.includes(provider.name) ? 'football' : 'padel',
       location: city,
       date,
     };
 
-    const slots = await this.provider.fetchAvailability(params);
+    const slots = await provider.instance.fetchAvailability(params);
     return slots;
   }
 
@@ -172,16 +203,8 @@ class BackgroundCollector {
     };
   }
 
-  getTotalUniqueVenues(results) {
-    const allVenues = new Set();
-    results.forEach((result) => {
-      if (result.slotsCount > 0) {
-        // We don't have the actual slots here, so use venuesCount
-        // This is an approximation
-        allVenues.add(`${result.city}_${result.venuesCount}`);
-      }
-    });
-    return allVenues.size;
+  getTotalVenueCount(results) {
+    return results.reduce((sum, r) => (r.venuesCount || 0) + sum, 0);
   }
 
   sleep(ms) {
