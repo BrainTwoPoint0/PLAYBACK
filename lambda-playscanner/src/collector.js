@@ -37,9 +37,8 @@ class BackgroundCollector {
         (p) => p.name === options.provider
       );
     } else if (options.group === 'padel') {
-      // MATCHi disabled — consistently 429'd, wastes 4+ min of timeout budget on retries
       this.providers = this.providers.filter((p) =>
-        ['playtomic', 'padel_mates', 'flow'].includes(p.name)
+        ['playtomic', 'matchi', 'padel_mates', 'flow'].includes(p.name)
       );
     } else if (options.group === 'tennis') {
       // MATCHi has 0 London tennis venues — skip it

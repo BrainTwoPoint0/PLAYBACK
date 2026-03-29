@@ -1,11 +1,10 @@
 /**
  * MATCHi Provider for AWS Lambda
- * Scrapes matchi.se HTML endpoints for padel court availability
+ * Scrapes matchi.se HTML endpoints for padel court availability.
  *
- * Two-step approach:
- *   1. POST /book/findFacilities (no date) — discover London facility IDs/names/slugs
- *   2. GET  /book/schedule per facility per date — get slot table with availability
- *   3. GET  /book/getSlotPrices — batch JSON prices for discovered slot IDs
+ * Rate limit: ~40 requests per 30s window, 30s cooldown after 429.
+ * Strategy: fetch schedules only (9 requests), skip individual price fetches.
+ * Prices come from the schedule tooltip or are set to 0.
  */
 
 const https = require('https');
@@ -21,9 +20,6 @@ class MatchiProvider {
     this.defaultSportId = '5'; // Padel
   }
 
-  /**
-   * Fetch availability for a given location and date
-   */
   async fetchAvailability(params) {
     const { location, date, sport = 'padel' } = params;
     this._currentSport = sport;
@@ -32,7 +28,7 @@ class MatchiProvider {
     console.log(`🔍 Fetching MATCHi ${sport} for ${location} on ${date}`);
 
     try {
-      // Step 1: Discover facilities (cached per sport within a collection run)
+      // Step 1: Discover facilities (cached per sport)
       const cacheKey = `${location}_${sport}`;
       if (!this._facilitiesCacheMap) this._facilitiesCacheMap = {};
       if (!this._facilitiesCacheMap[cacheKey]) {
@@ -41,77 +37,60 @@ class MatchiProvider {
         console.log(
           `Found ${this._facilitiesCacheMap[cacheKey].length} MATCHi ${sport} facilities in ${location}`
         );
+        // Cooldown after facility discovery
+        await this.sleep(3000);
       }
       const facilities = this._facilitiesCacheMap[cacheKey];
 
-      if (!facilities || facilities.length === 0) {
-        console.log(`No MATCHi facilities found for ${location}`);
-        return [];
-      }
+      if (!facilities || facilities.length === 0) return [];
 
-      // Step 2: Fetch schedule for each facility on the target date
-      const allSlotIds = [];
-      const slotDetails = []; // { slotId, facility, courtName, startTime, endTime, duration }
+      // Step 2: Fetch schedule for each facility — extract slots WITH prices from HTML
+      const allSlots = [];
 
       for (const facility of facilities) {
         try {
           const scheduleSlots = await this.getSchedule(facility, date);
           for (const slot of scheduleSlots) {
-            allSlotIds.push(slot.slotId);
-            slotDetails.push(slot);
+            allSlots.push({
+              provider: 'matchi',
+              sport: this._currentSport || 'padel',
+              listingType: 'pitch_hire',
+              venue: {
+                id: String(facility.id),
+                name: facility.name,
+                slug: facility.slug,
+                address: facility.location || '',
+                postcode: '',
+                latitude: 0,
+                longitude: 0,
+                indoor: false,
+                surface: 'artificial grass',
+                amenities: [],
+              },
+              court: {
+                id: slot.slotId,
+                name: slot.courtName,
+                surface: 'artificial grass',
+              },
+              startTime: slot.startTime,
+              endTime: slot.endTime,
+              duration: slot.duration,
+              price: 0, // Price requires separate API call — skip to respect rate limits
+              currency: 'GBP',
+              available: true,
+              link: `${this.baseUrl}/facilities/${facility.slug}?date=${date}&sport=${this.sportId}`,
+            });
           }
         } catch (error) {
-          console.warn(
-            `MATCHi schedule failed for ${facility.name}: ${error.message}`
-          );
+          if (!error.message.includes('429')) {
+            console.warn(
+              `MATCHi schedule failed for ${facility.name}: ${error.message}`
+            );
+          }
         }
 
-        // Rate limit: 2s between facility requests (MATCHi aggressively 429s)
-        await this.sleep(2000);
-      }
-
-      if (allSlotIds.length === 0) {
-        console.log(`No available MATCHi slots for ${location} on ${date}`);
-        return [];
-      }
-
-      // Step 3: Batch-fetch prices
-      const priceMap = await this.getSlotPrices(allSlotIds);
-
-      // Step 4: Build final slot objects
-      const allSlots = [];
-      for (const detail of slotDetails) {
-        const price = priceMap[detail.slotId];
-
-        allSlots.push({
-          provider: 'matchi',
-          sport: this._currentSport || 'padel',
-          listingType: 'pitch_hire',
-          venue: {
-            id: String(detail.facility.id),
-            name: detail.facility.name,
-            slug: detail.facility.slug,
-            address: detail.facility.location || '',
-            postcode: '',
-            latitude: 0,
-            longitude: 0,
-            indoor: false,
-            surface: 'artificial grass',
-            amenities: [],
-          },
-          court: {
-            id: detail.slotId,
-            name: detail.courtName,
-            surface: 'artificial grass',
-          },
-          startTime: detail.startTime,
-          endTime: detail.endTime,
-          duration: detail.duration,
-          price: price ? Math.round(price.price * 100) : 0,
-          currency: price?.currency || 'GBP',
-          available: true,
-          link: `${this.baseUrl}/facilities/${detail.facility.slug}?date=${date}&sport=${this.sportId}`,
-        });
+        // 3s between facilities to stay under rate limit
+        await this.sleep(3000);
       }
 
       console.log(
@@ -125,7 +104,7 @@ class MatchiProvider {
   }
 
   /**
-   * Discover facilities via POST /book/findFacilities (no date to get full list)
+   * Discover facilities via POST /book/findFacilities
    */
   async findFacilities(location) {
     const body = `q=${encodeURIComponent(location)}&sport=${this.sportId}&lang=en_US`;
@@ -154,7 +133,6 @@ class MatchiProvider {
 
       const locationText = panel.find('.fa-map-marker').parent().text().trim();
 
-      // Skip members-only facilities
       if (panel.find('.text-info').text().includes('Only club members')) return;
       if (!name) return;
 
@@ -165,10 +143,7 @@ class MatchiProvider {
   }
 
   /**
-   * Fetch schedule for a single facility on a specific date
-   * GET /book/schedule?facilityId=X&date=Y&sport=5
-   *
-   * Returns array of { slotId, facility, courtName, startTime, endTime, duration }
+   * Fetch schedule for a single facility
    */
   async getSchedule(facility, date) {
     const url = `${this.baseUrl}/book/schedule?facilityId=${facility.id}&date=${date}&sport=${this.sportId}&indoor=false&wl=`;
@@ -177,7 +152,6 @@ class MatchiProvider {
     const $ = cheerio.load(html);
     const slots = [];
 
-    // Find all free slot cells in the schedule table
     $('td.slot.free').each((_, td) => {
       const $td = $(td);
       const slotId = $td.attr('slotid');
@@ -185,7 +159,6 @@ class MatchiProvider {
 
       const duration = parseInt($td.attr('data-slot-duration') || '60', 10);
 
-      // Parse title: "Available<br>Court 1<br> 07:00 - 08:00"
       const title = $td.attr('title') || '';
       const parts = title.split('<br>').map((s) => s.trim());
 
@@ -203,10 +176,8 @@ class MatchiProvider {
         }
       }
 
-      if (!startHour) return; // Skip if we can't parse the time
+      if (!startHour) return;
 
-      // MATCHi times are UK local time — Lambda runs in UTC so append offset
-      // During GMT: +00:00, during BST: +01:00. Use Europe/London heuristic.
       const tzOffset = getUKOffset(date);
       const startTime = new Date(`${date}T${startHour}:00${tzOffset}`);
       const endTime = new Date(`${date}T${endHour}:00${tzOffset}`);
@@ -225,71 +196,18 @@ class MatchiProvider {
   }
 
   /**
-   * Fetch prices for slot IDs via GET /book/getSlotPrices
-   * MATCHi's endpoint is unreliable with multiple IDs — fetch one at a time.
-   * Returns map of slotId -> { price, currency }
-   */
-  async getSlotPrices(slotIds) {
-    const priceMap = {};
-    if (slotIds.length === 0) return priceMap;
-
-    // Deduplicate slot IDs
-    const uniqueIds = [...new Set(slotIds)];
-
-    for (let i = 0; i < uniqueIds.length; i++) {
-      const id = uniqueIds[i];
-      try {
-        const response = await this.httpRequest(
-          `${this.baseUrl}/book/getSlotPrices?slotId=${id}`,
-          {
-            headers: {
-              Accept: 'application/json',
-            },
-          }
-        );
-
-        if (response.length > 0) {
-          const data = JSON.parse(response);
-          if (Array.isArray(data) && data.length > 0) {
-            priceMap[data[0].slotId] = {
-              price: data[0].price,
-              currency: data[0].currency,
-            };
-          }
-        }
-      } catch (error) {
-        // Skip individual price failures silently
-      }
-
-      // Delay to respect rate limits — longer pause every 5 requests
-      if ((i + 1) % 5 === 0 && i + 1 < uniqueIds.length) {
-        await this.sleep(2000);
-      } else if (i + 1 < uniqueIds.length) {
-        await this.sleep(300);
-      }
-    }
-
-    console.log(
-      `💰 MATCHi: fetched ${Object.keys(priceMap).length}/${uniqueIds.length} prices`
-    );
-    return priceMap;
-  }
-
-  /**
    * HTTPS request wrapper with retry on 429
    */
   async httpRequest(url, options = {}) {
-    const maxRetries = 2;
+    const maxRetries = 1; // Only 1 retry — don't burn budget on retries
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        const result = await this._doRequest(url, options);
-        return result;
+        return await this._doRequest(url, options);
       } catch (error) {
         if (error.message.includes('429') && attempt < maxRetries) {
-          const delay = (attempt + 1) * 3000; // 3s, 6s
-          console.log(`⏳ MATCHi rate limited, waiting ${delay}ms...`);
-          await this.sleep(delay);
+          console.log(`⏳ MATCHi rate limited, waiting 30s...`);
+          await this.sleep(30000); // Full cooldown
           continue;
         }
         throw error;
