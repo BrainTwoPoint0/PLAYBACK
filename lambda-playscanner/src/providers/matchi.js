@@ -44,42 +44,14 @@ class MatchiProvider {
 
       if (!facilities || facilities.length === 0) return [];
 
-      // Step 2: Fetch schedule for each facility — extract slots WITH prices from HTML
-      const allSlots = [];
+      // Step 2: Fetch schedules — collect all slot IDs grouped by facility
+      const facilitySlots = new Map(); // facilityId -> { facility, slots[] }
 
       for (const facility of facilities) {
         try {
           const scheduleSlots = await this.getSchedule(facility, date);
-          for (const slot of scheduleSlots) {
-            allSlots.push({
-              provider: 'matchi',
-              sport: this._currentSport || 'padel',
-              listingType: 'pitch_hire',
-              venue: {
-                id: String(facility.id),
-                name: facility.name,
-                slug: facility.slug,
-                address: facility.location || '',
-                postcode: '',
-                latitude: 0,
-                longitude: 0,
-                indoor: false,
-                surface: 'artificial grass',
-                amenities: [],
-              },
-              court: {
-                id: slot.slotId,
-                name: slot.courtName,
-                surface: 'artificial grass',
-              },
-              startTime: slot.startTime,
-              endTime: slot.endTime,
-              duration: slot.duration,
-              price: 0, // Price requires separate API call — skip to respect rate limits
-              currency: 'GBP',
-              available: true,
-              link: `${this.baseUrl}/facilities/${facility.slug}?date=${date}&sport=${this.sportId}`,
-            });
+          if (scheduleSlots.length > 0) {
+            facilitySlots.set(facility.id, { facility, slots: scheduleSlots });
           }
         } catch (error) {
           if (!error.message.includes('429')) {
@@ -88,13 +60,113 @@ class MatchiProvider {
             );
           }
         }
-
-        // 3s between facilities to stay under rate limit
         await this.sleep(3000);
       }
 
+      // Step 3: Price sampling — only on first date (cache prices for subsequent dates)
+      // Budget: ~10 schedule requests + ~21 price requests = 31 total (under 40 limit)
+      if (!this._priceCache) this._priceCache = new Map(); // facilityId -> price samples
+
+      const needsPrices = !this._priceCache.size;
+      if (needsPrices) {
+        await this.sleep(5000); // Extra cooldown before price phase
+      }
+
+      if (needsPrices) {
+        for (const [facId, { facility, slots }] of facilitySlots) {
+          if (slots.length === 0) continue;
+
+          const indices = [0];
+          if (slots.length > 2) indices.push(Math.floor(slots.length / 2));
+          if (slots.length > 1) indices.push(slots.length - 1);
+
+          const samples = [];
+
+          for (const idx of indices) {
+            try {
+              const slotId = slots[idx].slotId;
+              const response = await this.httpRequest(
+                `${this.baseUrl}/book/getSlotPrices?slotId=${slotId}`,
+                { headers: { Accept: 'application/json' } }
+              );
+              if (response.length > 0) {
+                const data = JSON.parse(response);
+                if (Array.isArray(data) && data.length > 0) {
+                  samples.push({
+                    price: data[0].price,
+                    currency: data[0].currency,
+                  });
+                }
+              }
+            } catch {
+              // Skip price failures
+            }
+            await this.sleep(1000);
+          }
+
+          if (samples.length > 0) {
+            this._priceCache.set(facId, samples);
+          }
+        }
+      }
+
+      // Apply cached prices to all slots
+      for (const [facId, { slots }] of facilitySlots) {
+        const samples = this._priceCache.get(facId) || [
+          { price: 0, currency: 'GBP' },
+        ];
+
+        for (let i = 0; i < slots.length; i++) {
+          let price = samples[0];
+          if (samples.length >= 3) {
+            const third = Math.floor(slots.length / 3);
+            if (i < third) price = samples[0];
+            else if (i < third * 2) price = samples[1];
+            else price = samples[2];
+          }
+          slots[i]._price = Math.round(price.price * 100);
+          slots[i]._currency = price.currency || 'GBP';
+        }
+      }
+
+      // Step 4: Build final slot objects
+      const allSlots = [];
+      for (const [, { facility, slots }] of facilitySlots) {
+        for (const slot of slots) {
+          allSlots.push({
+            provider: 'matchi',
+            sport: this._currentSport || 'padel',
+            listingType: 'pitch_hire',
+            venue: {
+              id: String(facility.id),
+              name: facility.name,
+              slug: facility.slug,
+              address: facility.location || '',
+              postcode: '',
+              latitude: 0,
+              longitude: 0,
+              indoor: false,
+              surface: 'artificial grass',
+              amenities: [],
+            },
+            court: {
+              id: slot.slotId,
+              name: slot.courtName,
+              surface: 'artificial grass',
+            },
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+            duration: slot.duration,
+            price: slot._price || 0,
+            currency: slot._currency || 'GBP',
+            available: true,
+            link: `${this.baseUrl}/facilities/${facility.slug}?date=${date}&sport=${this.sportId}`,
+          });
+        }
+      }
+
       console.log(
-        `✅ MATCHi: collected ${allSlots.length} slots from ${facilities.length} facilities`
+        `✅ MATCHi: ${allSlots.length} slots, ${[...facilitySlots.values()].reduce((s, f) => s + Math.min(3, f.slots.length), 0)} price samples`
       );
       return allSlots;
     } catch (error) {
