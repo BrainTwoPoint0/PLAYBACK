@@ -47,15 +47,12 @@ class BackgroundCollector {
       );
     } else if (options.group === 'football') {
       this.providers = this.providers.filter((p) =>
-        [
-          'powerleague',
-          'goals',
-          'footy_addicts',
-          'fc_urban',
-          'hireapitch',
-          'flow',
-        ].includes(p.name)
+        ['powerleague', 'goals', 'footy_addicts', 'fc_urban', 'flow'].includes(
+          p.name
+        )
       );
+    } else if (options.group === 'hireapitch') {
+      this.providers = this.providers.filter((p) => p.name === 'hireapitch');
     }
   }
 
