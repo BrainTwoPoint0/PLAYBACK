@@ -1,6 +1,6 @@
 /**
  * HireAPitch Provider for AWS Lambda
- * Uses their ASP.NET API for pitch availability at London school venues.
+ * Dynamically discovers all venues with football pitches via API scan.
  *
  * Endpoints (all unauthenticated POST):
  *   /venue/getPitchTypes — pitch options per venue
@@ -10,24 +10,11 @@
 const https = require('https');
 const { URL } = require('url');
 
-// London HireAPitch venues (discovered via enumeration)
-const VENUES = [
-  { id: 857, name: 'Haggerston School', slug: 'haggerston-school' },
-  { id: 722, name: 'Hackney Marshes Centre', slug: 'hackney-marshes-centre' },
-  { id: 790, name: 'Mabley Green', slug: 'mabley-green' },
-  { id: 749, name: 'London Fields', slug: 'london-fields' },
-  { id: 860, name: 'Shoreditch Park', slug: 'shoreditch-park' },
-  { id: 756, name: 'Clissold Park', slug: 'clissold-park' },
-  { id: 858, name: 'Haggerston Park', slug: 'haggerston-park' },
-  { id: 716, name: 'Daubeney Fields', slug: 'daubeney-fields' },
-  { id: 740, name: 'Springfield Park', slug: 'springfield-park' },
-  {
-    id: 859,
-    name: 'Britannia Leisure Centre',
-    slug: 'britannia-leisure-centre',
-  },
-  { id: 511, name: 'Westway Sports Centre', slug: 'Westway' },
-];
+// Known venue ID range — scan these for football pitch types
+const ID_RANGE = { min: 1, max: 860 };
+
+// Exclude test/invalid venues
+const EXCLUDE_IDS = new Set([158, 178, 510]); // Test venues, Solihull (not London)
 
 class HireAPitchProvider {
   constructor() {
@@ -39,7 +26,6 @@ class HireAPitchProvider {
   async fetchAvailability(params) {
     const { date } = params;
 
-    // Only fetch once per run — gets all dates at once
     if (!this._allSlots) {
       this._allSlots = {};
       await this.scrapeAllVenues();
@@ -49,19 +35,19 @@ class HireAPitchProvider {
   }
 
   async scrapeAllVenues() {
-    console.log(`🏫 Scraping HireAPitch (${VENUES.length} venues)...`);
+    // Discover venues with football pitches (cached across dates)
+    if (!this._venues) {
+      this._venues = await this.discoverVenues();
+      console.log(
+        `🏫 HireAPitch: found ${this._venues.length} venues with football`
+      );
+    }
 
-    for (const venue of VENUES) {
+    for (const venue of this._venues) {
       try {
-        // Get pitch types first
-        const pitchTypes = await this.getPitchTypes(venue.id);
-        if (pitchTypes.length === 0) continue;
-
-        // Get slots for each pitch category
-        for (const pitch of pitchTypes) {
+        for (const pitch of venue.pitches) {
           try {
             const slots = await this.getBookingSlots(venue, pitch);
-
             for (const slot of slots) {
               const slotDate = slot.startTime.split('T')[0];
               if (!this._allSlots[slotDate]) this._allSlots[slotDate] = [];
@@ -72,52 +58,118 @@ class HireAPitchProvider {
           }
         }
       } catch (error) {
-        console.warn(`HireAPitch ${venue.name}: ${error.message}`);
+        console.warn(`HireAPitch ${venue.id}: ${error.message}`);
       }
 
-      await this.sleep(500);
+      await this.sleep(300);
     }
 
     const total = Object.values(this._allSlots).reduce(
       (sum, arr) => sum + arr.length,
       0
     );
-    console.log(`  ✅ HireAPitch: ${total} slots collected`);
+    console.log(
+      `  ✅ HireAPitch: ${total} slots from ${this._venues.length} venues`
+    );
   }
 
-  async getPitchTypes(placeId) {
-    const body = `PlaceID=${placeId}`;
-    const response = await this.httpRequest(
-      `${this.baseUrl}/venue/getPitchTypes`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Content-Length': String(Buffer.byteLength(body)),
-        },
-        body,
+  /**
+   * Discover all venues that have football pitch types.
+   * Scans ID range in parallel batches — fast because getPitchTypes is lightweight.
+   */
+  async discoverVenues() {
+    const venues = [];
+    const batchSize = 20;
+
+    for (let start = ID_RANGE.min; start <= ID_RANGE.max; start += batchSize) {
+      const batch = [];
+      for (
+        let id = start;
+        id < Math.min(start + batchSize, ID_RANGE.max + 1);
+        id++
+      ) {
+        if (EXCLUDE_IDS.has(id)) continue;
+        batch.push(this.checkVenue(id));
       }
-    );
 
-    const data = JSON.parse(response);
-    if (!Array.isArray(data)) return [];
+      const results = await Promise.all(batch);
+      for (const result of results) {
+        if (result) venues.push(result);
+      }
 
-    // Filter for football-related pitches
-    return data.filter((p) => {
-      const cat = (p.Category || '').toLowerCase();
-      const name = (p.OptionName || '').toLowerCase();
-      return (
-        cat.includes('football') ||
-        cat.includes('a side') ||
-        name.includes('pitch') ||
-        name.includes('a side') ||
-        name.includes('football')
+      // Small delay between batches
+      await this.sleep(200);
+    }
+
+    return venues;
+  }
+
+  async checkVenue(id) {
+    try {
+      const body = `PlaceID=${id}`;
+      const response = await this.httpRequest(
+        `${this.baseUrl}/venue/getPitchTypes`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Length': String(Buffer.byteLength(body)),
+          },
+          body,
+        }
       );
-    });
+
+      const data = JSON.parse(response);
+      if (!Array.isArray(data) || data.length === 0) return null;
+
+      const footballPitches = data.filter((p) => {
+        const cat = (p.Category || '').toLowerCase();
+        const name = (p.OptionName || '').toLowerCase();
+        return (
+          cat.includes('football') ||
+          cat.includes('a side') ||
+          name.includes('pitch') ||
+          name.includes('a side') ||
+          name.includes('football')
+        );
+      });
+
+      if (footballPitches.length === 0) return null;
+
+      // Extract venue name from first pitch option name
+      const sampleName = footballPitches[0].OptionName || '';
+      const venueName = this.extractVenueName(sampleName, id);
+
+      return {
+        id,
+        name: venueName,
+        slug: String(id),
+        pitches: footballPitches,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Extract a venue name from a pitch option name like "Bermondsey 7 a side pitch 1"
+   */
+  extractVenueName(pitchName, id) {
+    // Remove common pitch suffixes
+    let name = pitchName
+      .replace(/\d+\s*a?\s*-?\s*side.*/i, '')
+      .replace(/pitch\s*\d*/i, '')
+      .replace(/\d*[gG]\s*(Pitch)?/i, '')
+      .replace(/football.*/i, '')
+      .replace(/(indoor|outdoor|caged|muga|grass|turf)/i, '')
+      .replace(/\s*(on|off)\s*peak.*/i, '')
+      .trim();
+
+    if (name.length < 3) name = `HireAPitch Venue ${id}`;
+    return name;
   }
 
   async getBookingSlots(venue, pitch) {
-    // Get slots for the next 7 days
     const start = new Date();
     const end = new Date();
     end.setDate(end.getDate() + 7);
@@ -143,16 +195,13 @@ class HireAPitchProvider {
     const now = Date.now();
 
     for (const event of events) {
-      // id=0 or color="#CCCCCC" means booked
       if (event.id === 0 || event.color === '#CCCCCC') continue;
 
       const startTime = new Date(event.start);
       if (isNaN(startTime.getTime()) || startTime.getTime() < now) continue;
 
-      // Default 1 hour duration
       const endTime = new Date(startTime.getTime() + 60 * 60000);
 
-      // Parse price from title (e.g. "£69.00")
       const priceMatch = (event.title || '').match(/(\d+(?:\.\d+)?)/);
       const price = priceMatch
         ? Math.round(parseFloat(priceMatch[1]) * 100)
@@ -206,7 +255,7 @@ class HireAPitchProvider {
             'User-Agent': this.userAgent,
             ...options.headers,
           },
-          timeout: 10000,
+          timeout: 5000,
         },
         (res) => {
           let data = '';
