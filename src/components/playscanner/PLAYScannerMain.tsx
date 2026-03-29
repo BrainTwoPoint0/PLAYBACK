@@ -152,7 +152,7 @@ export default function PLAYScannerMain() {
       >
         {/* Sport toggle + location */}
         <div className="flex items-center gap-2 mb-3">
-          {(['padel', 'football'] as Sport[]).map((sport) => (
+          {(['padel', 'tennis', 'football'] as Sport[]).map((sport) => (
             <button
               key={sport}
               onClick={() => setSelectedSport(sport)}
@@ -163,7 +163,7 @@ export default function PLAYScannerMain() {
               }`}
             >
               <SportIcon sport={sport} size={14} />
-              {sport === 'padel' ? 'Padel' : 'Football'}
+              {sport.charAt(0).toUpperCase() + sport.slice(1)}
             </button>
           ))}
           <div className="ml-auto flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-gray-400 cursor-not-allowed">

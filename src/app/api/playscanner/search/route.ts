@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate sport type
-    if (!['padel', 'football'].includes(sport)) {
+    if (!['padel', 'football', 'tennis', 'basketball'].includes(sport)) {
       return NextResponse.json(
         {
           error: "Invalid sport. Must be 'padel' or 'football'",

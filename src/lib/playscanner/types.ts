@@ -1,5 +1,5 @@
 // Core sport types
-export type Sport = 'padel' | 'football';
+export type Sport = 'padel' | 'football' | 'tennis' | 'basketball';
 
 // Provider display config with brand colors
 export const PROVIDER_CONFIG: Record<
@@ -15,18 +15,28 @@ export const PROVIDER_CONFIG: Record<
   fc_urban: { displayName: 'FC Urban', color: '#F97316' },
   footy_addicts: { displayName: 'Footy Addicts', color: '#EF4444' },
   fives: { displayName: 'Fives', color: '#8B5CF6' },
+  hireapitch: { displayName: 'HireAPitch', color: '#10B981' },
+  flow: { displayName: 'Royal Parks', color: '#34D399' },
 };
 
 // Provider types
-export type PadelProvider = 'playtomic' | 'matchi' | 'padel_mates';
+export type PadelProvider = 'playtomic' | 'matchi' | 'padel_mates' | 'flow';
+export type TennisProvider = 'playtomic' | 'matchi' | 'flow';
 export type FootballProvider =
   | 'openactive'
   | 'powerleague'
   | 'goals'
   | 'fc_urban'
   | 'footy_addicts'
-  | 'fives';
-export type Provider = PadelProvider | FootballProvider;
+  | 'fives'
+  | 'hireapitch'
+  | 'flow';
+export type BasketballProvider = 'openactive';
+export type Provider =
+  | PadelProvider
+  | TennisProvider
+  | FootballProvider
+  | BasketballProvider;
 
 // Search parameters
 export interface SearchParams {
@@ -115,7 +125,7 @@ export interface CourtSlot {
     surface?: 'turf' | 'concrete' | 'grass' | 'astro' | 'other';
   };
   courtName?: string; // e.g. "Court 1", "5-a-side - Pitch 8"
-  sportMeta: PadelMeta | FootballMeta;
+  sportMeta: PadelMeta | FootballMeta | TennisMeta | BasketballMeta;
   lastUpdated: string; // ISO 8601
   collectedAt?: string; // ISO 8601 — when the provider data was fetched
 }
@@ -132,6 +142,17 @@ export interface FootballMeta {
   organized: boolean;
   level: 'casual' | 'competitive' | 'mixed';
   requiresTeam: boolean;
+}
+
+export interface TennisMeta {
+  courtType: 'indoor' | 'outdoor' | 'covered';
+  surface: 'hard' | 'clay' | 'grass' | 'artificial';
+  format: 'singles' | 'doubles';
+}
+
+export interface BasketballMeta {
+  format: '3v3' | '5v5';
+  level: 'casual' | 'competitive' | 'mixed';
 }
 
 // Search results

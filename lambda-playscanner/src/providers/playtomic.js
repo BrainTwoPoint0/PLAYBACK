@@ -21,9 +21,11 @@ class PlaytomicProvider {
    * Fetch availability for a given location and date
    */
   async fetchAvailability(params) {
-    const { location, date } = params;
+    const { location, date, sport = 'padel' } = params;
+    this._currentSport = sport;
+    const sportId = sport === 'tennis' ? 'TENNIS' : 'PADEL';
 
-    console.log(`🔍 Fetching Playtomic data for ${location} on ${date}`);
+    console.log(`🔍 Fetching Playtomic ${sport} for ${location} on ${date}`);
 
     try {
       // Step 1: Get venue IDs for the location
@@ -94,7 +96,7 @@ class PlaytomicProvider {
 
     const searchParams = new URLSearchParams({
       coordinate: `${coordinates.lat},${coordinates.lng}`,
-      sport_id: 'PADEL',
+      sport_id: this._currentSport === 'tennis' ? 'TENNIS' : 'PADEL',
       radius: '25000', // 25km radius to limit to Greater London area
     });
 
@@ -169,7 +171,7 @@ class PlaytomicProvider {
     const startMax = `${dateStr}T23:59:59`;
 
     const queryParams = new URLSearchParams({
-      sport_id: 'PADEL',
+      sport_id: this._currentSport === 'tennis' ? 'TENNIS' : 'PADEL',
       tenant_id: venue.id,
       start_min: startMin,
       start_max: startMax,
@@ -228,6 +230,7 @@ class PlaytomicProvider {
 
           slots.push({
             provider: 'playtomic',
+            sport: this._currentSport || 'padel',
             listingType: 'pitch_hire',
             venue,
             court: {

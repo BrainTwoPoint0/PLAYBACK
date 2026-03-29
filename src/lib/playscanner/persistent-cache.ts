@@ -533,8 +533,8 @@ export class PersistentCacheService {
       slot.venue?.address?.city || slot.venue?.location?.city || 'London';
     const venueAddress = slot.venue?.address || slot.venue?.location || {};
 
-    // Determine sport from slot data — prefer explicit sport field if present
-    const footballProviders = [
+    // Determine sport — prefer explicit slot.sport, fallback to provider-based detection
+    const footballOnlyProviders = [
       'openactive',
       'powerleague',
       'goals',
@@ -542,10 +542,23 @@ export class PersistentCacheService {
       'fc_urban',
       'hireapitch',
     ];
-    const isFootball =
-      slot.sport === 'football' || footballProviders.includes(slot.provider);
-    // Flow is multi-sport — uses the sport field set by the collector
-    const sport = isFootball ? ('football' as const) : ('padel' as const);
+    const padelOnlyProviders = ['padel_mates'];
+
+    let sport: 'padel' | 'football' | 'tennis' | 'basketball';
+    if (
+      slot.sport === 'tennis' ||
+      slot.sport === 'football' ||
+      slot.sport === 'padel' ||
+      slot.sport === 'basketball'
+    ) {
+      sport = slot.sport;
+    } else if (footballOnlyProviders.includes(slot.provider)) {
+      sport = 'football';
+    } else if (padelOnlyProviders.includes(slot.provider)) {
+      sport = 'padel';
+    } else {
+      sport = 'padel'; // default for Playtomic, MATCHi, Flow without explicit sport
+    }
     const provider = (slot.provider || 'playtomic') as Provider;
 
     return {
@@ -598,18 +611,29 @@ export class PersistentCacheService {
             ? 'artificial'
             : slot.court?.surface || slot.venue?.surface || 'artificial',
       },
-      sportMeta: isFootball
-        ? {
-            format: '5v5' as const,
-            organized: false,
-            level: 'casual' as const,
-            requiresTeam: false,
-          }
-        : {
-            courtType: slot.venue?.indoor ? 'indoor' : 'outdoor',
-            level: 'open',
-            doubles: true,
-          },
+      sportMeta:
+        sport === 'football'
+          ? {
+              format: '5v5' as const,
+              organized: false,
+              level: 'casual' as const,
+              requiresTeam: false,
+            }
+          : sport === 'tennis'
+            ? {
+                courtType: (slot.venue?.indoor ? 'indoor' : 'outdoor') as const,
+                surface: 'hard' as const,
+                format: 'doubles' as const,
+              }
+            : sport === 'basketball'
+              ? { format: '5v5' as const, level: 'casual' as const }
+              : {
+                  courtType: (slot.venue?.indoor
+                    ? 'indoor'
+                    : 'outdoor') as const,
+                  level: 'open' as const,
+                  doubles: true,
+                },
       lastUpdated: collectionTimestamp || new Date().toISOString(),
     };
   }

@@ -128,7 +128,11 @@ class FlowProvider {
       const courtName = item.location?.name || item.name || `${sport} Court`;
 
       const slotSport =
-        sport === 'padel' || sport === 'tennis' ? 'padel' : 'football';
+        sport === 'padel'
+          ? 'padel'
+          : sport === 'tennis'
+            ? 'tennis'
+            : 'football';
 
       slots.push({
         provider: 'flow',

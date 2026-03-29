@@ -29,6 +29,8 @@ class BackgroundCollector {
       { name: 'flow', instance: new FlowProvider() },
     ];
 
+    this.group = options.group || null;
+
     // Filter by single provider or provider group
     if (options.provider) {
       this.providers = this.providers.filter(
@@ -37,6 +39,10 @@ class BackgroundCollector {
     } else if (options.group === 'padel') {
       this.providers = this.providers.filter((p) =>
         ['playtomic', 'matchi', 'padel_mates', 'flow'].includes(p.name)
+      );
+    } else if (options.group === 'tennis') {
+      this.providers = this.providers.filter((p) =>
+        ['playtomic', 'matchi', 'flow'].includes(p.name)
       );
     } else if (options.group === 'football') {
       this.providers = this.providers.filter((p) =>
@@ -196,16 +202,26 @@ class BackgroundCollector {
    * Collect data for a specific city, date, and provider
    */
   async collectCityDateProvider(city, date, provider) {
-    const footballProviders = [
-      'powerleague',
-      'goals',
-      'footy_addicts',
-      'fc_urban',
-      'hireapitch',
-      'flow',
-    ];
+    // Determine sport from group or provider name
+    let sport = 'padel';
+    if (this.group === 'tennis') {
+      sport = 'tennis';
+    } else if (this.group === 'football') {
+      sport = 'football';
+    } else if (!this.group) {
+      // No group = running all providers, infer from provider name
+      const footballProviders = [
+        'powerleague',
+        'goals',
+        'footy_addicts',
+        'fc_urban',
+        'hireapitch',
+      ];
+      if (footballProviders.includes(provider.name)) sport = 'football';
+    }
+
     const params = {
-      sport: footballProviders.includes(provider.name) ? 'football' : 'padel',
+      sport,
       location: city,
       date,
     };

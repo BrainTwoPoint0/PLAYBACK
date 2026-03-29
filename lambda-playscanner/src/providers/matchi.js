@@ -18,26 +18,31 @@ class MatchiProvider {
     this.baseUrl = 'https://www.matchi.se';
     this.userAgent =
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36';
-    this.sportId = '5'; // Padel
+    this.defaultSportId = '5'; // Padel
   }
 
   /**
    * Fetch availability for a given location and date
    */
   async fetchAvailability(params) {
-    const { location, date } = params;
+    const { location, date, sport = 'padel' } = params;
+    this._currentSport = sport;
+    this.sportId = sport === 'tennis' ? '1' : this.defaultSportId;
 
-    console.log(`🔍 Fetching MATCHi data for ${location} on ${date}`);
+    console.log(`🔍 Fetching MATCHi ${sport} for ${location} on ${date}`);
 
     try {
-      // Step 1: Discover facilities (cached across dates within a collection run)
-      if (!this._facilitiesCache) {
-        this._facilitiesCache = await this.findFacilities(location);
+      // Step 1: Discover facilities (cached per sport within a collection run)
+      const cacheKey = `${location}_${sport}`;
+      if (!this._facilitiesCacheMap) this._facilitiesCacheMap = {};
+      if (!this._facilitiesCacheMap[cacheKey]) {
+        this._facilitiesCacheMap[cacheKey] =
+          await this.findFacilities(location);
         console.log(
-          `Found ${this._facilitiesCache.length} MATCHi facilities in ${location}`
+          `Found ${this._facilitiesCacheMap[cacheKey].length} MATCHi ${sport} facilities in ${location}`
         );
       }
-      const facilities = this._facilitiesCache;
+      const facilities = this._facilitiesCacheMap[cacheKey];
 
       if (!facilities || facilities.length === 0) {
         console.log(`No MATCHi facilities found for ${location}`);
@@ -80,6 +85,7 @@ class MatchiProvider {
 
         allSlots.push({
           provider: 'matchi',
+          sport: this._currentSport || 'padel',
           listingType: 'pitch_hire',
           venue: {
             id: String(detail.facility.id),
