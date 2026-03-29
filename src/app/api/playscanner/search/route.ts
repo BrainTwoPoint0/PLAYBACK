@@ -76,22 +76,6 @@ export async function POST(request: NextRequest) {
       filters: body.filters,
     };
 
-    // Check if football is requested (not yet supported)
-    if (sport === 'football') {
-      return NextResponse.json(
-        {
-          results: [],
-          totalResults: 0,
-          searchTime: 0,
-          providers: [],
-          filters: searchParams,
-          message:
-            "Football booking is coming soon! We're working on integrating with PowerLeague, FC Urban, and other providers.",
-        },
-        { status: 200 }
-      );
-    }
-
     // Always use cached mode (data is collected by Lambda)
     const searchResult = await persistentCache.search(searchParams);
     searchResult.source = 'persistent_cache';

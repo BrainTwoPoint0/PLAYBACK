@@ -1,5 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
-import { CourtSlot, SearchParams, SearchResult, Venue } from './types';
+import {
+  CourtSlot,
+  FootballProvider,
+  PadelProvider,
+  Provider,
+  SearchParams,
+  SearchResult,
+  Venue,
+} from './types';
 
 /**
  * Production-ready persistent cache service using Supabase
@@ -101,8 +109,13 @@ export class PersistentCacheService {
         return this.transformLambdaSlot(slot, cachedData.collectionTimestamp);
       });
 
-      // Apply filters to transformed data
-      let filteredSlots = transformedSlots;
+      // Filter by sport + remove past slots
+      const now = Date.now();
+      let filteredSlots = transformedSlots.filter(
+        (slot) =>
+          slot.sport === params.sport &&
+          new Date(slot.startTime).getTime() > now
+      );
 
       // Filter by time range
       if (params.startTime) {
@@ -520,14 +533,23 @@ export class PersistentCacheService {
       slot.venue?.address?.city || slot.venue?.location?.city || 'London';
     const venueAddress = slot.venue?.address || slot.venue?.location || {};
 
+    const isFootball =
+      slot.provider === 'openactive' ||
+      slot.provider === 'powerleague' ||
+      slot.provider === 'goals' ||
+      slot.provider === 'footy_addicts';
+    const sport = isFootball ? ('football' as const) : ('padel' as const);
+    const provider = (slot.provider || 'playtomic') as Provider;
+
     return {
       id: `${slot.venue?.id}-${slot.court?.id || 'court'}-${slot.startTime}-${slot.endTime}`,
-      sport: 'padel' as const,
-      provider: 'playtomic' as const,
+      sport,
+      provider,
+      listingType: slot.listingType || 'pitch_hire',
       venue: {
         id: slot.venue?.id || '',
         name: slot.venue?.name || 'Unknown Venue',
-        provider: 'playtomic' as const,
+        provider,
         location: {
           address: venueAddress.street || venueAddress.address || '',
           city: venueCity,
@@ -552,8 +574,11 @@ export class PersistentCacheService {
       endTime: slot.endTime,
       duration: slot.duration || 90,
       price: slot.price || 0,
+      durationOptions: slot.durationOptions,
       currency: slot.currency || 'GBP',
       bookingUrl: slot.link || `https://playtomic.com/venue/${slot.venue?.id}`,
+      collectedAt: slot._collectedAt || collectionTimestamp,
+      courtName: slot.court?.name || undefined,
       availability: {
         spotsAvailable: slot.available ? 1 : 0,
         totalSpots: 1,
@@ -566,11 +591,18 @@ export class PersistentCacheService {
             ? 'artificial'
             : slot.court?.surface || slot.venue?.surface || 'artificial',
       },
-      sportMeta: {
-        courtType: slot.venue?.indoor ? 'indoor' : 'outdoor',
-        level: 'open',
-        doubles: true,
-      },
+      sportMeta: isFootball
+        ? {
+            format: '5v5' as const,
+            organized: false,
+            level: 'casual' as const,
+            requiresTeam: false,
+          }
+        : {
+            courtType: slot.venue?.indoor ? 'indoor' : 'outdoor',
+            level: 'open',
+            doubles: true,
+          },
       lastUpdated: collectionTimestamp || new Date().toISOString(),
     };
   }

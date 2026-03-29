@@ -1,10 +1,28 @@
 // Core sport types
 export type Sport = 'padel' | 'football';
 
+// Provider display config with brand colors
+export const PROVIDER_CONFIG: Record<
+  string,
+  { displayName: string; color: string }
+> = {
+  playtomic: { displayName: 'Playtomic', color: '#CCFF00' },
+  matchi: { displayName: 'MATCHi', color: '#22AD5C' },
+  padel_mates: { displayName: 'Padel Mates', color: '#41E79E' },
+  powerleague: { displayName: 'PowerLeague', color: '#00A339' },
+  goals: { displayName: 'Goals', color: '#FFD200' },
+  openactive: { displayName: 'OpenActive', color: '#046BD2' },
+  fc_urban: { displayName: 'FC Urban', color: '#F97316' },
+  footy_addicts: { displayName: 'Footy Addicts', color: '#EF4444' },
+  fives: { displayName: 'Fives', color: '#8B5CF6' },
+};
+
 // Provider types
 export type PadelProvider = 'playtomic' | 'matchi' | 'padel_mates';
 export type FootballProvider =
+  | 'openactive'
   | 'powerleague'
+  | 'goals'
   | 'fc_urban'
   | 'footy_addicts'
   | 'fives';
@@ -67,15 +85,24 @@ export interface Venue {
   _raw?: any; // Provider-specific raw data
 }
 
+export type ListingType = 'pitch_hire' | 'drop_in';
+
+export interface DurationOption {
+  duration: number; // minutes
+  price: number; // pence
+}
+
 export interface CourtSlot {
   id: string;
   sport: Sport;
   provider: Provider;
+  listingType?: ListingType;
   venue: Venue;
   startTime: string; // ISO 8601
   endTime: string; // ISO 8601
-  duration: number; // minutes
-  price: number; // pence
+  duration: number; // minutes (default/shortest option)
+  price: number; // pence (default/shortest option)
+  durationOptions?: DurationOption[]; // available booking durations + prices
   currency: 'GBP' | 'EUR';
   bookingUrl: string;
   availability: {
@@ -87,8 +114,10 @@ export interface CourtSlot {
     lights: boolean;
     surface?: 'turf' | 'concrete' | 'grass' | 'astro' | 'other';
   };
+  courtName?: string; // e.g. "Court 1", "5-a-side - Pitch 8"
   sportMeta: PadelMeta | FootballMeta;
   lastUpdated: string; // ISO 8601
+  collectedAt?: string; // ISO 8601 — when the provider data was fetched
 }
 
 // Sport-specific metadata

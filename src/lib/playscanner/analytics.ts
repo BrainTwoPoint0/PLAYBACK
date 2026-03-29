@@ -395,6 +395,9 @@ export const CommissionCalculator = {
       Playtomic: 0.05, // 5% commission rate
       MATCHi: 0.04, // 4% commission rate
       'Padel Mates': 0.06, // 6% commission rate
+      PowerLeague: 0.03, // 3% commission rate
+      Goals: 0.03, // 3% commission rate
+      OpenActive: 0, // 0% commission rate (open data)
       default: 0.05, // Default 5%
     };
 
@@ -412,6 +415,9 @@ export const CommissionCalculator = {
       Playtomic: 5,
       MATCHi: 4,
       'Padel Mates': 6,
+      PowerLeague: 3,
+      Goals: 3,
+      OpenActive: 0,
       default: 5,
     };
 
