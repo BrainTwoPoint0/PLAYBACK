@@ -136,14 +136,33 @@ class HireAPitchProvider {
 
       if (footballPitches.length === 0) return null;
 
-      // Extract venue name from first pitch option name
-      const sampleName = footballPitches[0].OptionName || '';
-      const venueName = this.extractVenueName(sampleName, id);
+      // Get real venue name from page title
+      let venueName = `HireAPitch Venue ${id}`;
+      try {
+        const page = await this.httpRequest(
+          `${this.baseUrl}/venue/index/${id}`
+        );
+        const titleMatch = page.match(/<title>([^|<]+)/);
+        if (titleMatch) {
+          venueName = titleMatch[1].trim();
+        }
+      } catch {
+        // Fallback to extracting from pitch name
+        const sampleName = footballPitches[0].OptionName || '';
+        venueName = this.extractVenueName(sampleName, id);
+      }
+
+      // URL slug is the venue name kebab-cased
+      const slug =
+        venueName
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '') || String(id);
 
       return {
         id,
         name: venueName,
-        slug: String(id),
+        slug,
         pitches: footballPitches,
       };
     } catch {
