@@ -38,8 +38,10 @@ class BackgroundCollector {
       );
     } else if (options.group === 'padel') {
       this.providers = this.providers.filter((p) =>
-        ['playtomic', 'matchi', 'padel_mates', 'flow'].includes(p.name)
+        ['playtomic', 'padel_mates', 'flow'].includes(p.name)
       );
+    } else if (options.group === 'matchi') {
+      this.providers = this.providers.filter((p) => p.name === 'matchi');
     } else if (options.group === 'tennis') {
       // MATCHi has 0 London tennis venues — skip it
       this.providers = this.providers.filter((p) =>
