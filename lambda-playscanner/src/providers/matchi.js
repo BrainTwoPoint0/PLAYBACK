@@ -271,19 +271,15 @@ class MatchiProvider {
    * HTTPS request wrapper with retry on 429
    */
   async httpRequest(url, options = {}) {
-    const maxRetries = 1; // Only 1 retry — don't burn budget on retries
-
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      try {
-        return await this._doRequest(url, options);
-      } catch (error) {
-        if (error.message.includes('429') && attempt < maxRetries) {
-          console.log(`⏳ MATCHi rate limited, waiting 30s...`);
-          await this.sleep(30000); // Full cooldown
-          continue;
-        }
+    try {
+      return await this._doRequest(url, options);
+    } catch (error) {
+      if (error.message.includes('429')) {
+        // Don't retry 429s — the Lambda IP may be persistently rate-limited.
+        // Just skip this request and move on.
         throw error;
       }
+      throw error;
     }
   }
 

@@ -92,10 +92,19 @@ class BackgroundCollector {
           const itemStartTime = Date.now();
 
           try {
+            // Per-provider timeout: MATCHi needs longer for price sampling + 429 cooldown
+            // HireAPitch needs longer for 51-venue discovery
+            const providerTimeout =
+              provider.name === 'matchi'
+                ? 90000
+                : provider.name === 'hireapitch'
+                  ? 120000
+                  : 35000;
+
             const rawSlots = await Promise.race([
               this.collectCityDateProvider(city, dateString, provider),
               this.timeout(
-                35000,
+                providerTimeout,
                 `Timeout for ${provider.name} ${city} ${dateString}`
               ),
             ]);
