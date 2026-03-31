@@ -272,107 +272,110 @@ export default function SearchResults({
   return (
     <div className="space-y-3">
       {/* ─── Control bar ─── */}
-      <div className="flex flex-wrap items-center gap-1.5">
-        {/* Filters button — opens sheet */}
-        <button
-          onClick={() => setFilterOpen(true)}
-          className={`relative rounded-lg border px-3 py-1.5 text-xs font-medium transition-all flex items-center gap-1.5 ${
-            activeFilterCount > 0
-              ? 'border-[#00FF88]/40 bg-[#00FF88]/10 text-[#00FF88]'
-              : 'border-white/[0.1] bg-white/[0.03] text-gray-400 hover:border-white/[0.2] hover:text-white'
-          }`}
-        >
-          <SlidersHorizontalIcon className="h-3 w-3" />
-          Filters
-          {activeFilterCount > 0 && (
-            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#00FF88] text-[10px] font-bold text-[#0a100d]">
-              {activeFilterCount}
-            </span>
-          )}
-        </button>
-
-        {/* Quick time-of-day chips */}
-        {TIME_CHIPS.map((chip) => (
+      <div className="space-y-2">
+        {/* Row 1: Filters button + stats + view toggles */}
+        <div className="flex items-center gap-2">
           <button
-            key={chip.id}
-            onClick={() =>
-              setActiveTimeFilter((prev) => (prev === chip.id ? null : chip.id))
-            }
-            className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${
-              activeTimeFilter === chip.id
+            onClick={() => setFilterOpen(true)}
+            className={`relative rounded-lg border px-3 py-1.5 text-xs font-medium transition-all flex items-center gap-1.5 ${
+              activeFilterCount > 0
                 ? 'border-[#00FF88]/40 bg-[#00FF88]/10 text-[#00FF88]'
                 : 'border-white/[0.1] bg-white/[0.03] text-gray-400 hover:border-white/[0.2] hover:text-white'
             }`}
           >
-            {chip.label}
+            <SlidersHorizontalIcon className="h-3 w-3" />
+            Filters
+            {activeFilterCount > 0 && (
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#00FF88] text-[10px] font-bold text-[#0a100d]">
+                {activeFilterCount}
+              </span>
+            )}
           </button>
-        ))}
 
-        {/* Sport-specific quick filters */}
-        {(sport === 'padel' || sport === 'tennis') && (
-          <button
-            onClick={() => setShowIndoor(!showIndoor)}
-            className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${
-              showIndoor
-                ? 'border-[#00FF88]/40 bg-[#00FF88]/10 text-[#00FF88]'
-                : 'border-white/[0.1] bg-white/[0.03] text-gray-400 hover:border-white/[0.2] hover:text-white'
-            }`}
-          >
-            Indoor
-          </button>
-        )}
-        {sport === 'football' && (
-          <button
-            onClick={() => setShowDropIn(!showDropIn)}
-            className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${
-              showDropIn
-                ? 'border-[#00FF88]/40 bg-[#00FF88]/10 text-[#00FF88]'
-                : 'border-white/[0.1] bg-white/[0.03] text-gray-400 hover:border-white/[0.2] hover:text-white'
-            }`}
-          >
-            Drop-in
-          </button>
-        )}
-
-        {/* Stats + view toggle — pushed right */}
-        <div className="ml-auto flex items-center gap-2">
-          {stats && (
-            <span className="hidden sm:inline text-[11px] text-gray-600">
-              {venueGroups.length} venues
-              {stats.cheapest > 0 &&
-                ` · from £${(stats.cheapest / 100).toFixed(0)}`}
-              {stats.ageMin !== null && (
-                <>
-                  {' · '}
-                  <span
-                    className={
-                      stats.ageMin < 10
-                        ? 'text-green-500'
-                        : stats.ageMin < 30
-                          ? 'text-yellow-500'
-                          : 'text-amber-500'
-                    }
-                  >
-                    {stats.ageMin < 1 ? 'just now' : `${stats.ageMin}m ago`}
-                  </span>
-                </>
-              )}
-            </span>
-          )}
-          <div className="flex items-center gap-0.5 rounded-lg border border-white/[0.1] p-0.5">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`rounded-md p-1.5 transition-colors ${viewMode === 'list' ? 'bg-white/10 text-white' : 'text-gray-600 hover:text-gray-400'}`}
-            >
-              <ListIcon className="h-3.5 w-3.5" />
-            </button>
-            <button
-              onClick={() => setViewMode('map')}
-              className={`rounded-md p-1.5 transition-colors ${viewMode === 'map' ? 'bg-white/10 text-white' : 'text-gray-600 hover:text-gray-400'}`}
-            >
-              <MapIcon className="h-3.5 w-3.5" />
-            </button>
+          <div className="ml-auto flex items-center gap-2">
+            {stats && (
+              <span className="hidden sm:inline text-[11px] text-gray-600">
+                {venueGroups.length} venues
+                {stats.cheapest > 0 &&
+                  ` · from £${(stats.cheapest / 100).toFixed(0)}`}
+                {stats.ageMin !== null && (
+                  <>
+                    {' · '}
+                    <span
+                      className={
+                        stats.ageMin < 10
+                          ? 'text-green-500'
+                          : stats.ageMin < 30
+                            ? 'text-yellow-500'
+                            : 'text-amber-500'
+                      }
+                    >
+                      {stats.ageMin < 1 ? 'just now' : `${stats.ageMin}m ago`}
+                    </span>
+                  </>
+                )}
+              </span>
+            )}
+            <div className="flex items-center gap-0.5 rounded-lg border border-white/[0.1] p-0.5">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`rounded-md p-1.5 transition-colors ${viewMode === 'list' ? 'bg-white/10 text-white' : 'text-gray-600 hover:text-gray-400'}`}
+              >
+                <ListIcon className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => setViewMode('map')}
+                className={`rounded-md p-1.5 transition-colors ${viewMode === 'map' ? 'bg-white/10 text-white' : 'text-gray-600 hover:text-gray-400'}`}
+              >
+                <MapIcon className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
+        </div>
+
+        {/* Row 2: Quick time + sport-specific chips */}
+        <div className="flex items-center gap-1.5">
+          {TIME_CHIPS.map((chip) => (
+            <button
+              key={chip.id}
+              onClick={() =>
+                setActiveTimeFilter((prev) =>
+                  prev === chip.id ? null : chip.id
+                )
+              }
+              className={`flex-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all text-center ${
+                activeTimeFilter === chip.id
+                  ? 'border-[#00FF88]/40 bg-[#00FF88]/10 text-[#00FF88]'
+                  : 'border-white/[0.1] bg-white/[0.03] text-gray-400 hover:border-white/[0.2] hover:text-white'
+              }`}
+            >
+              {chip.label}
+            </button>
+          ))}
+          {(sport === 'padel' || sport === 'tennis') && (
+            <button
+              onClick={() => setShowIndoor(!showIndoor)}
+              className={`flex-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all text-center ${
+                showIndoor
+                  ? 'border-[#00FF88]/40 bg-[#00FF88]/10 text-[#00FF88]'
+                  : 'border-white/[0.1] bg-white/[0.03] text-gray-400 hover:border-white/[0.2] hover:text-white'
+              }`}
+            >
+              Indoor
+            </button>
+          )}
+          {sport === 'football' && (
+            <button
+              onClick={() => setShowDropIn(!showDropIn)}
+              className={`flex-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all text-center ${
+                showDropIn
+                  ? 'border-[#00FF88]/40 bg-[#00FF88]/10 text-[#00FF88]'
+                  : 'border-white/[0.1] bg-white/[0.03] text-gray-400 hover:border-white/[0.2] hover:text-white'
+              }`}
+            >
+              Drop-in
+            </button>
+          )}
         </div>
       </div>
 

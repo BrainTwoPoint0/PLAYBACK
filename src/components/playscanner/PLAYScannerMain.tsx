@@ -147,7 +147,7 @@ export default function PLAYScannerMain() {
 
             <div className="w-full h-px bg-white/[0.06] sm:hidden" />
 
-            <div className="flex items-center justify-between sm:justify-end gap-1.5 shrink-0">
+            <div className="flex items-center sm:justify-end gap-1.5 shrink-0">
               <div className="flex items-center rounded-xl bg-white/[0.04] p-0.5 shrink-0">
                 {SPORTS.map((s) => (
                   <button
@@ -160,11 +160,14 @@ export default function PLAYScannerMain() {
                     }`}
                   >
                     <SportIcon sport={s.id} size={12} />
-                    {s.label}
+                    <span className="hidden sm:inline">{s.label}</span>
                   </button>
                 ))}
               </div>
-              <div className="flex shrink-0 items-center gap-1.5 rounded-xl bg-white/[0.04] px-3 py-1.5 text-xs text-gray-500">
+              <span className="text-xs font-medium text-white sm:hidden">
+                {SPORTS.find((s) => s.id === sport)?.label}
+              </span>
+              <div className="flex shrink-0 items-center gap-1.5 rounded-xl bg-white/[0.04] px-3 py-1.5 text-xs text-gray-500 ml-auto sm:ml-0">
                 <MapPinIcon className="h-3 w-3" />
                 London
               </div>
