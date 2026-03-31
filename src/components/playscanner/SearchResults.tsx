@@ -263,7 +263,7 @@ export default function SearchResults({
           No {labels[sport] || 'courts'} available
         </h3>
         <p className="text-sm text-gray-500">
-          Try tomorrow — weekday availability is usually better
+          Try a different date or check back later
         </p>
       </div>
     );
