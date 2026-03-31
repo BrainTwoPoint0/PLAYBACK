@@ -383,10 +383,10 @@ export default function SearchResults({
       <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
         <SheetContent
           side={isMobile ? 'bottom' : 'right'}
-          className={`border-white/[0.08] bg-[#0a100d] overflow-y-auto ${
+          className={`border-white/[0.08] bg-[#0a100d] ${
             isMobile
-              ? 'max-h-[85vh] rounded-t-2xl'
-              : 'w-[360px] sm:max-w-[360px]'
+              ? 'max-h-[70vh] rounded-t-2xl overflow-y-auto'
+              : 'w-[360px] sm:max-w-[360px] overflow-y-auto'
           }`}
         >
           <SheetHeader className="pb-4">

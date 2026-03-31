@@ -10,18 +10,18 @@
 const https = require('https');
 const { URL } = require('url');
 
-// London districts from their locations API
+// London districts with approximate center coordinates
 const LONDON_DISTRICTS = [
-  'camden',
-  'chelsea',
-  'ealing',
-  'hackney',
-  'islington',
-  'lambeth',
-  'southwark',
-  'tower-hamlets',
-  'wandsworth',
-  'westminster',
+  { slug: 'camden', lat: 51.539, lng: -0.1426 },
+  { slug: 'chelsea', lat: 51.4875, lng: -0.1687 },
+  { slug: 'ealing', lat: 51.513, lng: -0.3089 },
+  { slug: 'hackney', lat: 51.545, lng: -0.0553 },
+  { slug: 'islington', lat: 51.5362, lng: -0.1033 },
+  { slug: 'lambeth', lat: 51.4571, lng: -0.1231 },
+  { slug: 'southwark', lat: 51.5035, lng: -0.0804 },
+  { slug: 'tower-hamlets', lat: 51.515, lng: -0.034 },
+  { slug: 'wandsworth', lat: 51.4567, lng: -0.191 },
+  { slug: 'westminster', lat: 51.4975, lng: -0.1357 },
 ];
 
 class FCUrbanProvider {
@@ -51,7 +51,7 @@ class FCUrbanProvider {
     for (const district of LONDON_DISTRICTS) {
       try {
         const html = await this.httpRequest(
-          `${this.baseUrl}/district/${district}`
+          `${this.baseUrl}/district/${district.slug}`
         );
         const sessions = this.parseSessions(html, district);
 
@@ -61,7 +61,7 @@ class FCUrbanProvider {
           this._allGames[sessionDate].push(session);
         }
       } catch (error) {
-        console.warn(`FC Urban ${district}: ${error.message}`);
+        console.warn(`FC Urban ${district.slug}: ${error.message}`);
       }
 
       await this.sleep(500);
@@ -109,7 +109,7 @@ class FCUrbanProvider {
       if (startTime.getTime() < now) continue;
 
       const endTime = new Date(startTime.getTime() + 60 * 60000); // 1 hour default
-      const location = (locations[i] || district)
+      const location = (locations[i] || district.slug)
         .replace(/&#x27;/g, "'")
         .replace(/&amp;/g, '&');
       const url = urls[i] || '';
@@ -123,13 +123,13 @@ class FCUrbanProvider {
         sport: 'football',
         listingType: 'drop_in',
         venue: {
-          id: `fcurban-${district}-${i}`,
+          id: `fcurban-${district.slug}-${i}`,
           name: `FC Urban ${location}`,
-          slug: `fc-urban-${district}`,
+          slug: `fc-urban-${district.slug}`,
           address: '',
           postcode: '',
-          latitude: 0,
-          longitude: 0,
+          latitude: district.lat,
+          longitude: district.lng,
           indoor: false,
           surface: 'artificial',
           amenities: [],
