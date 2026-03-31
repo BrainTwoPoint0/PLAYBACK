@@ -1,50 +1,42 @@
 /**
  * Footy Addicts Provider for AWS Lambda
- * Scrapes footyaddicts.com for drop-in football games in London.
+ * Scrapes footyaddicts.com listing pages for drop-in football games in London.
  *
- * Two-step approach:
- *   1. Fetch game listing pages to find London game URLs
- *   2. Fetch individual game pages for Schema.org JSON-LD data
+ * All data (venue, time, price, format) is extracted from the listing page HTML
+ * — no individual game page fetches needed.
  */
 
 const https = require('https');
 const { URL } = require('url');
 const cheerio = require('cheerio');
+const { getUKOffset } = require('../utils');
 
 class FootyAddictsProvider {
   constructor() {
     this.baseUrl = 'https://footyaddicts.com';
     this.userAgent =
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36';
-    // Max listing pages to scrape per run (25 games per page)
-    this.maxPages = 3;
+    this.maxPages = 4;
   }
 
-  /**
-   * Fetch availability for a given date.
-   * Scrapes listing pages once, then returns games for the requested date.
-   */
   async fetchAvailability(params) {
     const { date } = params;
 
-    // Only scrape once per collection run
     if (!this._allGames) {
       this._allGames = {};
-      await this.scrapeGames();
+      await this.scrapeListings();
     }
 
     return this._allGames[date] || [];
   }
 
-  /**
-   * Scrape game listing pages and fetch individual game data
-   */
-  async scrapeGames() {
-    console.log(`🎮 Scraping Footy Addicts (${this.maxPages} pages)...`);
+  async scrapeListings() {
+    console.log(
+      `🎮 Scraping Footy Addicts (${this.maxPages} listing pages)...`
+    );
 
-    const gameUrls = [];
+    let totalGames = 0;
 
-    // Step 1: Get London game URLs from listing pages
     for (let page = 1; page <= this.maxPages; page++) {
       try {
         const url =
@@ -53,120 +45,191 @@ class FootyAddictsProvider {
             : `${this.baseUrl}/football-games/?page=${page}`;
 
         const html = await this.httpRequest(url);
-        const $ = cheerio.load(html);
+        const games = this.parseListingPage(html);
 
-        $('a[href*="/football-games/"]').each((_, el) => {
-          const href = $(el).attr('href') || '';
-          if (
-            href.match(/\/football-games\/\d+/) &&
-            (href.includes('london') || href.includes('greater-london'))
-          ) {
-            const fullUrl = href.startsWith('http')
-              ? href
-              : `${this.baseUrl}${href}`;
-            if (!gameUrls.includes(fullUrl)) {
-              gameUrls.push(fullUrl);
-            }
-          }
-        });
+        for (const game of games) {
+          const gameDate = game.startTime.split('T')[0];
+          if (!this._allGames[gameDate]) this._allGames[gameDate] = [];
+          this._allGames[gameDate].push(game);
+          totalGames++;
+        }
 
         await this.sleep(500);
       } catch (error) {
-        console.warn(`Footy Addicts page ${page} failed: ${error.message}`);
+        console.warn(`Footy Addicts page ${page}: ${error.message}`);
       }
     }
 
-    console.log(`  Found ${gameUrls.length} London games`);
+    console.log(
+      `  ✅ Footy Addicts: ${totalGames} games from ${this.maxPages} pages`
+    );
+  }
 
-    // Step 2: Fetch each game page for Schema.org data
-    let collected = 0;
-    for (const gameUrl of gameUrls) {
-      try {
-        const slot = await this.fetchGameData(gameUrl);
-        if (slot) {
-          const slotDate = slot.startTime.split('T')[0];
-          if (!this._allGames[slotDate]) this._allGames[slotDate] = [];
-          this._allGames[slotDate].push(slot);
-          collected++;
-        }
-      } catch (error) {
-        // Skip individual game failures silently
-      }
+  parseListingPage(html) {
+    const $ = cheerio.load(html);
+    const games = [];
+    const now = Date.now();
 
-      await this.sleep(300);
-    }
+    $('a.group.block[href*="/football-games/"]').each((_, el) => {
+      const $card = $(el);
+      const href = $card.attr('href') || '';
 
-    console.log(`  ✅ Footy Addicts: ${collected} games collected`);
+      // Only London games
+      if (!href.includes('london') && !href.includes('greater-london')) return;
+
+      // Skip sold out / waiting list
+      const statusText = $card.find('span').first().text().trim().toLowerCase();
+      if (statusText.includes('sold out')) return;
+
+      // Venue name from h2
+      const venueName = $card.find('h2').first().text().trim();
+      if (!venueName) return;
+
+      // Time string like "5:00 PM, Today" or "7:30 PM, Tomorrow" or "8:00 PM, Wed 2 Apr"
+      const timeText = $card
+        .find('h2')
+        .parent()
+        .find('p')
+        .first()
+        .text()
+        .trim();
+      const startTime = this.parseTimeText(timeText);
+      if (!startTime || startTime.getTime() < now) return;
+
+      // Price from the bold text at bottom right
+      const priceText = $card.find('.font-bold').last().text().trim();
+      const priceMatch = priceText.match(/£(\d+(?:\.\d+)?)/);
+      const price = priceMatch
+        ? Math.round(parseFloat(priceMatch[1]) * 100)
+        : 0;
+
+      // Format from badge text (e.g. "5v5", "7v7", "8v8")
+      const badges = [];
+      $card.find('span').each((_, badge) => {
+        badges.push($(badge).text().trim().toLowerCase());
+      });
+      const formatBadge = badges.find((b) => /^\d+v\d+$/.test(b));
+      const format = formatBadge || 'Football';
+
+      // Game ID from URL
+      const idMatch = href.match(/\/(\d+)-/);
+      const gameId = idMatch ? idMatch[1] : href.split('/').pop();
+
+      // Venue slug from URL (after the ID)
+      const slugMatch = href.match(/\/\d+-(.+)$/);
+      const venueSlug = slugMatch
+        ? slugMatch[1]
+        : venueName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+      const endTime = new Date(startTime.getTime() + 60 * 60000);
+
+      games.push({
+        provider: 'footy_addicts',
+        sport: 'football',
+        listingType: 'drop_in',
+        venue: {
+          id: `fa-${venueSlug}`,
+          name: venueName,
+          slug: venueSlug,
+          address: '',
+          postcode: '',
+          latitude: 0,
+          longitude: 0,
+          indoor: false,
+          surface: 'artificial',
+          amenities: [],
+        },
+        court: {
+          id: gameId,
+          name: `${format} Game`,
+          surface: 'artificial',
+        },
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
+        duration: 60,
+        price,
+        currency: 'GBP',
+        available: true,
+        link: `${this.baseUrl}${href}`,
+      });
+    });
+
+    return games;
   }
 
   /**
-   * Fetch a single game page and extract Schema.org SportsEvent data
+   * Parse relative time strings like "5:00 PM, Today", "7:30 PM, Tomorrow",
+   * "8:00 PM, Wed 2 Apr"
    */
-  async fetchGameData(gameUrl) {
-    const html = await this.httpRequest(gameUrl);
-    const $ = cheerio.load(html);
+  parseTimeText(text) {
+    if (!text) return null;
 
-    // Find JSON-LD script
-    const ldScript = $('script[type="application/ld+json"]').first().html();
-    if (!ldScript) return null;
+    // Extract time portion: "5:00 PM" or "7:30 PM"
+    const timeMatch = text.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (!timeMatch) return null;
 
-    const data = JSON.parse(ldScript);
-    if (data['@type'] !== 'SportsEvent') return null;
+    let hours = parseInt(timeMatch[1], 10);
+    const minutes = parseInt(timeMatch[2], 10);
+    const ampm = timeMatch[3].toUpperCase();
 
-    // Skip sold out / past games
-    const availability = data.offers?.availability || '';
-    if (availability.includes('SoldOut')) return null;
+    if (ampm === 'PM' && hours !== 12) hours += 12;
+    if (ampm === 'AM' && hours === 12) hours = 0;
 
-    const startDate = data.startDate ? new Date(data.startDate) : null;
-    if (!startDate || isNaN(startDate.getTime())) return null;
+    const ukOffset = getUKOffset();
+    const lower = text.toLowerCase();
 
-    // Skip past games
-    if (startDate.getTime() < Date.now()) return null;
+    if (lower.includes('today')) {
+      const d = new Date();
+      d.setUTCHours(hours - ukOffset, minutes, 0, 0);
+      return d;
+    }
 
-    const endDate = data.endDate
-      ? new Date(data.endDate)
-      : new Date(startDate.getTime() + 60 * 60000);
-    const durationMin = Math.round(
-      (endDate.getTime() - startDate.getTime()) / 60000
+    if (lower.includes('tomorrow')) {
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      d.setUTCHours(hours - ukOffset, minutes, 0, 0);
+      return d;
+    }
+
+    // "Wed 2 Apr", "Thu 3 Apr" etc.
+    const dateMatch = text.match(
+      /(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i
     );
+    if (dateMatch) {
+      const day = parseInt(dateMatch[1], 10);
+      const monthNames = [
+        'jan',
+        'feb',
+        'mar',
+        'apr',
+        'may',
+        'jun',
+        'jul',
+        'aug',
+        'sep',
+        'oct',
+        'nov',
+        'dec',
+      ];
+      const month = monthNames.indexOf(dateMatch[2].toLowerCase());
+      if (month === -1) return null;
 
-    const price = data.offers?.price || 0;
-    const venueName = data.location?.name || 'Unknown Venue';
-    const address = data.location?.address || {};
+      const now = new Date();
+      let year = now.getFullYear();
+      // If the month is in the past, assume next year
+      const candidate = new Date(
+        Date.UTC(year, month, day, hours - ukOffset, minutes, 0, 0)
+      );
+      if (candidate.getTime() < now.getTime() - 86400000) {
+        year++;
+      }
 
-    // Extract game format from name (e.g. "8 a side football ...")
-    const formatMatch = (data.name || '').match(/(\d+)\s*a?\s*-?\s*side/i);
-    const format = formatMatch ? `${formatMatch[1]}-a-side` : 'Football';
+      return new Date(
+        Date.UTC(year, month, day, hours - ukOffset, minutes, 0, 0)
+      );
+    }
 
-    return {
-      provider: 'footy_addicts',
-      sport: 'football',
-      listingType: 'drop_in',
-      venue: {
-        id: gameUrl.split('/').pop().split('-')[0], // game ID
-        name: venueName,
-        slug: venueName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        address: address.streetAddress || '',
-        postcode: '',
-        latitude: 0,
-        longitude: 0,
-        indoor: false,
-        surface: 'artificial',
-        amenities: [],
-      },
-      court: {
-        id: gameUrl.split('/').pop().split('-')[0],
-        name: `${format} Game`,
-        surface: 'artificial',
-      },
-      startTime: startDate.toISOString(),
-      endTime: endDate.toISOString(),
-      duration: durationMin,
-      price: Math.round(price * 100),
-      currency: data.offers?.priceCurrency || 'GBP',
-      available: true,
-      link: data.url || gameUrl,
-    };
+    return null;
   }
 
   httpRequest(url) {
