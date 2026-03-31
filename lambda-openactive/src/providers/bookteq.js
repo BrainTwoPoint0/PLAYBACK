@@ -225,6 +225,7 @@ class BookteqProvider {
     const { data: rows, error } = await supabase
       .from('playscanner_openactive_slots')
       .select('*')
+      .eq('provider', 'openactive')
       .eq('date', date);
 
     if (error || !rows) {
