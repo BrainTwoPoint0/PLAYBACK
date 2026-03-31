@@ -42,21 +42,48 @@ export default function VenueCard({ group, onBook }: VenueCardProps) {
   const isDropIn = group.listingType === 'drop_in';
   const priceLabel = isDropIn ? '/person' : '/hr';
 
-  // Features tags
+  // Features tags — sport-specific metadata first
   const tags: string[] = [];
   if (isDropIn) tags.push('DROP-IN');
-  if (group.indoor) tags.push('Indoor');
+
+  // Sport-specific metadata
+  const firstSlot = group.slots[0];
+  if (firstSlot?.sportMeta) {
+    const meta = firstSlot.sportMeta;
+    if ('format' in meta && meta.format && group.sport === 'football') {
+      // Football format: 5v5, 7v7, etc.
+      const formatMap: Record<string, string> = {
+        '5v5': '5-a-side',
+        '6v6': '6-a-side',
+        '7v7': '7-a-side',
+        '8v8': '8-a-side',
+        '11v11': '11-a-side',
+      };
+      tags.push(formatMap[meta.format] || meta.format);
+    }
+    if ('courtType' in meta && meta.courtType) {
+      // Padel: indoor/outdoor/panoramic
+      if (meta.courtType === 'panoramic') tags.push('Panoramic');
+      else if (meta.courtType === 'indoor') tags.push('Indoor');
+      else tags.push('Outdoor');
+    }
+    if ('surface' in meta && meta.surface && group.sport === 'tennis') {
+      // Tennis surface: hard/clay/grass
+      tags.push(meta.surface.charAt(0).toUpperCase() + meta.surface.slice(1));
+    }
+  } else {
+    if (group.indoor) tags.push('Indoor');
+  }
+
   if (
     group.surface &&
     group.surface !== 'artificial' &&
-    group.surface !== 'unknown'
+    group.surface !== 'unknown' &&
+    !tags.some((t) => t.toLowerCase() === group.surface.toLowerCase())
   )
     tags.push(group.surface.toUpperCase());
-  if (
-    group.slots[0]?.durationOptions &&
-    group.slots[0].durationOptions.length > 1
-  ) {
-    const durations = group.slots[0].durationOptions
+  if (firstSlot?.durationOptions && firstSlot.durationOptions.length > 1) {
+    const durations = firstSlot.durationOptions
       .map((d) => `${d.duration}`)
       .join('/');
     tags.push(`${durations} min`);
@@ -82,7 +109,7 @@ export default function VenueCard({ group, onBook }: VenueCardProps) {
 
   return (
     <div
-      className={`group rounded-xl border p-4 transition-colors hover:bg-white/[0.03] ${
+      className={`group rounded-xl border px-4 py-3 transition-colors hover:bg-white/[0.03] ${
         isDropIn
           ? 'border-orange-500/20 bg-orange-500/[0.02]'
           : 'border-white/[0.06] bg-white/[0.02]'
@@ -123,16 +150,22 @@ export default function VenueCard({ group, onBook }: VenueCardProps) {
         </div>
 
         <div className="shrink-0 text-right">
-          <span className="text-lg font-bold text-[#00FF88]">
-            £{(group.cheapest / 100).toFixed(0)}
-          </span>
-          <span className="ml-0.5 text-xs text-gray-500">{priceLabel}</span>
+          {group.cheapest > 0 ? (
+            <>
+              <span className="text-lg font-bold text-[#00FF88]">
+                £{(group.cheapest / 100).toFixed(0)}
+              </span>
+              <span className="ml-0.5 text-xs text-gray-500">{priceLabel}</span>
+            </>
+          ) : (
+            <span className="text-xs text-gray-500">Price on site</span>
+          )}
         </div>
       </div>
 
       {/* Row 2: Feature tags + spots left */}
       {(tags.length > 0 || spotsLeft !== null) && (
-        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        <div className="mt-1.5 flex flex-wrap items-center gap-1">
           {tags.map((tag) => (
             <span
               key={tag}
@@ -154,7 +187,7 @@ export default function VenueCard({ group, onBook }: VenueCardProps) {
       )}
 
       {/* Row 3: Time slot pills */}
-      <div className="mt-3">
+      <div className="mt-2">
         <SlotPills slots={group.slots} onBook={onBook} />
       </div>
     </div>

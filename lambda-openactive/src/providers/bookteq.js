@@ -17,7 +17,11 @@ const { getSupabaseClient } = require('../supabase');
 const FOOTBALL_NAME_PATTERN =
   /\b(football|pitch|5[- ]?a[- ]?side|6[- ]?a[- ]?side|7[- ]?a[- ]?side|8[- ]?a[- ]?side|9[- ]?a[- ]?side|11[- ]?a[- ]?side|3[gG]|4[gG]|astro|futsal|arena|muga)\b/i;
 
-// Exclude non-football
+// Basketball-related name patterns
+const BASKETBALL_NAME_PATTERN =
+  /\b(basketball|basket\s*ball|bball|nba\s*court\s*time|3[- ]?on[- ]?3\s*basketball)\b/i;
+
+// Exclude non-sport
 const EXCLUDE_PATTERN =
   /\b(cricket|rugby|hockey|netball|tennis|padel|badminton|swimming|squash|changing room)\b/i;
 
@@ -116,9 +120,13 @@ class BookteqProvider {
         .join(' ');
       const combinedText = `${facilityName} ${activityLabels}`;
 
-      // Filter: must be football-related
-      if (!FOOTBALL_NAME_PATTERN.test(combinedText)) continue;
+      // Determine sport from name/activity
+      const isFootball = FOOTBALL_NAME_PATTERN.test(combinedText);
+      const isBasketball = BASKETBALL_NAME_PATTERN.test(combinedText);
+      if (!isFootball && !isBasketball) continue;
       if (EXCLUDE_PATTERN.test(combinedText)) continue;
+
+      const sport = isBasketball ? 'basketball' : 'football';
 
       // Parse slot data
       const durationMin = this.parseDuration(d.duration);
@@ -132,7 +140,7 @@ class BookteqProvider {
       slots.push({
         id: item.id,
         provider: 'openactive',
-        sport: 'football',
+        sport,
         listingType: 'pitch_hire',
         venue_slug: venue.slug,
         venue_name: venue.name,
@@ -216,6 +224,7 @@ class BookteqProvider {
     // Transform to PLAYScanner cache format
     return rows.map((row) => ({
       provider: 'openactive',
+      sport: row.sport || 'football',
       venue: {
         id: row.venue_slug,
         name: row.venue_name,

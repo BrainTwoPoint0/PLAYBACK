@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CourtSlot, PROVIDER_CONFIG } from '@/lib/playscanner/types';
 import { ExternalLinkIcon, XIcon, Loader2Icon } from 'lucide-react';
 
@@ -15,12 +15,43 @@ export default function BookingConfirm({
   onClose,
   onConversion,
 }: BookingConfirmProps) {
-  const [validating, setValidating] = useState(false);
+  const [validating, setValidating] = useState(true); // Start validating immediately
   const [validation, setValidation] = useState<{
     available: boolean;
     currentPrice: number | null;
     priceChanged: boolean;
   } | null>(null);
+  const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
+
+  // Pre-validate on modal open
+  useEffect(() => {
+    if (!slot) return;
+    setValidating(true);
+    setValidation(null);
+    setResolvedUrl(null);
+
+    fetch('/api/playscanner/redirect', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        provider: slot.provider,
+        venueName: slot.venue.name,
+        venueId: slot.venue.id,
+        bookingUrl: slot.bookingUrl,
+        price: slot.price,
+        currency: slot.currency,
+        sport: slot.sport,
+        startTime: slot.startTime,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.validation) setValidation(data.validation);
+        if (data.bookingUrl) setResolvedUrl(data.bookingUrl);
+        setValidating(false);
+      })
+      .catch(() => setValidating(false));
+  }, [slot]);
 
   if (!slot) return null;
 
@@ -43,43 +74,11 @@ export default function BookingConfirm({
   });
   const isDropIn = slot.listingType === 'drop_in';
 
-  const handleBook = async () => {
-    setValidating(true);
+  const handleBook = () => {
+    if (validation && !validation.available) return;
     onConversion?.(slot);
-
-    try {
-      const res = await fetch('/api/playscanner/redirect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          provider: slot.provider,
-          venueName: slot.venue.name,
-          venueId: slot.venue.id,
-          bookingUrl: slot.bookingUrl,
-          price: slot.price,
-          currency: slot.currency,
-          sport: slot.sport,
-          startTime: slot.startTime,
-        }),
-      });
-      const data = await res.json();
-
-      if (data.validation) {
-        setValidation(data.validation);
-        if (!data.validation.available) {
-          setValidating(false);
-          return; // Show "unavailable" state, don't redirect
-        }
-      }
-
-      window.open(data.bookingUrl || slot.bookingUrl, '_blank');
-      onClose();
-    } catch {
-      window.open(slot.bookingUrl, '_blank');
-      onClose();
-    } finally {
-      setValidating(false);
-    }
+    window.open(resolvedUrl || slot.bookingUrl, '_blank');
+    onClose();
   };
 
   return (

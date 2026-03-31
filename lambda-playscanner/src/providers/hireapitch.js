@@ -122,19 +122,27 @@ class HireAPitchProvider {
       const data = JSON.parse(response);
       if (!Array.isArray(data) || data.length === 0) return null;
 
-      const footballPitches = data.filter((p) => {
-        const cat = (p.Category || '').toLowerCase();
-        const name = (p.OptionName || '').toLowerCase();
-        return (
-          cat.includes('football') ||
-          cat.includes('a side') ||
-          name.includes('pitch') ||
-          name.includes('a side') ||
-          name.includes('football')
-        );
-      });
+      const sportPitches = data
+        .map((p) => {
+          const cat = (p.Category || '').toLowerCase();
+          const name = (p.OptionName || '').toLowerCase();
+          const isBasketball =
+            cat.includes('basketball') ||
+            name.includes('basketball') ||
+            name.includes('basket ball');
+          const isFootball =
+            cat.includes('football') ||
+            cat.includes('a side') ||
+            name.includes('pitch') ||
+            name.includes('a side') ||
+            name.includes('football');
+          if (isBasketball) return { ...p, _sport: 'basketball' };
+          if (isFootball) return { ...p, _sport: 'football' };
+          return null;
+        })
+        .filter(Boolean);
 
-      if (footballPitches.length === 0) return null;
+      if (sportPitches.length === 0) return null;
 
       // Get real venue name from page title
       let venueName = `HireAPitch Venue ${id}`;
@@ -148,7 +156,7 @@ class HireAPitchProvider {
         }
       } catch {
         // Fallback to extracting from pitch name
-        const sampleName = footballPitches[0].OptionName || '';
+        const sampleName = sportPitches[0].OptionName || '';
         venueName = this.extractVenueName(sampleName, id);
       }
 
@@ -163,7 +171,7 @@ class HireAPitchProvider {
         id,
         name: venueName,
         slug,
-        pitches: footballPitches,
+        pitches: sportPitches,
       };
     } catch {
       return null;
@@ -230,7 +238,7 @@ class HireAPitchProvider {
 
       slots.push({
         provider: 'hireapitch',
-        sport: 'football',
+        sport: pitch._sport || 'football',
         listingType: 'pitch_hire',
         venue: {
           id: String(venue.id),

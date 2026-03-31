@@ -15,8 +15,12 @@ import Image from 'next/image';
 const navItems = [
   { href: '/academy', label: 'Academy' },
   { href: '/tournament', label: 'Tournament' },
-  // { href: '/playscanner', label: 'PLAYScanner' },
-  { href: '/foundation', label: 'Foundation', disabled: true },
+  {
+    href: 'https://playhub.playbacksports.ai',
+    label: 'PLAYHUB',
+    external: true,
+  },
+  { href: '/playscanner', label: 'PLAYSCANNER' },
   { href: '/press', label: 'News' },
 ];
 
@@ -41,18 +45,27 @@ export default function NavBar() {
                   Home
                 </Link>
               </div>
-              {navItems
-                .filter((item) => !item.disabled)
-                .map(({ href, label }) => (
-                  <div key={label}>
-                    <Link
-                      href={href}
+              {navItems.map((item) => (
+                <div key={item.label}>
+                  {'external' in item && item.external ? (
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className={`${navigationMenuTriggerStyle()}`}
                     >
-                      {label}
+                      {item.label}
+                    </a>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className={`${navigationMenuTriggerStyle()}`}
+                    >
+                      {item.label}
                     </Link>
-                  </div>
-                ))}
+                  )}
+                </div>
+              ))}
             </NavigationMenuContent>
           </NavigationMenuItem>
           <NavigationMenuItem>
@@ -67,17 +80,23 @@ export default function NavBar() {
             </Link>
           </NavigationMenuItem>
           <NavigationMenuList className="hidden md:flex mr-auto ml-4 py-1 pl-4 border-l border-[var(--timberwolf)] items-center text-lg justify-center">
-            {navItems.map(({ href, label, disabled }) => (
-              <NavigationMenuItem key={label}>
-                {disabled ? (
-                  <span
-                    className={`${navigationMenuTriggerStyle()} opacity-50 cursor-not-allowed`}
+            {navItems.map((item) => (
+              <NavigationMenuItem key={item.label}>
+                {'external' in item && item.external ? (
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={navigationMenuTriggerStyle()}
                   >
-                    {label}
-                  </span>
+                    {item.label}
+                  </a>
                 ) : (
-                  <Link href={href} className={navigationMenuTriggerStyle()}>
-                    {label}
+                  <Link
+                    href={item.href}
+                    className={navigationMenuTriggerStyle()}
+                  >
+                    {item.label}
                   </Link>
                 )}
               </NavigationMenuItem>

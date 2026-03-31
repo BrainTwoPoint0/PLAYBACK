@@ -4,15 +4,16 @@ import PLAYScannerMain from '@/components/playscanner/PLAYScannerMain';
 import { ContactForm } from '@/components/Contact';
 
 export const metadata: Metadata = {
-  title: 'PLAYScanner - Book Sports Courts & Pitches | PLAYBACK',
+  title: 'PLAYSCANNER - Book Sports Courts & Pitches | PLAYBACK',
   description:
-    'Find and book padel courts and football pitches across multiple providers. Compare prices, availability, and book instantly.',
+    'Find and book football pitches, padel courts, basketball courts, and tennis courts across London. Compare prices from 10+ providers.',
   keywords: [
-    'padel booking',
     'football booking',
-    'sports courts',
+    'padel booking',
+    'basketball booking',
+    'tennis booking',
+    'sports courts london',
     'pitch booking',
-    'PLAYBACK',
   ],
 };
 

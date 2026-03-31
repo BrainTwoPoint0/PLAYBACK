@@ -5,12 +5,13 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import SearchResults from './SearchResults';
 import SportIcon from './SportIcon';
-import { MapPinIcon, ChevronDownIcon } from 'lucide-react';
-import { Sport, SearchParams, CourtSlot } from '@/lib/playscanner/types';
+import { MapPinIcon } from 'lucide-react';
+import { Sport, CourtSlot } from '@/lib/playscanner/types';
 import { playscannerAnalytics } from '@/lib/playscanner/analytics';
 
-const QUICK_DATES = (() => {
-  const dates: { label: string; value: string }[] = [];
+/* ── Date helpers ─────────────────────────────────────── */
+const DATES = (() => {
+  const dates: { label: string; shortLabel: string; value: string }[] = [];
   for (let i = 0; i < 7; i++) {
     const d = new Date();
     d.setDate(d.getDate() + i);
@@ -20,207 +21,190 @@ const QUICK_DATES = (() => {
         ? 'Today'
         : i === 1
           ? 'Tomorrow'
+          : d.toLocaleDateString('en-GB', {
+              weekday: 'short',
+              day: 'numeric',
+            });
+    const shortLabel =
+      i === 0
+        ? 'Today'
+        : i === 1
+          ? 'Tmrw'
           : d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' });
-    dates.push({ label, value });
+    dates.push({ label, shortLabel, value });
   }
   return dates;
 })();
 
+const SPORTS: { id: Sport; label: string }[] = [
+  { id: 'football', label: 'Football' },
+  { id: 'padel', label: 'Padel' },
+  { id: 'basketball', label: 'Basketball' },
+  { id: 'tennis', label: 'Tennis' },
+];
+
+/* ── Component ────────────────────────────────────────── */
 export default function PLAYScannerMain() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Initialize from URL params or defaults
-  const initialSport = (searchParams.get('sport') as Sport) || 'padel';
-  const initialDate = searchParams.get('date') || QUICK_DATES[0].value;
+  const urlSport = (searchParams.get('sport') as Sport) || 'padel';
+  const urlDate = searchParams.get('date') || DATES[0].value;
 
-  const [selectedSport, setSelectedSport] = useState<Sport>(
-    ['padel', 'football'].includes(initialSport) ? initialSport : 'padel'
+  const [sport, setSport] = useState<Sport>(
+    SPORTS.some((s) => s.id === urlSport) ? urlSport : 'padel'
   );
-  const [selectedDate, setSelectedDate] = useState(
-    QUICK_DATES.some((d) => d.value === initialDate)
-      ? initialDate
-      : QUICK_DATES[0].value
+  const [date, setDate] = useState(
+    DATES.some((d) => d.value === urlDate) ? urlDate : DATES[0].value
   );
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [rawResults, setRawResults] = useState<CourtSlot[]>([]);
-  const [currentSearchId, setCurrentSearchId] = useState<string | null>(null);
+  const [results, setResults] = useState<CourtSlot[]>([]);
+  const [searchId, setSearchId] = useState<string | null>(null);
 
-  // Initialize analytics
+  /* Analytics */
   useEffect(() => {
     playscannerAnalytics.initSession().then(() => {
       playscannerAnalytics.trackPageView('search');
     });
-    const handleUnload = () => playscannerAnalytics.endSession();
-    window.addEventListener('beforeunload', handleUnload);
-    return () => window.removeEventListener('beforeunload', handleUnload);
+    const cleanup = () => playscannerAnalytics.endSession();
+    window.addEventListener('beforeunload', cleanup);
+    return () => window.removeEventListener('beforeunload', cleanup);
   }, []);
 
-  const handleSearch = useCallback(async (sport: Sport, date: string) => {
+  /* Search */
+  const search = useCallback(async (s: Sport, d: string) => {
     setIsSearching(true);
     setError(null);
-    const startTime = Date.now();
-
+    const t0 = Date.now();
     try {
-      const searchParams: SearchParams = {
-        sport,
-        location: 'London',
-        date,
-      };
-
-      const response = await fetch('/api/playscanner/search', {
+      const res = await fetch('/api/playscanner/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...searchParams, cached: true }),
+        body: JSON.stringify({
+          sport: s,
+          location: 'London',
+          date: d,
+          cached: true,
+        }),
       });
-
-      if (!response.ok) throw new Error(`Search failed: ${response.status}`);
-
-      const data = await response.json();
-      const duration = Date.now() - startTime;
-
+      if (!res.ok) throw new Error(`${res.status}`);
+      const data = await res.json();
       const providers = [
-        ...new Set((data.results || []).map((s: CourtSlot) => s.provider)),
+        ...new Set((data.results || []).map((r: CourtSlot) => r.provider)),
       ] as string[];
-
-      const searchId = await playscannerAnalytics.trackSearch(
-        searchParams,
+      const sid = await playscannerAnalytics.trackSearch(
+        { sport: s, location: 'London', date: d },
         data.results?.length || 0,
-        duration,
+        Date.now() - t0,
         providers
       );
-
-      setCurrentSearchId(searchId);
-      setRawResults(data.results || []);
+      setSearchId(sid);
+      setResults(data.results || []);
       setHasSearched(true);
-      playscannerAnalytics.trackPageView('results');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Search failed');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Search failed');
     } finally {
       setIsSearching(false);
     }
   }, []);
 
-  // Auto-search on mount, sport change, or date change + sync URL
+  /* Auto-search + URL sync */
   useEffect(() => {
-    // Update URL without navigation
-    const params = new URLSearchParams();
-    params.set('sport', selectedSport);
-    params.set('date', selectedDate);
-    router.replace(`/playscanner?${params.toString()}`, { scroll: false });
+    const p = new URLSearchParams();
+    p.set('sport', sport);
+    p.set('date', date);
+    router.replace(`/playscanner?${p.toString()}`, { scroll: false });
+    search(sport, date);
+  }, [sport, date, search, router]);
 
-    handleSearch(selectedSport, selectedDate);
-  }, [selectedSport, selectedDate, handleSearch, router]);
-
+  /* ── Render ─────────────────────────────────────────── */
   return (
-    <div className="relative z-20 max-w-4xl mx-auto px-4 py-6">
-      {/* Header with shimmer */}
-      <motion.div
-        className="mb-6"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <h1 className="text-2xl font-bold tracking-tight">
-          PLAY
-          <motion.span
-            className="bg-[linear-gradient(110deg,#00FF88,35%,#a0ffd0,50%,#00FF88,75%,#00FF88)] bg-[length:200%_100%] bg-clip-text text-transparent"
-            initial={{ backgroundPosition: '200% 0' }}
-            animate={{ backgroundPosition: '-200% 0' }}
-            transition={{
-              repeat: Infinity,
-              duration: 3,
-              ease: 'linear',
-            }}
-          >
-            Scanner
-          </motion.span>
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Compare courts and pitches across London
-        </p>
-      </motion.div>
+    <div className="relative z-20 mx-auto max-w-5xl px-4">
+      {/* ━━━ Unified search bar ━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <div className="sticky top-0 z-30 -mx-4 px-4 pt-3 pb-2 bg-[var(--night)]/[.97] backdrop-blur-lg">
+        {/* Brand + Search controls — one unified bar */}
+        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-2 space-y-2">
+          {/* Desktop: single row — dates left, sports+location right */}
+          {/* Mobile: two rows — sports+location on top, dates below */}
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-2">
+            <div className="flex items-center justify-evenly sm:justify-start gap-1 overflow-x-auto no-visible-scrollbar">
+              {DATES.map((d) => (
+                <button
+                  key={d.value}
+                  onClick={() => setDate(d.value)}
+                  className={`shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all ${
+                    date === d.value
+                      ? 'bg-white/[0.12] text-white'
+                      : 'text-gray-600 hover:text-gray-400'
+                  }`}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
 
-      {/* Search bar: sport toggle + date chips — sticky */}
-      <motion.div
-        className="sticky top-0 z-30 -mx-4 bg-[var(--night)]/95 backdrop-blur-md px-4 pb-4 pt-2"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-      >
-        {/* Sport toggle + location */}
-        <div className="flex items-center gap-2 mb-3">
-          {(['padel', 'tennis', 'football'] as Sport[]).map((sport) => (
-            <button
-              key={sport}
-              onClick={() => setSelectedSport(sport)}
-              className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                selectedSport === sport
-                  ? 'bg-[#00FF88] text-[#0a100d]'
-                  : 'bg-white/[0.06] text-gray-400 hover:text-white'
-              }`}
-            >
-              <SportIcon sport={sport} size={14} />
-              {sport.charAt(0).toUpperCase() + sport.slice(1)}
-            </button>
-          ))}
-          <div className="ml-auto flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-gray-400 cursor-not-allowed">
-            <MapPinIcon className="h-3.5 w-3.5 shrink-0" />
-            <span>London</span>
-            <ChevronDownIcon className="h-3.5 w-3.5 shrink-0 text-gray-600" />
+            <div className="w-full h-px bg-white/[0.06] sm:hidden" />
+
+            <div className="flex items-center justify-between sm:justify-end gap-1.5 shrink-0">
+              <div className="flex items-center rounded-xl bg-white/[0.04] p-0.5 shrink-0">
+                {SPORTS.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => setSport(s.id)}
+                    className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                      sport === s.id
+                        ? 'bg-[#00FF88] text-[#0a100d] shadow-sm shadow-[#00FF88]/20'
+                        : 'text-gray-500 hover:text-white'
+                    }`}
+                  >
+                    <SportIcon sport={s.id} size={12} />
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex shrink-0 items-center gap-1.5 rounded-xl bg-white/[0.04] px-3 py-1.5 text-xs text-gray-500">
+                <MapPinIcon className="h-3 w-3" />
+                London
+              </div>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Date quick-select chips */}
-        <div className="flex sm:justify-center gap-1.5 overflow-x-auto pb-1 -mb-1 no-visible-scrollbar">
-          {QUICK_DATES.map((d) => (
-            <button
-              key={d.value}
-              onClick={() => setSelectedDate(d.value)}
-              className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
-                selectedDate === d.value
-                  ? 'bg-white/10 text-white border border-white/20'
-                  : 'bg-white/[0.03] text-gray-500 border border-transparent hover:text-gray-300'
-              }`}
-            >
-              {d.label}
-            </button>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Results — show immediately (skeleton while loading) */}
-      {(hasSearched || isSearching) && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          <SearchResults
-            results={rawResults}
-            isLoading={isSearching}
-            sport={selectedSport}
-            error={error ? { code: 'SEARCH_ERROR', message: error } : undefined}
-            onConversion={(slot) => {
-              playscannerAnalytics.trackConversion(
-                {
-                  provider_name: slot.provider,
-                  venue_name: slot.venue.name,
-                  venue_location: slot.venue.location?.city || '',
-                  booking_url: slot.bookingUrl || '',
-                  estimated_price: slot.price,
-                  sport: selectedSport,
-                  estimated_commission: slot.price ? slot.price * 0.05 : 0,
-                  commission_rate: 5,
-                },
-                currentSearchId || undefined
-              );
-            }}
-          />
-        </motion.div>
-      )}
+      {/* ━━━ Results ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <div className="pt-2 pb-8">
+        {(hasSearched || isSearching) && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            <SearchResults
+              results={results}
+              isLoading={isSearching}
+              sport={sport}
+              error={error ? { code: 'ERR', message: error } : undefined}
+              onConversion={(slot) => {
+                playscannerAnalytics.trackConversion(
+                  {
+                    provider_name: slot.provider,
+                    venue_name: slot.venue.name,
+                    venue_location: slot.venue.location?.city || '',
+                    booking_url: slot.bookingUrl || '',
+                    estimated_price: slot.price,
+                    sport,
+                    estimated_commission: slot.price ? slot.price * 0.05 : 0,
+                    commission_rate: 5,
+                  },
+                  searchId || undefined
+                );
+              }}
+            />
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 }

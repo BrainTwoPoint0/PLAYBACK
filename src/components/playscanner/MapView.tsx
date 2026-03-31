@@ -3,13 +3,8 @@
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { CourtSlot } from '@/lib/playscanner/types';
-import {
-  Card,
-  CardContent,
-  Badge,
-  Button,
-} from '@braintwopoint0/playback-commons/ui';
-import { MapPinIcon, ClockIcon, ExternalLinkIcon, Loader2 } from 'lucide-react';
+import { Badge } from '@braintwopoint0/playback-commons/ui';
+import { MapPinIcon, ClockIcon, ExternalLinkIcon } from 'lucide-react';
 
 // Dynamically import Map components to avoid SSR issues
 const MapContainer = dynamic(
@@ -33,131 +28,115 @@ const Popup = dynamic(() => import('react-leaflet').then((mod) => mod.Popup), {
 
 interface MapViewProps {
   results: CourtSlot[];
-  sport: 'padel' | 'football';
+  sport: string;
+}
+
+// Inject Leaflet styles once globally
+let stylesInjected = false;
+function injectLeafletStyles() {
+  if (stylesInjected) return;
+  stylesInjected = true;
+
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+  document.head.appendChild(link);
+
+  const style = document.createElement('style');
+  style.textContent = `
+    .leaflet-marker-icon { background: none !important; border: none !important; }
+    .leaflet-marker-icon img { width: 18px !important; height: 18px !important; }
+    .leaflet-popup-content-wrapper { background: #0a100d !important; border: 1px solid rgba(0,255,136,0.2) !important; border-radius: 12px !important; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.4) !important; }
+    .leaflet-popup-content { margin: 0 !important; color: white !important; }
+    .leaflet-popup-tip { background: #0a100d !important; border: 1px solid rgba(0,255,136,0.2) !important; box-shadow: none !important; }
+    .leaflet-popup-close-button { color: #00FF88 !important; font-size: 20px !important; font-weight: 300 !important; width: 24px !important; height: 24px !important; display: flex !important; align-items: center !important; justify-content: center !important; line-height: 1 !important; padding: 0 !important; top: 8px !important; right: 8px !important; }
+    .leaflet-popup-close-button:hover { color: #00E077 !important; background: rgba(0,255,136,0.1) !important; border-radius: 4px !important; }
+    .leaflet-control-zoom a { background: #0a100d !important; border: 1px solid rgba(0,255,136,0.2) !important; color: #00FF88 !important; display: flex !important; align-items: center !important; justify-content: center !important; width: 30px !important; height: 30px !important; line-height: 26px !important; font-size: 18px !important; }
+    .leaflet-control-zoom a:hover { background: rgba(0,255,136,0.1) !important; color: #00E077 !important; }
+    .leaflet-control-attribution { background: rgba(10,16,13,0.8) !important; color: #b9baa3 !important; border: 1px solid rgba(0,255,136,0.1) !important; border-radius: 6px !important; font-size: 10px !important; }
+    .leaflet-control-attribution a { color: #00FF88 !important; }
+    @media (max-width: 640px) { .leaflet-popup-content-wrapper { max-width: 260px !important; } .leaflet-control-zoom a { width: 22px !important; height: 22px !important; } }
+  `;
+  document.head.appendChild(style);
+}
+
+function MapSkeleton() {
+  return (
+    <div className="absolute inset-0 z-10 rounded-xl bg-[#0a100d] overflow-hidden">
+      <div className="absolute inset-0 opacity-[0.03]">
+        {[...Array(8)].map((_, i) => (
+          <div
+            key={`h${i}`}
+            className="absolute left-0 right-0 border-t border-white"
+            style={{ top: `${(i + 1) * 12}%` }}
+          />
+        ))}
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={`v${i}`}
+            className="absolute top-0 bottom-0 border-l border-white"
+            style={{ left: `${(i + 1) * 15}%` }}
+          />
+        ))}
+      </div>
+      <div className="absolute top-[30%] left-[40%] h-3 w-3 animate-pulse rounded-full bg-[#00FF88]/20" />
+      <div
+        className="absolute top-[45%] left-[55%] h-3 w-3 animate-pulse rounded-full bg-[#00FF88]/20"
+        style={{ animationDelay: '150ms' }}
+      />
+      <div
+        className="absolute top-[35%] left-[60%] h-3 w-3 animate-pulse rounded-full bg-[#00FF88]/20"
+        style={{ animationDelay: '300ms' }}
+      />
+      <div
+        className="absolute top-[55%] left-[45%] h-3 w-3 animate-pulse rounded-full bg-[#00FF88]/20"
+        style={{ animationDelay: '100ms' }}
+      />
+      <div
+        className="absolute top-[50%] left-[35%] h-3 w-3 animate-pulse rounded-full bg-[#00FF88]/20"
+        style={{ animationDelay: '250ms' }}
+      />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="flex items-center gap-2 rounded-lg bg-white/[0.04] px-4 py-2 backdrop-blur-sm">
+          <MapPinIcon className="h-4 w-4 animate-pulse text-[#00FF88]/50" />
+          <span className="text-xs text-gray-600">Loading map</span>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function MapView({ results, sport }: MapViewProps) {
   const [isClient, setIsClient] = useState(false);
   const [leafletLoaded, setLeafletLoaded] = useState(false);
+  const [tilesReady, setTilesReady] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
+    setTilesReady(false);
+    injectLeafletStyles();
 
-    // Load Leaflet dynamically
-    if (typeof window !== 'undefined') {
-      // Load CSS dynamically
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-      document.head.appendChild(link);
+    import('leaflet').then((L) => {
+      const srcMap: Record<string, string> = {
+        football: '/assets/football.svg',
+        basketball: '/assets/basketball.svg',
+        padel: '/assets/tennis.svg',
+        tennis: '/assets/tennis.svg',
+      };
+      const src = srcMap[sport] || '/assets/football.svg';
 
-      // Add custom dark theme styles for Leaflet popups
-      const customStyles = document.createElement('style');
-      customStyles.textContent = `
-        .leaflet-popup-content-wrapper {
-          background: #0a100d !important;
-          border: 1px solid rgba(0, 255, 136, 0.2) !important;
-          border-radius: 12px !important;
-          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2) !important;
-        }
-        .leaflet-popup-content {
-          margin: 0 !important;
-          color: white !important;
-        }
-        .leaflet-popup-tip {
-          background: #0a100d !important;
-          border: 1px solid rgba(0, 255, 136, 0.2) !important;
-          box-shadow: none !important;
-        }
-        .leaflet-popup-close-button {
-          color: #00FF88 !important;
-          font-size: 20px !important;
-          font-weight: 300 !important;
-          width: 24px !important;
-          height: 24px !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          line-height: 1 !important;
-          padding: 0 !important;
-          top: 8px !important;
-          right: 8px !important;
-        }
-        .leaflet-popup-close-button:hover {
-          color: #00E077 !important;
-          background: rgba(0, 255, 136, 0.1) !important;
-          border-radius: 4px !important;
-        }
-        .leaflet-control-zoom a {
-          background: #0a100d !important;
-          border: 1px solid rgba(0, 255, 136, 0.2) !important;
-          color: #00FF88 !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          text-align: center !important;
-          line-height: 26px !important;
-          font-size: 18px !important;
-          font-weight: 400 !important;
-          width: 30px !important;
-          height: 30px !important;
-        }
-        .leaflet-control-zoom a:hover {
-          background: rgba(0, 255, 136, 0.1) !important;
-          color: #00E077 !important;
-        }
-        .leaflet-control-attribution {
-          background: rgba(10, 16, 13, 0.8) !important;
-          color: #b9baa3 !important;
-          border: 1px solid rgba(0, 255, 136, 0.1) !important;
-          border-radius: 6px !important;
-          font-size: 10px !important;
-        }
-        .leaflet-control-attribution a {
-          color: #00FF88 !important;
-        }
-        @media (max-width: 640px) {
-          .leaflet-popup-content-wrapper {
-            max-width: 260px !important;
-          }
-          .leaflet-popup-close-button {
-            font-size: 14px !important;
-            padding: 4px !important;
-            top: 4px !important;
-            right: 4px !important;
-          }
-          .leaflet-control-zoom {
-            font-size: 14px !important;
-          }
-          .leaflet-control-zoom a {
-            width: 22px !important;
-            height: 22px !important;
-            line-height: 20px !important;
-          }
-        }
-      `;
-      document.head.appendChild(customStyles);
-
-      import('leaflet').then((L) => {
-        // Create custom green marker icon for sports venues
-        const { getSportIconHtml } = require('./SportIcon');
-        const iconHtml = getSportIconHtml(sport, 28);
-
-        const customIcon = L.divIcon({
-          html: iconHtml,
-          className: 'custom-venue-marker',
-          iconSize: [28, 28],
-          iconAnchor: [14, 14],
-          popupAnchor: [0, -14],
-        });
-
-        // Set as default marker
-        L.Marker.prototype.options.icon = customIcon;
-
-        setLeafletLoaded(true);
+      const customIcon = L.divIcon({
+        html: `<div style="width:32px;height:32px;border-radius:50%;background:#00FF88;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.4);border:2px solid white;overflow:hidden;"><img src="${src}" style="display:block;width:18px;height:18px;max-width:18px;max-height:18px;" /></div>`,
+        className: '',
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+        popupAnchor: [0, -16],
       });
-    }
-  }, []);
+
+      L.Marker.prototype.options.icon = customIcon;
+      setLeafletLoaded(true);
+    });
+  }, [sport]);
 
   // Get center point and zoom for map
   const getMapSettings = (): { center: [number, number]; zoom: number } => {
@@ -324,89 +303,59 @@ export default function MapView({ results, sport }: MapViewProps) {
     </div>
   );
 
-  if (!isClient) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center h-96">
-          <div className="flex items-center space-x-2">
-            <Loader2 className="h-6 w-6 animate-spin" />
-            <span>Loading map...</span>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!leafletLoaded) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center h-96">
-          <div className="flex items-center space-x-2">
-            <Loader2 className="h-6 w-6 animate-spin" />
-            <span>Initializing map...</span>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   const uniqueVenues = getUniqueVenues();
   const { center, zoom } = getMapSettings();
 
-  if (uniqueVenues.length === 0) {
+  if (isClient && leafletLoaded && uniqueVenues.length === 0) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center h-96">
-          <div className="text-6xl mb-4">🗺️</div>
-          <h3 className="text-lg font-semibold mb-2">
-            No venues to show on map
-          </h3>
-          <p className="text-gray-600 text-center">
-            The search results don&apos;t contain location data for mapping. Try
-            searching in a different area or check back later.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-10 text-center">
+        <MapPinIcon className="mx-auto h-8 w-8 text-gray-600 mb-3" />
+        <h3 className="text-base font-semibold text-white mb-1">
+          No venues to show on map
+        </h3>
+        <p className="text-sm text-gray-500">
+          Try a different search or check back later
+        </p>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardContent className="p-0">
-        <div className="relative">
-          <MapContainer
-            center={center}
-            zoom={zoom}
-            style={{ height: '500px', width: '100%' }}
-            className="rounded-lg"
-            zoomControl={true}
-            scrollWheelZoom={true}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | &copy; <a href="https://carto.com/attributions">CARTO</a>'
-              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            />
+    <div className="relative h-[500px] rounded-xl overflow-hidden">
+      {/* Skeleton overlay — visible until tiles load, then fades out */}
+      {!tilesReady && <MapSkeleton />}
 
-            {uniqueVenues.map((venueData, index) => (
-              <Marker
-                key={index}
-                position={[
-                  venueData.coordinates.lat,
-                  venueData.coordinates.lng,
-                ]}
-              >
-                <Popup>
-                  <VenuePopup
-                    venue={venueData.venue}
-                    slots={venueData.slots}
-                    cheapestSlot={venueData.cheapestSlot}
-                  />
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
-        </div>
-      </CardContent>
-    </Card>
+      {/* Actual map — renders underneath skeleton, invisible until tiles ready */}
+      {isClient && leafletLoaded && (
+        <MapContainer
+          center={center}
+          zoom={zoom}
+          style={{ height: '500px', width: '100%' }}
+          className="rounded-lg"
+          zoomControl={true}
+          scrollWheelZoom={true}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            eventHandlers={{ load: () => setTilesReady(true) }}
+          />
+          {uniqueVenues.map((venueData, index) => (
+            <Marker
+              key={index}
+              position={[venueData.coordinates.lat, venueData.coordinates.lng]}
+            >
+              <Popup>
+                <VenuePopup
+                  venue={venueData.venue}
+                  slots={venueData.slots}
+                  cheapestSlot={venueData.cheapestSlot}
+                />
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      )}
+    </div>
   );
 }

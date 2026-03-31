@@ -17,7 +17,7 @@ export default function SportIcon({
     padel: { src: '/assets/tennis.svg', alt: 'Padel' },
     tennis: { src: '/assets/tennis.svg', alt: 'Tennis' },
     football: { src: '/assets/football.svg', alt: 'Football' },
-    basketball: { src: '/assets/football.svg', alt: 'Basketball' }, // TODO: add basketball.svg
+    basketball: { src: '/assets/basketball.svg', alt: 'Basketball' },
   };
   const { src, alt } = sportAssets[sport] || sportAssets.padel;
 
@@ -39,9 +39,12 @@ export function getSportIconHtml(
   sport: 'padel' | 'football' | 'tennis' | 'basketball',
   size = 14
 ): string {
-  const src =
-    sport === 'football' || sport === 'basketball'
-      ? '/assets/football.svg'
-      : '/assets/tennis.svg';
+  const srcMap: Record<string, string> = {
+    football: '/assets/football.svg',
+    basketball: '/assets/basketball.svg',
+    padel: '/assets/tennis.svg',
+    tennis: '/assets/tennis.svg',
+  };
+  const src = srcMap[sport] || '/assets/football.svg';
   return `<img src="${src}" width="${size}" height="${size}" alt="${sport}" style="display:block;" />`;
 }
