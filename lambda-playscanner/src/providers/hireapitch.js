@@ -10,11 +10,11 @@
 const https = require('https');
 const { URL } = require('url');
 
-// Known venue ID range — scan these for football pitch types
-const ID_RANGE = { min: 1, max: 860 };
+// Known venue ID range — scan these for sport pitch types
+const ID_RANGE = { min: 1, max: 1500 };
 
-// Exclude test/invalid venues
-const EXCLUDE_IDS = new Set([158, 178, 510]); // Test venues, Solihull (not London)
+// Exclude test/invalid/non-London venues
+const EXCLUDE_IDS = new Set([158, 178, 510, 1137, 1138]); // Test venues, Solihull, Bradford
 
 class HireAPitchProvider {
   constructor() {
