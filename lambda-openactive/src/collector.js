@@ -1,7 +1,7 @@
 /**
  * OpenActive Collector
  * Orchestrates feed crawling for London venues across 7 days.
- * Supports multiple providers: Bookteq (football) and Better/GLL (basketball).
+ * Supports multiple providers: Bookteq and Better/GLL (football, basketball, tennis, padel).
  */
 
 const { BookteqProvider } = require('./providers/bookteq');
