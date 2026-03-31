@@ -13,17 +13,20 @@
 const { pollFeed } = require('../feed-consumer');
 const { getSupabaseClient } = require('../supabase');
 
-// Football-related name patterns
-const FOOTBALL_NAME_PATTERN =
-  /\b(football|pitch|5[- ]?a[- ]?side|6[- ]?a[- ]?side|7[- ]?a[- ]?side|8[- ]?a[- ]?side|9[- ]?a[- ]?side|11[- ]?a[- ]?side|3[gG]|4[gG]|astro|futsal|arena|muga)\b/i;
-
-// Basketball-related name patterns
+// Sport name patterns (ordered by detection priority: most specific first)
 const BASKETBALL_NAME_PATTERN =
   /\b(basketball|basket\s*ball|bball|nba\s*court\s*time|3[- ]?on[- ]?3\s*basketball)\b/i;
 
-// Exclude non-sport
+const PADEL_NAME_PATTERN = /\b(padel)\b/i;
+
+const TENNIS_NAME_PATTERN = /\b(tennis)\b/i;
+
+const FOOTBALL_NAME_PATTERN =
+  /\b(football|pitch|5[- ]?a[- ]?side|6[- ]?a[- ]?side|7[- ]?a[- ]?side|8[- ]?a[- ]?side|9[- ]?a[- ]?side|11[- ]?a[- ]?side|3[gG]|4[gG]|astro|futsal|arena|muga)\b/i;
+
+// Exclude non-sport (tennis and padel removed — now supported)
 const EXCLUDE_PATTERN =
-  /\b(cricket|rugby|hockey|netball|tennis|padel|badminton|swimming|squash|changing room)\b/i;
+  /\b(cricket|rugby|hockey|netball|badminton|swimming|squash|changing room)\b/i;
 
 class BookteqProvider {
   constructor(venues) {
@@ -72,7 +75,7 @@ class BookteqProvider {
           timeoutMs: 15000, // 15s per venue
         });
 
-        // Process updates: store valid football slots
+        // Process updates: store valid sport slots
         if (updated.length > 0) {
           await this.processUpdates(venue, updated);
         }
@@ -91,7 +94,7 @@ class BookteqProvider {
   }
 
   /**
-   * Process updated items from the feed — extract football slots and store them
+   * Process updated items from the feed — extract sport slots and store them
    */
   async processUpdates(venue, items) {
     const slots = [];
@@ -120,13 +123,21 @@ class BookteqProvider {
         .join(' ');
       const combinedText = `${facilityName} ${activityLabels}`;
 
-      // Determine sport from name/activity
-      const isFootball = FOOTBALL_NAME_PATTERN.test(combinedText);
+      // Determine sport from name/activity (priority: basketball > padel > tennis > football)
       const isBasketball = BASKETBALL_NAME_PATTERN.test(combinedText);
-      if (!isFootball && !isBasketball) continue;
+      const isPadel = PADEL_NAME_PATTERN.test(combinedText);
+      const isTennis = TENNIS_NAME_PATTERN.test(combinedText);
+      const isFootball = FOOTBALL_NAME_PATTERN.test(combinedText);
+      if (!isBasketball && !isPadel && !isTennis && !isFootball) continue;
       if (EXCLUDE_PATTERN.test(combinedText)) continue;
 
-      const sport = isBasketball ? 'basketball' : 'football';
+      const sport = isBasketball
+        ? 'basketball'
+        : isPadel
+          ? 'padel'
+          : isTennis
+            ? 'tennis'
+            : 'football';
 
       // Parse slot data
       const durationMin = this.parseDuration(d.duration);
@@ -141,7 +152,7 @@ class BookteqProvider {
         id: item.id,
         provider: 'openactive',
         sport,
-        listingType: 'pitch_hire',
+        listing_type: 'pitch_hire',
         venue_slug: venue.slug,
         venue_name: venue.name,
         venue_address: venue.address || '',
@@ -167,7 +178,7 @@ class BookteqProvider {
   }
 
   /**
-   * Store football slots in Supabase for later retrieval by date
+   * Store sport slots in Supabase for later retrieval by date
    */
   async storeSlots(slots) {
     const supabase = getSupabaseClient();

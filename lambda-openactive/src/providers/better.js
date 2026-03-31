@@ -1,13 +1,13 @@
 /**
  * Better/GLL OpenActive Provider
- * Polls the Better RPDE feeds for basketball court availability in London.
+ * Polls the Better RPDE feeds for sports court availability in London.
  *
  * Strategy:
  * 1. Crawl the facility-uses feed (full crawl, no cursor) to build a map of
- *    basketball-related facilities in London.
+ *    sports facilities in London (basketball, tennis, football, padel).
  * 2. Poll the slots feed incrementally (cursor-based) and match each slot's
- *    facilityUse reference against the basketball facility map.
- * 3. Store matched basketball slots in playscanner_openactive_slots.
+ *    facilityUse reference against the sports facility map.
+ * 3. Store matched slots in playscanner_openactive_slots.
  *
  * The Better feed covers all of UK (200+ centres), so London filtering is
  * critical to keep data volume manageable.
@@ -30,18 +30,28 @@ const LONDON_BOUNDS = {
   lngMax: 0.24,
 };
 
-// Basketball-related patterns for facility/activity names
+// Sport name patterns (ordered by detection priority: most specific first)
 const BASKETBALL_NAME_PATTERN =
   /\b(basketball|basket\s*ball|bball|nba\s*court\s*time|3[- ]?on[- ]?3\s*basketball)\b/i;
 
-// Also match basketball in booking URL path segments
+const PADEL_NAME_PATTERN = /\b(padel)\b/i;
+
+const TENNIS_NAME_PATTERN = /\b(tennis)\b/i;
+
+const FOOTBALL_NAME_PATTERN =
+  /\b(football|pitch|5[- ]?a[- ]?side|6[- ]?a[- ]?side|7[- ]?a[- ]?side|8[- ]?a[- ]?side|9[- ]?a[- ]?side|11[- ]?a[- ]?side|3[gG]|4[gG]|astro|futsal|muga)\b/i;
+
+// Sport URL path patterns
 const BASKETBALL_URL_PATTERN = /\/(basketball|basket-ball|nba-court)/i;
+const TENNIS_URL_PATTERN = /\/(tennis)/i;
+const FOOTBALL_URL_PATTERN = /\/(football|5-a-side|pitch)/i;
+const PADEL_URL_PATTERN = /\/(padel)/i;
 
 class BetterProvider {
   constructor() {
     // Map of facilityUse ID (activity_recurrence_group:XXXX) → facility metadata
     // Includes both FacilityUse-level and IndividualFacilityUse-level entries
-    this._basketballFacilities = null; // null = not loaded yet
+    this._sportsFacilities = null; // null = not loaded yet
   }
 
   /**
@@ -52,9 +62,9 @@ class BetterProvider {
   async fetchAvailability(params) {
     const { date } = params;
 
-    // Step 1: Load basketball facility map (once per collection run)
+    // Step 1: Load sports facility map (once per collection run)
     if (!this._polled) {
-      await this.loadBasketballFacilities();
+      await this.loadSportsFacilities();
       await this.pollSlotsFeed();
       this._polled = true;
     }
@@ -64,12 +74,12 @@ class BetterProvider {
   }
 
   /**
-   * Crawl the full facility-uses feed and extract basketball facilities in London.
-   * This feed is moderate-sized (~200 pages) but we only keep basketball facilities.
+   * Crawl the full facility-uses feed and extract sports facilities in London.
+   * This feed is moderate-sized (~200 pages) but we only keep supported sports.
    */
-  async loadBasketballFacilities() {
+  async loadSportsFacilities() {
     console.log(
-      '🏀 Better: Loading basketball facilities from facility-uses feed...'
+      '🏟️ Better: Loading sports facilities from facility-uses feed...'
     );
 
     const items = await crawlFeed(FACILITY_USES_URL, {
@@ -83,7 +93,7 @@ class BetterProvider {
 
     const facilities = {};
     let londonCount = 0;
-    let basketballCount = 0;
+    let matchedCount = 0;
 
     for (const item of items) {
       const d = item.data;
@@ -98,49 +108,38 @@ class BetterProvider {
       if (!this.isInLondon(lat, lng)) continue;
       londonCount++;
 
-      // Check if this facility is basketball-related
+      // Detect sport from facility name and URL
       const facilityName = d.name || '';
       const facilityUrl = d.url || '';
-
-      // Check main facility name and URL
-      const mainIsBasketball =
-        BASKETBALL_NAME_PATTERN.test(facilityName) ||
-        BASKETBALL_URL_PATTERN.test(facilityUrl);
+      const mainSport = this.detectSport(facilityName, facilityUrl);
 
       // Check individual facility uses (sub-courts)
       const individualFUs = d.individualFacilityUse || [];
-      const basketballIFUs = [];
+      const sportIFUs = [];
 
       for (const ifu of individualFUs) {
         const ifuName = ifu.name || '';
         const ifuUrl = ifu.url || '';
-        if (
-          BASKETBALL_NAME_PATTERN.test(ifuName) ||
-          BASKETBALL_URL_PATTERN.test(ifuUrl)
-        ) {
-          basketballIFUs.push(ifu);
+        const ifuSport = this.detectSport(ifuName, ifuUrl);
+        if (ifuSport) {
+          sportIFUs.push({ ifu, sport: ifuSport });
         }
       }
 
-      // Also check the description for basketball mentions — but treat this
-      // as a weaker signal. A leisure centre description saying "basketball,
-      // badminton and netball courts" doesn't mean every slot is basketball.
+      // Also check the description for sport mentions — but treat this
+      // as a weaker signal. A leisure centre description mentioning multiple
+      // sports doesn't mean every slot is that sport.
       // We include these facilities in the map but only match their slots
-      // if the specific IFU or slot URL confirms basketball.
+      // if the specific IFU or slot URL confirms the sport.
       const description = d.description || '';
-      const descHasBasketball = BASKETBALL_NAME_PATTERN.test(description);
+      const descSport = this.detectSport(description, '');
 
-      // If neither the main facility nor any sub-courts are basketball, and
-      // description doesn't mention basketball, skip
-      if (
-        !mainIsBasketball &&
-        basketballIFUs.length === 0 &&
-        !descHasBasketball
-      ) {
+      // If no sport detected anywhere, skip
+      if (!mainSport && sportIFUs.length === 0 && !descSport) {
         continue;
       }
 
-      basketballCount++;
+      matchedCount++;
 
       // Build venue metadata from the facility-use
       const venue = {
@@ -154,15 +153,15 @@ class BetterProvider {
       };
 
       // Store the main FacilityUse ID
-      // isMainBasketball is true only when the facility NAME or URL explicitly
-      // says basketball (strong signal). Description-only matches are treated
-      // as weak — slots must additionally match by IFU or slot URL.
+      // mainSport is set only when the facility NAME or URL explicitly
+      // indicates a sport (strong signal). Description-only matches are
+      // treated as weak — slots must additionally match by IFU or slot URL.
       const fuId = this.extractFacilityUseId(item.id);
       if (fuId) {
         facilities[fuId] = {
           venue,
           facilityName,
-          isMainBasketball: mainIsBasketball,
+          mainSport,
           individualFacilityUses: {},
         };
 
@@ -170,19 +169,19 @@ class BetterProvider {
         for (const ifu of individualFUs) {
           const ifuId = this.extractIfuHash(ifu['@id']);
           if (ifuId) {
-            const isBasketballIFU = basketballIFUs.includes(ifu);
+            const sportEntry = sportIFUs.find((s) => s.ifu === ifu);
             facilities[fuId].individualFacilityUses[ifuId] = {
               name: ifu.name || facilityName,
-              isBasketball: isBasketballIFU,
+              sport: sportEntry ? sportEntry.sport : null,
             };
           }
         }
       }
     }
 
-    this._basketballFacilities = facilities;
+    this._sportsFacilities = facilities;
     console.log(
-      `  🏀 Better: ${basketballCount} basketball facilities found in London (${londonCount} total London facilities scanned)`
+      `  🏟️ Better: ${matchedCount} sports facilities found in London (${londonCount} total London facilities scanned)`
     );
   }
 
@@ -203,7 +202,7 @@ class BetterProvider {
       `  📡 Better: ${updated.length} updated, ${deleted.length} deleted from slots feed`
     );
 
-    // Process updates: filter for basketball slots
+    // Process updates: filter for sports slots
     if (updated.length > 0) {
       await this.processUpdates(updated);
     }
@@ -215,10 +214,10 @@ class BetterProvider {
   }
 
   /**
-   * Process updated slot items — match against basketball facility map and store.
+   * Process updated slot items — match against sports facility map and store.
    */
   async processUpdates(items) {
-    if (!this._basketballFacilities) return;
+    if (!this._sportsFacilities) return;
 
     const slots = [];
 
@@ -237,11 +236,11 @@ class BetterProvider {
       const remaining = d.remainingUses ?? d.maximumUses ?? 1;
       if (remaining <= 0) continue;
 
-      // Match the slot's facilityUse reference against our basketball facility map
+      // Match the slot's facilityUse reference against our sports facility map
       const match = this.matchSlotToFacility(d);
       if (!match) continue;
 
-      const { venue, courtName } = match;
+      const { venue, courtName, sport } = match;
 
       // Parse slot data
       const durationMin = this.parseDuration(d.duration);
@@ -254,7 +253,7 @@ class BetterProvider {
       slots.push({
         id: `better_${item.id}`,
         provider: 'better',
-        sport: 'basketball',
+        sport,
         listing_type: 'pitch_hire',
         venue_slug: this.slugify(venue.name),
         venue_name: venue.name,
@@ -264,7 +263,7 @@ class BetterProvider {
         venue_lng: venue.lng,
         court_name: courtName,
         indoor: venue.indoor,
-        surface: 'indoor', // Better basketball is always indoor sports halls
+        surface: this.guessSurface(courtName, sport),
         start_time: startDate.toISOString(),
         end_time: endDate.toISOString(),
         duration: durationMin,
@@ -277,41 +276,41 @@ class BetterProvider {
 
     if (slots.length > 0) {
       await this.storeSlots(slots);
-      console.log(`  🏀 Better: ${slots.length} basketball slots stored`);
+      console.log(`  🏟️ Better: ${slots.length} sport slots stored`);
     }
   }
 
   /**
-   * Match a slot's facilityUse reference to our basketball facility map.
+   * Match a slot's facilityUse reference to our sports facility map.
    * The slot's facilityUse field is a URL like:
    *   .../facility-uses/activity_recurrence_group:XXXX/individual-facility-uses/HASH
    *
    * We extract the group ID and optional IFU hash, then look them up.
    *
-   * @returns {{ venue, courtName } | null}
+   * @returns {{ venue, courtName, sport } | null}
    */
   matchSlotToFacility(slotData) {
     const fuRef = slotData.facilityUse;
     if (!fuRef || typeof fuRef !== 'string') return null;
 
-    // Also check the slot URL for basketball keywords
+    // Detect sport from the slot URL
     const slotUrl = slotData.url || '';
-    const slotUrlIsBasketball = BASKETBALL_URL_PATTERN.test(slotUrl);
+    const slotUrlSport = this.detectSportFromUrl(slotUrl);
 
     // Extract the activity_recurrence_group ID from the facilityUse URL
     const groupMatch = fuRef.match(/activity_recurrence_group:(\d+)/);
     if (!groupMatch) return null;
     const groupId = `activity_recurrence_group:${groupMatch[1]}`;
 
-    const facility = this._basketballFacilities[groupId];
+    const facility = this._sportsFacilities[groupId];
     if (!facility) {
-      // Facility not in our basketball map — but check if the slot URL itself
-      // indicates basketball (catch any facilities we missed)
-      if (slotUrlIsBasketball) {
+      // Facility not in our sports map — but check if the slot URL itself
+      // indicates a sport (catch any facilities we missed)
+      if (slotUrlSport) {
         // We don't have venue metadata, so we can't include this slot
         // (no location data). Log it for future investigation.
         console.log(
-          `  ⚠️ Basketball slot URL detected but facility ${groupId} not in map: ${slotUrl}`
+          `  ⚠️ Sport slot URL detected but facility ${groupId} not in map: ${slotUrl}`
         );
       }
       return null;
@@ -321,35 +320,43 @@ class BetterProvider {
     const ifuMatch = fuRef.match(/individual-facility-uses\/([a-f0-9]+)/);
     const ifuHash = ifuMatch ? ifuMatch[1] : null;
 
-    // Determine court name
+    // Determine court name and sport
     let courtName = facility.facilityName;
+    let sport = null;
 
     if (ifuHash && facility.individualFacilityUses[ifuHash]) {
       const ifu = facility.individualFacilityUses[ifuHash];
       courtName = ifu.name;
 
-      // If the main facility is basketball-related, all its slots count.
-      // If only specific IFUs are basketball, only match those.
-      if (
-        !facility.isMainBasketball &&
-        !ifu.isBasketball &&
-        !slotUrlIsBasketball
-      ) {
+      // If the main facility has a sport, all its slots inherit that sport.
+      // If only specific IFUs have a sport, only match those.
+      if (facility.mainSport) {
+        sport = facility.mainSport;
+      } else if (ifu.sport) {
+        sport = ifu.sport;
+      } else if (slotUrlSport) {
+        sport = slotUrlSport;
+      } else {
         return null;
       }
-    } else if (!facility.isMainBasketball && !slotUrlIsBasketball) {
-      // Main facility isn't basketball and no IFU match — skip
+    } else if (facility.mainSport) {
+      sport = facility.mainSport;
+    } else if (slotUrlSport) {
+      sport = slotUrlSport;
+    } else {
+      // No sport detected from facility, IFU, or slot URL — skip
       return null;
     }
 
     return {
       venue: facility.venue,
       courtName,
+      sport,
     };
   }
 
   /**
-   * Store basketball slots in Supabase (upsert by ID).
+   * Store sport slots in Supabase (upsert by ID).
    */
   async storeSlots(slots) {
     const supabase = getSupabaseClient();
@@ -416,7 +423,7 @@ class BetterProvider {
 
     return rows.map((row) => ({
       provider: 'better',
-      sport: row.sport || 'basketball',
+      sport: row.sport,
       venue: {
         id: row.venue_slug,
         name: row.venue_name,
@@ -445,6 +452,53 @@ class BetterProvider {
   }
 
   // --- Helpers ---
+
+  /**
+   * Detect sport from a name/text string and optional URL.
+   * Priority: basketball > padel > tennis > football (most specific first).
+   * @returns {string|null}
+   */
+  detectSport(text, url) {
+    if (BASKETBALL_NAME_PATTERN.test(text) || BASKETBALL_URL_PATTERN.test(url))
+      return 'basketball';
+    if (PADEL_NAME_PATTERN.test(text) || PADEL_URL_PATTERN.test(url))
+      return 'padel';
+    if (TENNIS_NAME_PATTERN.test(text) || TENNIS_URL_PATTERN.test(url))
+      return 'tennis';
+    if (FOOTBALL_NAME_PATTERN.test(text) || FOOTBALL_URL_PATTERN.test(url))
+      return 'football';
+    return null;
+  }
+
+  /**
+   * Detect sport from a URL only (for slot URLs).
+   * @returns {string|null}
+   */
+  detectSportFromUrl(url) {
+    if (!url) return null;
+    if (BASKETBALL_URL_PATTERN.test(url)) return 'basketball';
+    if (PADEL_URL_PATTERN.test(url)) return 'padel';
+    if (TENNIS_URL_PATTERN.test(url)) return 'tennis';
+    if (FOOTBALL_URL_PATTERN.test(url)) return 'football';
+    return null;
+  }
+
+  /**
+   * Guess surface type from court name and sport.
+   */
+  guessSurface(name, sport) {
+    const lower = name.toLowerCase();
+    if (lower.includes('3g') || lower.includes('4g') || lower.includes('astro'))
+      return '3G';
+    if (lower.includes('grass')) return 'grass';
+    if (lower.includes('indoor')) return 'indoor';
+    if (lower.includes('concrete')) return 'concrete';
+    // Default by sport
+    if (sport === 'tennis') return 'hard';
+    if (sport === 'basketball') return 'indoor';
+    if (sport === 'padel') return 'artificial';
+    return 'artificial';
+  }
 
   isInLondon(lat, lng) {
     return (
