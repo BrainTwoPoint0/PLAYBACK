@@ -621,16 +621,18 @@ export class PersistentCacheService {
             }
           : sport === 'tennis'
             ? {
-                courtType: (slot.venue?.indoor ? 'indoor' : 'outdoor') as const,
+                courtType: slot.venue?.indoor
+                  ? ('indoor' as const)
+                  : ('outdoor' as const),
                 surface: 'hard' as const,
                 format: 'doubles' as const,
               }
             : sport === 'basketball'
               ? { format: '5v5' as const, level: 'casual' as const }
               : {
-                  courtType: (slot.venue?.indoor
-                    ? 'indoor'
-                    : 'outdoor') as const,
+                  courtType: slot.venue?.indoor
+                    ? ('indoor' as const)
+                    : ('outdoor' as const),
                   level: 'open' as const,
                   doubles: true,
                 },
