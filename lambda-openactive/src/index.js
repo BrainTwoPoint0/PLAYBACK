@@ -1,14 +1,20 @@
 /**
- * AWS Lambda Handler for OpenActive Football Collection
+ * AWS Lambda Handler for OpenActive Collection
  *
- * Crawls Bookteq OpenActive RPDE feeds for London football pitch availability
+ * Crawls OpenActive RPDE feeds for London sports facility availability
  * and stores data in the shared PLAYScanner Supabase cache.
+ *
+ * Supports multiple providers via event.provider:
+ *   - 'bookteq' (default) — football pitches from Bookteq/Legend venues
+ *   - 'better' — basketball courts from Better/GLL leisure centres
+ *   - 'all' — run both providers sequentially
  */
 
 const { OpenActiveCollector } = require('./collector');
 
 exports.handler = async (event, context) => {
-  console.log('🏟️ OpenActive Football Lambda Started');
+  const provider = event?.provider || 'all';
+  console.log(`🏟️ OpenActive Lambda Started (provider: ${provider})`);
 
   const startTime = Date.now();
 
@@ -20,10 +26,13 @@ exports.handler = async (event, context) => {
       }
     }
 
-    const collector = new OpenActiveCollector();
+    const collector = new OpenActiveCollector({ provider });
 
     const lambdaTimeout = context.getRemainingTimeInMillis() - 30000;
-    const collectionTimeout = Math.min(lambdaTimeout, 270000);
+    // Better feed is larger — allow more time when running it
+    const defaultTimeout =
+      provider === 'better' || provider === 'all' ? 540000 : 270000;
+    const collectionTimeout = Math.min(lambdaTimeout, defaultTimeout);
 
     console.log(`⏱️ Collection timeout: ${collectionTimeout}ms`);
 
@@ -48,6 +57,7 @@ exports.handler = async (event, context) => {
       statusCode: 200,
       body: JSON.stringify({
         status: 'success',
+        provider,
         collection: collectionResult,
         executionTime: totalTime,
         timestamp: new Date().toISOString(),
@@ -61,6 +71,7 @@ exports.handler = async (event, context) => {
       statusCode: 500,
       body: JSON.stringify({
         status: 'error',
+        provider,
         error: error.message,
         executionTime: totalTime,
         timestamp: new Date().toISOString(),

@@ -1,18 +1,32 @@
 /**
- * OpenActive Football Collector
- * Orchestrates feed crawling for London Bookteq venues across 7 days.
+ * OpenActive Collector
+ * Orchestrates feed crawling for London venues across 7 days.
+ * Supports multiple providers: Bookteq (football) and Better/GLL (basketball).
  */
 
 const { BookteqProvider } = require('./providers/bookteq');
+const { BetterProvider } = require('./providers/better');
 const { setCachedData, logCollection } = require('./supabase');
 const venues = require('../venues');
 
 class OpenActiveCollector {
-  constructor() {
-    // Combine Bookteq venues + Legend feeds into one provider
-    const legendFeeds = venues.LEGEND_FEEDS || [];
-    const allVenues = [...venues, ...legendFeeds];
-    this.provider = new BookteqProvider(allVenues);
+  /**
+   * @param {object} options
+   * @param {string} [options.provider] - 'bookteq', 'better', or 'all' (default: 'all')
+   */
+  constructor(options = {}) {
+    this.providerFilter = options.provider || 'all';
+    this.providers = {};
+
+    if (this.providerFilter === 'all' || this.providerFilter === 'bookteq') {
+      const legendFeeds = venues.LEGEND_FEEDS || [];
+      const allVenues = [...venues, ...legendFeeds];
+      this.providers.bookteq = new BookteqProvider(allVenues);
+    }
+
+    if (this.providerFilter === 'all' || this.providerFilter === 'better') {
+      this.providers.better = new BetterProvider();
+    }
   }
 
   async collectAll() {
@@ -22,79 +36,92 @@ class OpenActiveCollector {
 
     const cities = ['London'];
     const daysAhead = 7;
+    const providerNames = Object.keys(this.providers);
 
     console.log(
-      `🏟️ OpenActive collection ${collectionId}: ${venues.length} venues, ${daysAhead} days`
+      `🏟️ OpenActive collection ${collectionId}: providers=[${providerNames.join(', ')}], ${daysAhead} days`
     );
 
-    for (const city of cities) {
-      for (let dayOffset = 0; dayOffset < daysAhead; dayOffset++) {
-        const date = new Date();
-        date.setDate(date.getDate() + dayOffset);
-        const dateString = date.toISOString().split('T')[0];
-        const itemStartTime = Date.now();
+    for (const [providerName, provider] of Object.entries(this.providers)) {
+      // Cache provider name for log labels
+      const cacheProvider =
+        providerName === 'bookteq' ? 'openactive' : providerName;
 
-        try {
-          const slots = await Promise.race([
-            this.provider.fetchAvailability({ date: dateString }),
-            this.timeout(60000, `Timeout for ${city} ${dateString}`),
-          ]);
+      for (const city of cities) {
+        for (let dayOffset = 0; dayOffset < daysAhead; dayOffset++) {
+          const date = new Date();
+          date.setDate(date.getDate() + dayOffset);
+          const dateString = date.toISOString().split('T')[0];
+          const itemStartTime = Date.now();
 
-          const executionTime = Date.now() - itemStartTime;
-          const uniqueVenues = [...new Set(slots.map((s) => s.venue.id))];
+          try {
+            const timeoutMs = providerName === 'better' ? 120000 : 60000;
+            const slots = await Promise.race([
+              provider.fetchAvailability({ date: dateString }),
+              this.timeout(
+                timeoutMs,
+                `Timeout for ${providerName} ${city} ${dateString}`
+              ),
+            ]);
 
-          // Write to shared cache
-          await setCachedData(city, dateString, slots, 'openactive');
+            const executionTime = Date.now() - itemStartTime;
+            const uniqueVenues = [...new Set(slots.map((s) => s.venue.id))];
 
-          await logCollection({
-            collection_id: collectionId,
-            city,
-            date: dateString,
-            status: 'success',
-            slots_collected: slots.length,
-            venues_processed: uniqueVenues.length,
-            execution_time_ms: executionTime,
-            provider: 'openactive',
-          });
+            // Write to shared cache
+            await setCachedData(city, dateString, slots, cacheProvider);
 
-          results.push({
-            city,
-            date: dateString,
-            status: 'success',
-            slotsCount: slots.length,
-            venuesCount: uniqueVenues.length,
-            executionTime,
-          });
+            await logCollection({
+              collection_id: collectionId,
+              city,
+              date: dateString,
+              status: 'success',
+              slots_collected: slots.length,
+              venues_processed: uniqueVenues.length,
+              execution_time_ms: executionTime,
+              provider: cacheProvider,
+            });
 
-          console.log(
-            `✅ openactive ${city} ${dateString}: ${slots.length} slots from ${uniqueVenues.length} venues (${executionTime}ms)`
-          );
-        } catch (error) {
-          const executionTime = Date.now() - itemStartTime;
+            results.push({
+              city,
+              date: dateString,
+              provider: providerName,
+              status: 'success',
+              slotsCount: slots.length,
+              venuesCount: uniqueVenues.length,
+              executionTime,
+            });
 
-          await logCollection({
-            collection_id: collectionId,
-            city,
-            date: dateString,
-            status: 'error',
-            slots_collected: 0,
-            venues_processed: 0,
-            error_message: error.message,
-            execution_time_ms: executionTime,
-            provider: 'openactive',
-          });
+            console.log(
+              `✅ ${cacheProvider} ${city} ${dateString}: ${slots.length} slots from ${uniqueVenues.length} venues (${executionTime}ms)`
+            );
+          } catch (error) {
+            const executionTime = Date.now() - itemStartTime;
 
-          results.push({
-            city,
-            date: dateString,
-            status: 'error',
-            error: error.message,
-            executionTime,
-          });
+            await logCollection({
+              collection_id: collectionId,
+              city,
+              date: dateString,
+              status: 'error',
+              slots_collected: 0,
+              venues_processed: 0,
+              error_message: error.message,
+              execution_time_ms: executionTime,
+              provider: cacheProvider,
+            });
 
-          console.error(
-            `❌ openactive ${city} ${dateString}: ${error.message} (${executionTime}ms)`
-          );
+            results.push({
+              city,
+              date: dateString,
+              provider: providerName,
+              status: 'error',
+              error: error.message,
+              executionTime,
+            });
+
+            console.error(
+              `❌ ${cacheProvider} ${city} ${dateString}: ${error.message} (${executionTime}ms)`
+            );
+          }
         }
       }
     }
