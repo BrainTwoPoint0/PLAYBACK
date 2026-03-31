@@ -40,7 +40,15 @@ export default function VenueCard({ group, onBook }: VenueCardProps) {
   };
 
   const isDropIn = group.listingType === 'drop_in';
-  const priceLabel = isDropIn ? '/person' : '/hr';
+  const avgDuration = Math.round(
+    group.slots.reduce((sum, s) => sum + (s.duration || 60), 0) /
+      group.slots.length
+  );
+  const priceLabel = isDropIn
+    ? '/person'
+    : avgDuration === 60
+      ? '/hr'
+      : `/${avgDuration}min`;
 
   // Features tags — sport-specific metadata first
   const tags: string[] = [];
