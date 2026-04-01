@@ -11,6 +11,7 @@ interface VenueGroup {
   city: string;
   slots: CourtSlot[];
   cheapest: number;
+  mostExpensive: number;
   indoor: boolean;
   surface: string;
   courtNames: string[];
@@ -165,6 +166,11 @@ export default function VenueCard({ group, onBook }: VenueCardProps) {
             <>
               <span className="text-lg font-bold text-[#00FF88]">
                 £{(group.cheapest / 100).toFixed(0)}
+                {group.mostExpensive > group.cheapest && (
+                  <span className="text-sm font-medium text-gray-500">
+                    –£{(group.mostExpensive / 100).toFixed(0)}
+                  </span>
+                )}
               </span>
               <span className="ml-0.5 text-xs text-gray-500">{priceLabel}</span>
             </>
@@ -223,6 +229,7 @@ export function groupSlotsByVenue(slots: CourtSlot[]): VenueGroup[] {
         city: slot.venue.location?.city || slot.venue.address?.city || '',
         slots: [],
         cheapest: slot.price,
+        mostExpensive: slot.price,
         indoor: slot.features?.indoor || false,
         surface: slot.features?.surface || '',
         courtNames: [],
@@ -238,6 +245,9 @@ export function groupSlotsByVenue(slots: CourtSlot[]): VenueGroup[] {
       (slot.price < group.cheapest || group.cheapest === 0)
     ) {
       group.cheapest = slot.price;
+    }
+    if (slot.price > group.mostExpensive) {
+      group.mostExpensive = slot.price;
     }
     if (slot.courtName) {
       group.courtNames.push(slot.courtName);
