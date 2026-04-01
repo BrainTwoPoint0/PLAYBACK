@@ -40,15 +40,18 @@ export default function VenueCard({ group, onBook }: VenueCardProps) {
   };
 
   const isDropIn = group.listingType === 'drop_in';
-  const avgDuration = Math.round(
-    group.slots.reduce((sum, s) => sum + (s.duration || 60), 0) /
-      group.slots.length
+  // Use the cheapest slot's duration for the price label (not an average)
+  const cheapestSlot = group.slots.reduce(
+    (min, s) =>
+      s.price > 0 && (min.price === 0 || s.price < min.price) ? s : min,
+    group.slots[0]
   );
+  const displayDuration = cheapestSlot?.duration || 60;
   const priceLabel = isDropIn
     ? '/person'
-    : avgDuration === 60
+    : displayDuration === 60
       ? '/hr'
-      : `/${avgDuration}min`;
+      : `/${displayDuration}min`;
 
   // Features tags — sport-specific metadata first
   const tags: string[] = [];

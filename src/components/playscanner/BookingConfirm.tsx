@@ -136,9 +136,20 @@ export default function BookingConfirm({
             <div className="text-sm text-gray-400">
               {isDropIn ? 'Per person' : 'Price'}
             </div>
-            <div className="text-2xl font-bold text-[#00FF88]">
-              £{(slot.price / 100).toFixed(2)}
-            </div>
+            {validation?.priceChanged && validation.currentPrice ? (
+              <div>
+                <span className="text-sm text-gray-600 line-through">
+                  £{(slot.price / 100).toFixed(2)}
+                </span>
+                <div className="text-2xl font-bold text-amber-400">
+                  £{(validation.currentPrice / 100).toFixed(2)}
+                </div>
+              </div>
+            ) : (
+              <div className="text-2xl font-bold text-[#00FF88]">
+                £{(slot.price / 100).toFixed(2)}
+              </div>
+            )}
           </div>
         </div>
 
@@ -150,7 +161,7 @@ export default function BookingConfirm({
         )}
         {validation?.priceChanged && validation.currentPrice && (
           <div className="mt-3 rounded-lg bg-amber-500/10 p-3 text-sm text-amber-400">
-            Price updated to £{(validation.currentPrice / 100).toFixed(2)}
+            Price has changed since we last checked
           </div>
         )}
 
