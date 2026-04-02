@@ -136,7 +136,11 @@ export default function BookingConfirm({
             <div className="text-sm text-gray-400">
               {isDropIn ? 'Per person' : 'Price'}
             </div>
-            {validation?.priceChanged && validation.currentPrice ? (
+            {slot.price === 0 ? (
+              <div className="text-sm font-medium text-gray-400">
+                Price on site
+              </div>
+            ) : validation?.priceChanged && validation.currentPrice ? (
               <div>
                 <span className="text-sm text-gray-600 line-through">
                   £{(slot.price / 100).toFixed(2)}
