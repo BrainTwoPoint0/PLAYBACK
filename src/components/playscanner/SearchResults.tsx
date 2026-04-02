@@ -102,6 +102,16 @@ export default function SearchResults({
     return prices.length > 0 ? Math.max(...prices) : 10000;
   }, [results]);
 
+  const timeMin = useMemo(() => {
+    const hours = results.map((s) => new Date(s.startTime).getHours());
+    return hours.length > 0 ? Math.min(...hours) : 0;
+  }, [results]);
+
+  const timeMax = useMemo(() => {
+    const hours = results.map((s) => new Date(s.startTime).getHours() + 1);
+    return hours.length > 0 ? Math.max(...hours) : 24;
+  }, [results]);
+
   // Count active advanced filters
   const activeFilterCount =
     (selectedProviders.size > 0 ? 1 : 0) +
@@ -467,21 +477,21 @@ export default function SearchResults({
               </h4>
               <div className="px-1">
                 <Slider
-                  value={timeRange || [0, 24]}
+                  value={timeRange || [timeMin, timeMax]}
                   onValueChange={(v) => {
-                    if (v[0] <= 0 && v[1] >= 24) setTimeRange(null);
+                    if (v[0] <= timeMin && v[1] >= timeMax) setTimeRange(null);
                     else {
                       setTimeRange([v[0], v[1]]);
                       setActiveTimeFilter(null);
                     }
                   }}
-                  min={0}
-                  max={24}
+                  min={timeMin}
+                  max={timeMax}
                   step={1}
                 />
                 <div className="flex justify-between mt-2 text-xs text-gray-400">
-                  <span>{formatHour(timeRange?.[0] ?? 0)}</span>
-                  <span>{formatHour(timeRange?.[1] ?? 24)}</span>
+                  <span>{formatHour(timeRange?.[0] ?? timeMin)}</span>
+                  <span>{formatHour(timeRange?.[1] ?? timeMax)}</span>
                 </div>
               </div>
               {timeRange && (
