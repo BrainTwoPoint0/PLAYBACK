@@ -29,6 +29,12 @@ import { TIME_CHIPS } from './QuickFilters';
 
 type ViewMode = 'list' | 'map';
 
+function formatHour(h: number): string {
+  if (h === 0 || h === 24) return '12 AM';
+  if (h === 12) return '12 PM';
+  return h < 12 ? `${h} AM` : `${h - 12} PM`;
+}
+
 export default function SearchResults({
   results,
   isLoading,
@@ -58,6 +64,7 @@ export default function SearchResults({
   );
   const [selectedVenues, setSelectedVenues] = useState<Set<string>>(new Set());
   const [priceRange, setPriceRange] = useState<[number, number] | null>(null);
+  const [timeRange, setTimeRange] = useState<[number, number] | null>(null);
   const [venueSearch, setVenueSearch] = useState('');
 
   // Derive available providers and venues from results
@@ -99,12 +106,14 @@ export default function SearchResults({
   const activeFilterCount =
     (selectedProviders.size > 0 ? 1 : 0) +
     (selectedVenues.size > 0 ? 1 : 0) +
-    (priceRange ? 1 : 0);
+    (priceRange ? 1 : 0) +
+    (timeRange ? 1 : 0);
 
   const clearAllFilters = () => {
     setSelectedProviders(new Set());
     setSelectedVenues(new Set());
     setPriceRange(null);
+    setTimeRange(null);
     setActiveTimeFilter(null);
     setShowIndoor(false);
     setShowDropIn(false);
@@ -114,7 +123,7 @@ export default function SearchResults({
   const filteredResults = useMemo(() => {
     let filtered = [...results];
 
-    // Time-of-day filter
+    // Time-of-day filter (chip or slider — mutually exclusive)
     if (activeTimeFilter) {
       const chip = TIME_CHIPS.find((t) => t.id === activeTimeFilter);
       if (chip) {
@@ -123,6 +132,11 @@ export default function SearchResults({
           return hour >= chip.range[0] && hour < chip.range[1];
         });
       }
+    } else if (timeRange) {
+      filtered = filtered.filter((slot) => {
+        const hour = new Date(slot.startTime).getHours();
+        return hour >= timeRange[0] && hour < timeRange[1];
+      });
     }
 
     if (showIndoor) {
@@ -161,6 +175,7 @@ export default function SearchResults({
     selectedProviders,
     selectedVenues,
     priceRange,
+    timeRange,
   ]);
 
   const venueGroups = useMemo(
@@ -338,11 +353,12 @@ export default function SearchResults({
           {TIME_CHIPS.map((chip) => (
             <button
               key={chip.id}
-              onClick={() =>
+              onClick={() => {
                 setActiveTimeFilter((prev) =>
                   prev === chip.id ? null : chip.id
-                )
-              }
+                );
+                setTimeRange(null);
+              }}
               className={`flex-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all text-center ${
                 activeTimeFilter === chip.id
                   ? 'border-[#00FF88]/40 bg-[#00FF88]/10 text-[#00FF88]'
@@ -440,6 +456,40 @@ export default function SearchResults({
                   className="mt-1 text-[11px] text-gray-600 hover:text-white transition-colors"
                 >
                   Reset price
+                </button>
+              )}
+            </div>
+
+            {/* ── Time range ── */}
+            <div>
+              <h4 className="text-xs font-medium uppercase tracking-wider text-gray-500 mb-3">
+                Time range
+              </h4>
+              <div className="px-1">
+                <Slider
+                  value={timeRange || [0, 24]}
+                  onValueChange={(v) => {
+                    if (v[0] <= 0 && v[1] >= 24) setTimeRange(null);
+                    else {
+                      setTimeRange([v[0], v[1]]);
+                      setActiveTimeFilter(null);
+                    }
+                  }}
+                  min={0}
+                  max={24}
+                  step={1}
+                />
+                <div className="flex justify-between mt-2 text-xs text-gray-400">
+                  <span>{formatHour(timeRange?.[0] ?? 0)}</span>
+                  <span>{formatHour(timeRange?.[1] ?? 24)}</span>
+                </div>
+              </div>
+              {timeRange && (
+                <button
+                  onClick={() => setTimeRange(null)}
+                  className="mt-1 text-[11px] text-gray-600 hover:text-white transition-colors"
+                >
+                  Reset time
                 </button>
               )}
             </div>
