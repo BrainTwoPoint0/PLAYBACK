@@ -140,7 +140,9 @@ export default function BookingConfirm({
               <div className="text-sm font-medium text-gray-400">
                 Price on site
               </div>
-            ) : validation?.priceChanged && validation.currentPrice ? (
+            ) : validation?.priceChanged &&
+              validation.currentPrice != null &&
+              validation.currentPrice > 0 ? (
               <div>
                 <span className="text-sm text-gray-600 line-through">
                   £{(slot.price / 100).toFixed(2)}
@@ -163,11 +165,13 @@ export default function BookingConfirm({
             This slot may no longer be available. Try a different time.
           </div>
         )}
-        {validation?.priceChanged && validation.currentPrice && (
-          <div className="mt-3 rounded-lg bg-amber-500/10 p-3 text-sm text-amber-400">
-            Price has changed since we last checked
-          </div>
-        )}
+        {validation?.priceChanged &&
+          validation.currentPrice != null &&
+          validation.currentPrice > 0 && (
+            <div className="mt-3 rounded-lg bg-amber-500/10 p-3 text-sm text-amber-400">
+              Price has changed since we last checked
+            </div>
+          )}
 
         {/* CTA */}
         <button
