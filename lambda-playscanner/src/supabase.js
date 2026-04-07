@@ -57,8 +57,16 @@ async function setCachedData(city, date, slots, providerName = 'playtomic') {
   if (existing?.slots && Array.isArray(existing.slots)) {
     // Keep slots from other providers, but discard if older than 60 minutes
     const staleThreshold = Date.now() - 60 * 60 * 1000;
+    // Determine sport of incoming batch for provider+sport merge
+    // This prevents e.g. tennis Playtomic from overwriting padel Playtomic
+    const incomingSport = slots[0]?.sport || null;
     const otherSlots = existing.slots.filter((s) => {
-      if (!s.provider || s.provider === providerName) return false;
+      if (!s.provider) return false;
+      if (s.provider === providerName) {
+        // If both have sport info, only remove same-sport slots from this provider
+        if (incomingSport && s.sport && s.sport !== incomingSport) return true;
+        return false;
+      }
       // Discard stale provider data
       if (s._collectedAt && new Date(s._collectedAt).getTime() < staleThreshold)
         return false;
