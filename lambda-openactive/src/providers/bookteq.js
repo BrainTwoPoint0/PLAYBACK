@@ -145,8 +145,9 @@ class BookteqProvider {
         ? new Date(d.endDate)
         : new Date(startDate.getTime() + durationMin * 60000);
       const { price, currency } = this.parsePrice(d.offers);
-      const bookingUrl =
-        d.url || d.offers?.[0]?.url || `https://${venue.slug}.bookteq.com`;
+      // d.offers[0].url is an OpenActive Booking API endpoint (order-quote-templates),
+      // not a user-facing page — skip it and use the venue homepage instead
+      const bookingUrl = d.url || `https://${venue.slug}.bookteq.com`;
 
       slots.push({
         id: item.id,

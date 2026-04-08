@@ -25,6 +25,9 @@ const ALLOWED_DOMAINS = [
   'hireapitch.com',
   'www.hireapitch.com',
   'flow.onl',
+  'better.org.uk',
+  'www.better.org.uk',
+  'legendonlineservices.co.uk',
 ];
 
 function isAllowedUrl(url: string): boolean {
@@ -134,6 +137,7 @@ async function validatePrice(slot: {
   venueId: string;
   startTime: string;
   price: number;
+  sport?: string;
 }): Promise<{
   available: boolean;
   currentPrice: number | null;
@@ -207,7 +211,7 @@ async function validatePrice(slot: {
 
     case 'playtomic': {
       const res = await fetch(
-        `https://api.playtomic.io/v1/availability?sport_id=PADEL&tenant_id=${slot.venueId}&start_min=${date}T00:00:00&start_max=${date}T23:59:59`,
+        `https://api.playtomic.io/v1/availability?sport_id=${slot.sport === 'tennis' ? 'TENNIS' : 'PADEL'}&tenant_id=${slot.venueId}&start_min=${date}T00:00:00&start_max=${date}T23:59:59`,
         { signal: AbortSignal.timeout(5000) }
       );
       if (!res.ok) return null;
