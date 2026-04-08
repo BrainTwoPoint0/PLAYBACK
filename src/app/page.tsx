@@ -9,7 +9,7 @@ import Services from '@/components/Services';
 import { ContactForm } from '@/components/Contact';
 import Press from '@/components/Press';
 import LatestNews from '@/components/LatestNews';
-import { Suspense, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Network } from '@/components/Network';
 
 export default function Home() {
@@ -44,9 +44,7 @@ export default function Home() {
       {/* <Partners /> */}
       <Services />
       <Press />
-      <Suspense fallback={<div>Loading latest news...</div>}>
-        {!loading && <LatestNews posts={latestPosts} />}
-      </Suspense>
+      <LatestNews posts={latestPosts} loading={loading} />
       <SportsList />
       <ContactForm />
     </main>
