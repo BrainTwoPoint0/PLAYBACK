@@ -23,6 +23,7 @@ async function pollFeed(feedUrl, options = {}) {
   let currentUrl = (await getCursor(feedUrl)) || feedUrl;
   const startTime = Date.now();
   let pageCount = 0;
+  let lastNext = currentUrl;
 
   const updated = [];
   const deleted = [];
@@ -32,6 +33,8 @@ async function pollFeed(feedUrl, options = {}) {
       console.warn(
         `Feed timeout after ${pageCount} pages (${updated.length} updated, ${deleted.length} deleted): ${feedUrl}`
       );
+      // Save cursor on timeout so we can resume next run
+      await saveCursor(feedUrl, lastNext);
       break;
     }
 
@@ -57,8 +60,8 @@ async function pollFeed(feedUrl, options = {}) {
       break;
     }
 
-    // Save cursor after each page (resume point if Lambda times out)
-    await saveCursor(feedUrl, next);
+    // Track cursor position in memory — only saved to DB on completion or timeout
+    lastNext = next;
     currentUrl = next;
   }
 
