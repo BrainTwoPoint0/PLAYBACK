@@ -292,6 +292,41 @@ function filterAndSort(rows, params, nowMs) {
   return out;
 }
 
+/**
+ * Compute the UTC ISO bounds of a London-local day. Used by writeSlots to
+ * scope the tombstone sweep so it doesn't accidentally tombstone the wrong
+ * day's rows during BST.
+ *
+ * The naive `${dateStr}T00:00:00.000Z` approach hardcodes UTC midnight,
+ * which silently drops late-evening London slots from late March to late
+ * October (Phase 4 fix).
+ *
+ * Approach: sample at midnight UTC of the requested date, ask Intl what
+ * hour London thinks it is, derive the offset (0 = GMT, 1 = BST), shift
+ * accordingly. Sampling at 00:00 UTC works for both DST transition days
+ * (the BST↔GMT switch is at 01:00 UTC, so midnight is always on the
+ * "before" side of the boundary).
+ */
+function londonDayBoundsUtc(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const probeUtc = new Date(Date.UTC(y, m - 1, d, 0, 0, 0));
+  const londonHourStr = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    hour: 'numeric',
+    hour12: false,
+  }).format(probeUtc);
+  const londonHour = parseInt(londonHourStr, 10);
+  // londonHour is 0 (GMT) or 1 (BST). London midnight on dateStr is offset
+  // hours BEFORE midnight UTC of the same date.
+  const offsetMs = londonHour * 3600 * 1000;
+  const startMinUtc = new Date(probeUtc.getTime() - offsetMs);
+  const startMaxUtc = new Date(startMinUtc.getTime() + 24 * 3600 * 1000 - 1);
+  return {
+    startMinIso: startMinUtc.toISOString(),
+    startMaxIso: startMaxUtc.toISOString(),
+  };
+}
+
 module.exports = {
   buildSlotId,
   slotToRow,
@@ -299,4 +334,5 @@ module.exports = {
   filterAndSort,
   normalizeVenue,
   resolveSport,
+  londonDayBoundsUtc,
 };

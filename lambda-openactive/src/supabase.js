@@ -3,7 +3,7 @@
  */
 
 const { createClient } = require('@supabase/supabase-js');
-const { slotToRow } = require('./slot-mapper');
+const { slotToRow, londonDayBoundsUtc } = require('./slot-mapper');
 
 // Initialize Supabase client
 let supabase;
@@ -73,9 +73,12 @@ async function writeSlots(slots, providerName, scope) {
     );
   }
 
+  // BST-aware day bounds — see lambda-playscanner copy for context.
   const sortedDates = [...scope.dates].sort();
-  const startMin = `${sortedDates[0]}T00:00:00.000Z`;
-  const startMax = `${sortedDates[sortedDates.length - 1]}T23:59:59.999Z`;
+  const startMin = londonDayBoundsUtc(sortedDates[0]).startMinIso;
+  const startMax = londonDayBoundsUtc(
+    sortedDates[sortedDates.length - 1]
+  ).startMaxIso;
 
   const { data, error } = await supabase.rpc('playscanner_write_slots', {
     p_provider: providerName,

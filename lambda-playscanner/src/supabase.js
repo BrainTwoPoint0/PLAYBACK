@@ -3,7 +3,7 @@
  */
 
 const { createClient } = require('@supabase/supabase-js');
-const { slotToRow } = require('./slot-mapper');
+const { slotToRow, londonDayBoundsUtc } = require('./slot-mapper');
 
 // Initialize Supabase client
 let supabase;
@@ -78,12 +78,16 @@ async function writeSlots(slots, providerName, scope) {
   }
 
   // Bound the sweep by the widest [start_min, start_max] window derived from
-  // attempted dates. The collector always attempts a contiguous 7-day window,
-  // so using min/max of the date strings is safe and uses the existing
-  // (provider, city, start_time) index.
+  // attempted dates. The previous version hardcoded `T00:00:00.000Z` for the
+  // bounds, which silently mis-aligned the sweep window during BST — late
+  // evening London slots fell outside the UTC-bounded scope and would never
+  // be tombstoned correctly. londonDayBoundsUtc returns the actual UTC bounds
+  // of a London-local day (handles BST/GMT automatically).
   const sortedDates = [...scope.dates].sort();
-  const startMin = `${sortedDates[0]}T00:00:00.000Z`;
-  const startMax = `${sortedDates[sortedDates.length - 1]}T23:59:59.999Z`;
+  const startMin = londonDayBoundsUtc(sortedDates[0]).startMinIso;
+  const startMax = londonDayBoundsUtc(
+    sortedDates[sortedDates.length - 1]
+  ).startMaxIso;
 
   const { data, error } = await supabase.rpc('playscanner_write_slots', {
     p_provider: providerName,
