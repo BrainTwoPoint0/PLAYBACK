@@ -7,8 +7,15 @@
 const { BookteqProvider } = require('./providers/bookteq');
 const { BetterProvider } = require('./providers/better');
 const { writeSlots, logCollection } = require('./supabase');
-const { resolveSport } = require('./slot-mapper');
 const venues = require('../venues');
+
+// Sport universe per provider. Used to scope the tombstone sweep even on
+// zero-slot days (otherwise an empty batch would skip the sweep and leave
+// yesterday's stale rows visible until the 24h floor hid them).
+const PROVIDER_SPORTS = {
+  better: ['basketball', 'football', 'tennis', 'padel'],
+  openactive: ['football'], // Bookteq/Legend — football only in practice
+};
 
 class OpenActiveCollector {
   /**
@@ -71,20 +78,29 @@ class OpenActiveCollector {
             // Write to the flat playscanner_slots table. Unlike
             // lambda-playscanner, the openactive event payload doesn't carry
             // a sport — Better's RPDE feed can emit multiple sports in one
-            // batch — so derive scope.sports from the batch itself.
-            const batchSports = [
-              ...new Set(slots.map((s) => resolveSport(s)).filter(Boolean)),
+            // batch — so we scope by the universe of sports the provider is
+            // responsible for, not by what happened to come back this time.
+            //
+            // This matters for EMPTY batches specifically: if a day genuinely
+            // has zero slots (all booked / all past) and we derived scope.sports
+            // from an empty array, the sweep would skip entirely and yesterday's
+            // stale rows would linger until the 24h floor hid them. Running the
+            // sweep with the full sport universe ensures tombstones fire even
+            // on zero-slot days.
+            const providerSports = PROVIDER_SPORTS[cacheProvider] || [
+              'football',
+              'tennis',
+              'padel',
+              'basketball',
             ];
-            if (batchSports.length > 0) {
-              const wsResult = await writeSlots(slots, cacheProvider, {
-                cities: [city],
-                sports: batchSports,
-                dates: [dateString],
-              });
-              console.log(
-                `🗂️ ${cacheProvider} [${batchSports.join(',')}] ${city} ${dateString}: +${wsResult.written}/~${wsResult.tombstoned}`
-              );
-            }
+            const wsResult = await writeSlots(slots, cacheProvider, {
+              cities: [city],
+              sports: providerSports,
+              dates: [dateString],
+            });
+            console.log(
+              `🗂️ ${cacheProvider} [${providerSports.join(',')}] ${city} ${dateString}: +${wsResult.written}/~${wsResult.tombstoned} (slots=${slots.length})`
+            );
 
             await logCollection({
               collection_id: collectionId,
