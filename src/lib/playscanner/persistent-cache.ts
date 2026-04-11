@@ -208,75 +208,6 @@ export class PersistentCacheService {
   }
 
   /**
-   * Store collected data in persistent cache
-   */
-  async setCachedData(
-    city: string,
-    date: string,
-    slots: CourtSlot[],
-    ttl: number = PersistentCacheService.defaultTTL
-  ): Promise<void> {
-    try {
-      const cacheKey = this.getCacheKey(city, date);
-      const expiresAt = new Date(Date.now() + ttl);
-
-      // Calculate metadata
-      const uniqueVenues = new Set(slots.map((slot) => slot.venue.id)).size;
-      const metadata = {
-        totalSlots: slots.length,
-        uniqueVenues,
-        collectedAt: new Date().toISOString(),
-        provider: 'playtomic',
-      };
-
-      let retryCount = 0;
-      const maxRetries = 3;
-
-      while (retryCount < maxRetries) {
-        const { error } = await this.supabase.from('playscanner_cache').upsert(
-          {
-            cache_key: cacheKey,
-            city: city.toLowerCase(),
-            date,
-            slots,
-            metadata,
-            expires_at: expiresAt.toISOString(),
-          },
-          {
-            onConflict: 'cache_key',
-            ignoreDuplicates: false,
-          }
-        );
-
-        if (!error) {
-          break;
-        }
-
-        if (error.code === '23505' && retryCount < maxRetries - 1) {
-          console.warn(
-            `Duplicate key conflict for ${cacheKey}, retrying... (${retryCount + 1}/${maxRetries})`
-          );
-          retryCount++;
-          await new Promise((resolve) =>
-            setTimeout(resolve, 1000 * retryCount)
-          );
-          continue;
-        }
-
-        console.error('Error storing cached data:', error);
-        throw error;
-      }
-
-      console.log(
-        `💾 Cached ${slots.length} slots for ${city} ${date} (TTL: ${ttl / 1000 / 60}min)`
-      );
-    } catch (error) {
-      console.error('setCachedData error:', error);
-      throw error;
-    }
-  }
-
-  /**
    * Log collection attempt
    */
   async logCollection(entry: CollectionLogEntry): Promise<void> {
@@ -304,28 +235,71 @@ export class PersistentCacheService {
   }
 
   /**
-   * Get cache statistics
+   * Aggregate stats from `playscanner_slots`. Semantics shifted slightly
+   * from the blob era but the shape is preserved for existing callers
+   * (admin/health/search endpoints):
+   *   - totalEntries / totalSlots both count rows (no per-city/date bucketing anymore)
+   *   - activeEntries counts available=TRUE rows
+   *   - expiredEntries counts tombstoned (available=FALSE) rows
+   *   - dateRange is min/max start_time (what users can book)
+   *   - lastCollection is max collected_at (most recent successful write)
    */
   async getCacheStats(): Promise<CacheStats> {
     try {
-      const { data, error } = await this.supabase.rpc('get_cache_stats');
+      const [totalsRes, activeRes, citiesRes, dateRangeRes] = await Promise.all(
+        [
+          this.supabase
+            .from('playscanner_slots')
+            .select('id', { count: 'exact', head: true }),
+          this.supabase
+            .from('playscanner_slots')
+            .select('id', { count: 'exact', head: true })
+            .eq('available', true),
+          this.supabase.from('playscanner_slots').select('city'),
+          this.supabase
+            .from('playscanner_slots')
+            .select('start_time, collected_at')
+            .order('start_time', { ascending: true })
+            .limit(1),
+        ]
+      );
 
-      if (error) {
-        console.error('Error getting cache stats:', error);
-        return this.getDefaultStats();
-      }
+      const total = totalsRes.count || 0;
+      const active = activeRes.count || 0;
+      const expired = Math.max(0, total - active);
+
+      const cities = new Set(
+        (citiesRes.data || []).map((row: { city: string }) => row.city)
+      );
+
+      // Cheapest way to get the newest start_time + latest collected_at without
+      // pulling every row: one row each, ordered.
+      const [newestRow, latestCollectRow] = await Promise.all([
+        this.supabase
+          .from('playscanner_slots')
+          .select('start_time')
+          .order('start_time', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        this.supabase
+          .from('playscanner_slots')
+          .select('collected_at')
+          .order('collected_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
 
       return {
-        totalEntries: data.total_entries || 0,
-        activeEntries: data.active_entries || 0,
-        expiredEntries: data.expired_entries || 0,
-        totalSlots: data.total_slots || 0,
-        citiesCovered: data.cities_covered || 0,
+        totalEntries: total,
+        activeEntries: active,
+        expiredEntries: expired,
+        totalSlots: total,
+        citiesCovered: cities.size,
         dateRange: {
-          oldest: data.date_range?.oldest || null,
-          newest: data.date_range?.newest || null,
+          oldest: dateRangeRes.data?.[0]?.start_time || null,
+          newest: newestRow.data?.start_time || null,
         },
-        lastCollection: data.last_collection || null,
+        lastCollection: latestCollectRow.data?.collected_at || null,
         memoryUsage: 'N/A (Database)',
       };
     } catch (error) {
@@ -335,13 +309,12 @@ export class PersistentCacheService {
   }
 
   /**
-   * Health check - verify database connection
+   * Health check — verify database connection by probing playscanner_slots.
    */
   async healthCheck(): Promise<{ healthy: boolean; details: any }> {
     try {
-      // Use playscanner_cache for health check instead of playscanner_health
       const { error } = await this.supabase
-        .from('playscanner_cache')
+        .from('playscanner_slots')
         .select('id')
         .limit(1);
 
@@ -372,60 +345,33 @@ export class PersistentCacheService {
   }
 
   /**
-   * Clear expired cache entries
+   * Delete truly old rows from `playscanner_slots`. The writer's tombstone
+   * sweep handles the hot path (booked-out slots flip to available=FALSE),
+   * but tombstones accumulate — this wipes anything older than 7 days,
+   * which is well beyond any possible future-date read.
    */
   async cleanup(): Promise<number> {
     try {
-      const { data, error } = await this.supabase.rpc('cleanup_expired_cache');
+      const cutoff = new Date(
+        Date.now() - 7 * 24 * 60 * 60 * 1000
+      ).toISOString();
+
+      const { error, count } = await this.supabase
+        .from('playscanner_slots')
+        .delete({ count: 'exact' })
+        .lt('collected_at', cutoff);
 
       if (error) {
         console.error('Error during cleanup:', error);
         return 0;
       }
 
-      console.log(`🗑️ Cleaned up ${data} expired cache entries`);
-      return data;
+      const deleted = count || 0;
+      console.log(`🗑️ Cleaned up ${deleted} stale playscanner_slots rows`);
+      return deleted;
     } catch (error) {
       console.error('cleanup error:', error);
       return 0;
-    }
-  }
-
-  /**
-   * Get cache key for city and date
-   */
-  private getCacheKey(city: string, date: string): string {
-    return `${city.toLowerCase()}:${date}`;
-  }
-
-  /**
-   * Get cache age description
-   */
-  private async getCacheAge(city: string, date: string): Promise<string> {
-    try {
-      const cacheKey = this.getCacheKey(city, date);
-
-      const { data, error } = await this.supabase
-        .from('playscanner_cache')
-        .select('created_at')
-        .eq('cache_key', cacheKey)
-        .single();
-
-      if (error || !data) {
-        return 'unknown';
-      }
-
-      const ageMs = Date.now() - new Date(data.created_at).getTime();
-      const ageMinutes = Math.floor(ageMs / 60000);
-
-      if (ageMinutes < 1) return 'fresh';
-      if (ageMinutes < 15) return `${ageMinutes}m old`;
-      if (ageMinutes < 60) return `${ageMinutes}m old`;
-
-      const ageHours = Math.floor(ageMinutes / 60);
-      return `${ageHours}h old`;
-    } catch (error) {
-      return 'unknown';
     }
   }
 
