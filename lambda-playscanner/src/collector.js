@@ -12,7 +12,25 @@ const { FootyAddictsProvider } = require('./providers/footy-addicts');
 const { FCUrbanProvider } = require('./providers/fc-urban');
 const { HireAPitchProvider } = require('./providers/hireapitch');
 const { FlowProvider } = require('./providers/flow');
-const { setCachedData, logCollection } = require('./supabase');
+const { setCachedData, writeSlots, logCollection } = require('./supabase');
+
+// Sport resolution must match collectCityDateProvider below — duplicated only
+// so we can compute the scope for the flat-table writer without changing the
+// existing method's return shape.
+const FOOTBALL_PROVIDER_NAMES = [
+  'powerleague',
+  'goals',
+  'footy_addicts',
+  'fc_urban',
+  'hireapitch',
+];
+function resolveRunSport(group, providerName) {
+  if (group === 'tennis') return 'tennis';
+  if (group === 'football') return 'football';
+  if (!group && FOOTBALL_PROVIDER_NAMES.includes(providerName))
+    return 'football';
+  return 'padel';
+}
 
 class BackgroundCollector {
   constructor(options = {}) {
@@ -124,6 +142,25 @@ class BackgroundCollector {
 
             // Store in Supabase (read-merge-write per provider)
             await setCachedData(city, dateString, slots, provider.name);
+
+            // Dual-write to the flat playscanner_slots table (Phase 1).
+            // Non-blocking: if the flat write fails we log and continue — the
+            // blob cache above is still the primary read source until Phase 2.
+            try {
+              const runSport = resolveRunSport(this.group, provider.name);
+              const wsResult = await writeSlots(slots, provider.name, {
+                cities: [city],
+                sports: [runSport],
+                dates: [dateString],
+              });
+              console.log(
+                `🗂️ flat: ${provider.name} ${runSport} ${city} ${dateString}: +${wsResult.written}/~${wsResult.tombstoned}`
+              );
+            } catch (flatErr) {
+              console.error(
+                `writeSlots failed for ${provider.name} ${city} ${dateString}: ${flatErr.message}`
+              );
+            }
 
             await logCollection({
               collection_id: collectionId,

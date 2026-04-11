@@ -6,7 +6,8 @@
 
 const { BookteqProvider } = require('./providers/bookteq');
 const { BetterProvider } = require('./providers/better');
-const { setCachedData, logCollection } = require('./supabase');
+const { setCachedData, writeSlots, logCollection } = require('./supabase');
+const { resolveSport } = require('./slot-mapper');
 const venues = require('../venues');
 
 class OpenActiveCollector {
@@ -67,8 +68,34 @@ class OpenActiveCollector {
             const executionTime = Date.now() - itemStartTime;
             const uniqueVenues = [...new Set(slots.map((s) => s.venue.id))];
 
-            // Write to shared cache
+            // Write to shared cache (blob, Phase 1 primary)
             await setCachedData(city, dateString, slots, cacheProvider);
+
+            // Dual-write to the flat playscanner_slots table (Phase 1).
+            // Unlike lambda-playscanner, the openactive event payload doesn't
+            // carry a sport — Better's RPDE feed can emit multiple sports in
+            // one batch. Derive scope.sports from the actual sports present,
+            // so the tombstone sweep only touches what we just refreshed.
+            // Non-blocking: blob cache stays primary until Phase 2.
+            try {
+              const batchSports = [
+                ...new Set(slots.map((s) => resolveSport(s)).filter(Boolean)),
+              ];
+              if (batchSports.length > 0) {
+                const wsResult = await writeSlots(slots, cacheProvider, {
+                  cities: [city],
+                  sports: batchSports,
+                  dates: [dateString],
+                });
+                console.log(
+                  `🗂️ flat: ${cacheProvider} [${batchSports.join(',')}] ${city} ${dateString}: +${wsResult.written}/~${wsResult.tombstoned}`
+                );
+              }
+            } catch (flatErr) {
+              console.error(
+                `writeSlots failed for ${cacheProvider} ${city} ${dateString}: ${flatErr.message}`
+              );
+            }
 
             await logCollection({
               collection_id: collectionId,
