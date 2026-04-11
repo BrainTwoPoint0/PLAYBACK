@@ -3,19 +3,6 @@ import { CourtSlot, SearchParams, SearchResult } from './types';
 import { rowToCourtSlot, PlayscannerSlotRow } from './slot-mapper';
 
 /**
- * Staleness safety net for reads from `playscanner_slots`. Rows older than
- * this are excluded from search() results. Tombstoning is the primary
- * mechanism for dropping booked-out slots; this floor is just insurance so
- * a stuck collector can't leave truly ancient data visible.
- *
- * 24 hours is generous — it lets every provider schedule (30min → 2h
- * cadence) survive multiple consecutive failures without going dark, at
- * the cost of showing slightly stale data during extended outages. Tighter
- * per-provider TTLs are a post-Phase-2 optimization.
- */
-const STALENESS_FLOOR_MS = 24 * 60 * 60 * 1000;
-
-/**
  * Production-ready persistent cache service using Supabase
  * Replaces in-memory cache with database persistence
  */
@@ -85,80 +72,39 @@ export class PersistentCacheService {
   }
 
   /**
-   * Search the flat `playscanner_slots` table for available slots matching
-   * the given filters. This is the Phase 2 reader cutover — replaces the
-   * old blob fetch + transformLambdaSlot + JS filter pipeline with a
-   * single indexed Supabase query that only reads the slice the user
-   * asked for.
+   * Search `playscanner_slots` via the `playscanner_search_slots_json`
+   * Postgres function. One round-trip, jsonb-aggregated response —
+   * bypasses PostgREST's default 1000-row cap so padel/football slices
+   * with 2k+ rows finish in a single network hop instead of 2-3 paged
+   * trans-Atlantic round-trips.
    *
-   * The heavy lifting lives in SQL (sport/city/price/indoor filters use
-   * indexed columns). The TS side just maps rows → CourtSlot.
-   *
-   * Staleness: rows older than STALENESS_FLOOR_MS are excluded as a safety
-   * net. Tombstoning in the writer is the primary mechanism for dropping
-   * booked-out slots; this is insurance against a stuck collector.
+   * Filtering (sport/city/time/price/indoor), ordering, and the 24h
+   * staleness floor all live in the SQL function. The TS side is a
+   * thin caller + row → CourtSlot mapper.
    */
   async search(params: SearchParams): Promise<SearchResult> {
     const startTime = Date.now();
 
     try {
-      const nowIso = new Date().toISOString();
-      const staleFloorIso = new Date(
-        Date.now() - STALENESS_FLOOR_MS
-      ).toISOString();
-      const startOfDay = `${params.date}T00:00:00.000Z`;
-      const endOfDay = `${params.date}T23:59:59.999Z`;
-
-      // Paginate past Supabase's server-side db_max_rows cap (default 1000).
-      // A busy padel-London-tomorrow slice currently has ~1,300 rows and
-      // will grow as more providers come online, so we always page until
-      // we get a short batch back.
-      const pageSize = 1000;
-      const maxPages = 10; // hard safety ceiling — 10k rows is plenty
-      const rows: PlayscannerSlotRow[] = [];
-
-      for (let page = 0; page < maxPages; page++) {
-        let q = this.supabase
-          .from('playscanner_slots')
-          .select('*')
-          .eq('city', params.location.toLowerCase())
-          .eq('sport', params.sport)
-          .eq('available', true)
-          .gt('start_time', nowIso)
-          .gte('start_time', startOfDay)
-          .lte('start_time', endOfDay)
-          .gt('collected_at', staleFloorIso);
-
-        if (params.startTime) {
-          const threshold = `${params.date}T${params.startTime}:00.000Z`;
-          q = q.gte('start_time', threshold);
+      const { data, error } = await this.supabase.rpc(
+        'playscanner_search_slots_json',
+        {
+          p_city: params.location.toLowerCase(),
+          p_sport: params.sport,
+          p_date: params.date,
+          p_start_time: params.startTime ?? null,
+          p_end_time: params.endTime ?? null,
+          p_max_price: params.maxPrice ?? null,
+          p_indoor: params.indoor ?? null,
         }
-        if (params.endTime) {
-          const threshold = `${params.date}T${params.endTime}:00.000Z`;
-          q = q.lte('end_time', threshold);
-        }
-        if (params.maxPrice != null) {
-          q = q.lte('price', params.maxPrice);
-        }
-        if (params.indoor != null) {
-          q = q.eq('venue_indoor', params.indoor);
-        }
+      );
 
-        const { data, error } = await q
-          .order('start_time', { ascending: true })
-          .order('price', { ascending: true })
-          .order('id', { ascending: true }) // stable tiebreaker for paging
-          .range(page * pageSize, (page + 1) * pageSize - 1);
-
-        if (error) {
-          console.error('PersistentCacheService search query error:', error);
-          return this.emptySearchResult(params, startTime, 'error');
-        }
-
-        const batch = (data || []) as PlayscannerSlotRow[];
-        rows.push(...batch);
-        if (batch.length < pageSize) break;
+      if (error) {
+        console.error('PersistentCacheService search rpc error:', error);
+        return this.emptySearchResult(params, startTime, 'error');
       }
+
+      const rows = (Array.isArray(data) ? data : []) as PlayscannerSlotRow[];
       const results = rows.map(rowToCourtSlot);
       const providers = [...new Set(results.map((s) => s.provider))];
       const latestCollectedAt = rows.reduce<string | null>((acc, r) => {
