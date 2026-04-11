@@ -17,11 +17,12 @@ export const PROVIDER_CONFIG: Record<
   fives: { displayName: 'Fives', color: '#8B5CF6' },
   hireapitch: { displayName: 'HireAPitch', color: '#10B981' },
   flow: { displayName: 'Royal Parks', color: '#34D399' },
+  clubspark: { displayName: 'ClubSpark (LTA)', color: '#0052A5' },
 };
 
 // Provider types
 export type PadelProvider = 'playtomic' | 'matchi' | 'padel_mates' | 'flow';
-export type TennisProvider = 'playtomic' | 'matchi' | 'flow';
+export type TennisProvider = 'playtomic' | 'matchi' | 'flow' | 'clubspark';
 export type FootballProvider =
   | 'openactive'
   | 'powerleague'

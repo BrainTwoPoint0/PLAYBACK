@@ -12,6 +12,7 @@ const { FootyAddictsProvider } = require('./providers/footy-addicts');
 const { FCUrbanProvider } = require('./providers/fc-urban');
 const { HireAPitchProvider } = require('./providers/hireapitch');
 const { FlowProvider } = require('./providers/flow');
+const { ClubSparkProvider } = require('./providers/clubspark');
 const { writeSlots, logCollection } = require('./supabase');
 
 // Sport resolution for the flat-table writer scope. Must match what the
@@ -52,6 +53,7 @@ class BackgroundCollector {
       { name: 'fc_urban', instance: new FCUrbanProvider() },
       { name: 'hireapitch', instance: new HireAPitchProvider() },
       { name: 'flow', instance: new FlowProvider() },
+      { name: 'clubspark', instance: new ClubSparkProvider() },
     ];
 
     this.group = options.group || null;
@@ -70,7 +72,7 @@ class BackgroundCollector {
     } else if (options.group === 'tennis') {
       // MATCHi has 0 London tennis venues — skip it
       this.providers = this.providers.filter((p) =>
-        ['playtomic', 'flow'].includes(p.name)
+        ['playtomic', 'flow', 'clubspark'].includes(p.name)
       );
     } else if (options.group === 'football') {
       this.providers = this.providers.filter((p) =>
