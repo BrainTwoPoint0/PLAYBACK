@@ -12,7 +12,7 @@ const { FootyAddictsProvider } = require('./providers/footy-addicts');
 const { FCUrbanProvider } = require('./providers/fc-urban');
 const { HireAPitchProvider } = require('./providers/hireapitch');
 const { FlowProvider } = require('./providers/flow');
-const { setCachedData, writeSlots, logCollection } = require('./supabase');
+const { writeSlots, logCollection } = require('./supabase');
 
 // Sport resolution for the flat-table writer scope. Must match what the
 // provider actually emits. Several EventBridge schedules send per-provider
@@ -147,27 +147,17 @@ class BackgroundCollector {
             const executionTime = Date.now() - itemStartTime;
             const uniqueVenues = this.getUniqueVenues(slots);
 
-            // Store in Supabase (read-merge-write per provider)
-            await setCachedData(city, dateString, slots, provider.name);
-
-            // Dual-write to the flat playscanner_slots table (Phase 1).
-            // Non-blocking: if the flat write fails we log and continue — the
-            // blob cache above is still the primary read source until Phase 2.
-            try {
-              const runSport = resolveRunSport(this.group, provider.name);
-              const wsResult = await writeSlots(slots, provider.name, {
-                cities: [city],
-                sports: [runSport],
-                dates: [dateString],
-              });
-              console.log(
-                `🗂️ flat: ${provider.name} ${runSport} ${city} ${dateString}: +${wsResult.written}/~${wsResult.tombstoned}`
-              );
-            } catch (flatErr) {
-              console.error(
-                `writeSlots failed for ${provider.name} ${city} ${dateString}: ${flatErr.message}`
-              );
-            }
+            // Write to the flat playscanner_slots table — sole storage
+            // since the playscanner_cache blob was retired in Phase 3.
+            const runSport = resolveRunSport(this.group, provider.name);
+            const wsResult = await writeSlots(slots, provider.name, {
+              cities: [city],
+              sports: [runSport],
+              dates: [dateString],
+            });
+            console.log(
+              `🗂️ ${provider.name} ${runSport} ${city} ${dateString}: +${wsResult.written}/~${wsResult.tombstoned}`
+            );
 
             await logCollection({
               collection_id: collectionId,

@@ -89,31 +89,3 @@ exports.handler = async (event, context) => {
     };
   }
 };
-
-/**
- * Health check handler (optional endpoint)
- */
-exports.healthCheck = async (event) => {
-  try {
-    const { getCacheStats } = require('./supabase');
-    const stats = await getCacheStats();
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        status: 'healthy',
-        cacheStats: stats,
-        timestamp: new Date().toISOString(),
-      }),
-    };
-  } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        status: 'unhealthy',
-        error: error.message,
-        timestamp: new Date().toISOString(),
-      }),
-    };
-  }
-};
