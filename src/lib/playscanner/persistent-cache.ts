@@ -1,13 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
-import {
-  CourtSlot,
-  FootballProvider,
-  PadelProvider,
-  Provider,
-  SearchParams,
-  SearchResult,
-  Venue,
-} from './types';
+import { CourtSlot, SearchParams, SearchResult } from './types';
+import { rowToCourtSlot, PlayscannerSlotRow } from './slot-mapper';
+
+/**
+ * Staleness safety net for reads from `playscanner_slots`. Rows older than
+ * this are excluded from search() results. Tombstoning is the primary
+ * mechanism for dropping booked-out slots; this floor is just insurance so
+ * a stuck collector can't leave truly ancient data visible.
+ *
+ * 24 hours is generous — it lets every provider schedule (30min → 2h
+ * cadence) survive multiple consecutive failures without going dark, at
+ * the cost of showing slightly stale data during extended outages. Tighter
+ * per-provider TTLs are a post-Phase-2 optimization.
+ */
+const STALENESS_FLOOR_MS = 24 * 60 * 60 * 1000;
 
 /**
  * Production-ready persistent cache service using Supabase
@@ -79,156 +85,126 @@ export class PersistentCacheService {
   }
 
   /**
-   * Search cached data with filters
+   * Search the flat `playscanner_slots` table for available slots matching
+   * the given filters. This is the Phase 2 reader cutover — replaces the
+   * old blob fetch + transformLambdaSlot + JS filter pipeline with a
+   * single indexed Supabase query that only reads the slice the user
+   * asked for.
+   *
+   * The heavy lifting lives in SQL (sport/city/price/indoor filters use
+   * indexed columns). The TS side just maps rows → CourtSlot.
+   *
+   * Staleness: rows older than STALENESS_FLOOR_MS are excluded as a safety
+   * net. Tombstoning in the writer is the primary mechanism for dropping
+   * booked-out slots; this is insurance against a stuck collector.
    */
   async search(params: SearchParams): Promise<SearchResult> {
     const startTime = Date.now();
 
     try {
-      // Get cached slots for this location/date
-      const cachedData = await this.getCachedData(params.location, params.date);
-      if (!cachedData || cachedData.slots.length === 0) {
-        return {
-          results: [],
-          totalResults: 0,
-          searchTime: Date.now() - startTime,
-          providers: [],
-          filters: params,
-          source: 'cached',
-          cacheAge: 'empty',
-        };
-      }
+      const nowIso = new Date().toISOString();
+      const staleFloorIso = new Date(
+        Date.now() - STALENESS_FLOOR_MS
+      ).toISOString();
+      const startOfDay = `${params.date}T00:00:00.000Z`;
+      const endOfDay = `${params.date}T23:59:59.999Z`;
 
-      // Transform raw cached data to CourtSlot format using actual collection timestamp
-      const transformedSlots = cachedData.slots.map((slot) => {
-        // If the slot is already transformed (has bookingUrl), return as-is
-        if (slot.bookingUrl) {
-          return slot;
+      // Paginate past Supabase's server-side db_max_rows cap (default 1000).
+      // A busy padel-London-tomorrow slice currently has ~1,300 rows and
+      // will grow as more providers come online, so we always page until
+      // we get a short batch back.
+      const pageSize = 1000;
+      const maxPages = 10; // hard safety ceiling — 10k rows is plenty
+      const rows: PlayscannerSlotRow[] = [];
+
+      for (let page = 0; page < maxPages; page++) {
+        let q = this.supabase
+          .from('playscanner_slots')
+          .select('*')
+          .eq('city', params.location.toLowerCase())
+          .eq('sport', params.sport)
+          .eq('available', true)
+          .gt('start_time', nowIso)
+          .gte('start_time', startOfDay)
+          .lte('start_time', endOfDay)
+          .gt('collected_at', staleFloorIso);
+
+        if (params.startTime) {
+          const threshold = `${params.date}T${params.startTime}:00.000Z`;
+          q = q.gte('start_time', threshold);
         }
-        // Otherwise, transform from raw Lambda format using actual collection timestamp
-        return this.transformLambdaSlot(slot, cachedData.collectionTimestamp);
-      });
+        if (params.endTime) {
+          const threshold = `${params.date}T${params.endTime}:00.000Z`;
+          q = q.lte('end_time', threshold);
+        }
+        if (params.maxPrice != null) {
+          q = q.lte('price', params.maxPrice);
+        }
+        if (params.indoor != null) {
+          q = q.eq('venue_indoor', params.indoor);
+        }
 
-      // Filter by sport + remove past slots
-      const now = Date.now();
-      let filteredSlots = transformedSlots.filter(
-        (slot) =>
-          slot.sport === params.sport &&
-          new Date(slot.startTime).getTime() > now
-      );
+        const { data, error } = await q
+          .order('start_time', { ascending: true })
+          .order('price', { ascending: true })
+          .order('id', { ascending: true }) // stable tiebreaker for paging
+          .range(page * pageSize, (page + 1) * pageSize - 1);
 
-      // Filter by time range
-      if (params.startTime) {
-        const startTimeFilter = new Date(
-          `${params.date}T${params.startTime}`
-        ).getTime();
-        filteredSlots = filteredSlots.filter(
-          (slot) => new Date(slot.startTime).getTime() >= startTimeFilter
-        );
+        if (error) {
+          console.error('PersistentCacheService search query error:', error);
+          return this.emptySearchResult(params, startTime, 'error');
+        }
+
+        const batch = (data || []) as PlayscannerSlotRow[];
+        rows.push(...batch);
+        if (batch.length < pageSize) break;
       }
-
-      if (params.endTime) {
-        const endTimeFilter = new Date(
-          `${params.date}T${params.endTime}`
-        ).getTime();
-        filteredSlots = filteredSlots.filter(
-          (slot) => new Date(slot.endTime).getTime() <= endTimeFilter
-        );
-      }
-
-      // Filter by price
-      if (params.maxPrice) {
-        filteredSlots = filteredSlots.filter(
-          (slot) => slot.price <= params.maxPrice!
-        );
-      }
-
-      // Filter by indoor/outdoor
-      if (params.indoor !== undefined) {
-        filteredSlots = filteredSlots.filter(
-          (slot) => slot.features.indoor === params.indoor
-        );
-      }
-
-      // Sort by time, then price
-      filteredSlots.sort((a, b) => {
-        const timeCompare =
-          new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
-        if (timeCompare !== 0) return timeCompare;
-        return a.price - b.price;
-      });
-
-      const providers = [
-        ...new Set(filteredSlots.map((slot) => slot.provider)),
-      ];
-      const cacheAge = await this.getCacheAge(params.location, params.date);
+      const results = rows.map(rowToCourtSlot);
+      const providers = [...new Set(results.map((s) => s.provider))];
+      const latestCollectedAt = rows.reduce<string | null>((acc, r) => {
+        if (!acc || r.collected_at > acc) return r.collected_at;
+        return acc;
+      }, null);
 
       return {
-        results: filteredSlots,
-        totalResults: filteredSlots.length,
+        results,
+        totalResults: results.length,
         searchTime: Date.now() - startTime,
         providers,
         filters: params,
-        source: 'cached',
-        cacheAge,
+        source: 'persistent_cache',
+        cacheAge: latestCollectedAt
+          ? this.describeAge(Date.now() - new Date(latestCollectedAt).getTime())
+          : 'empty',
       };
     } catch (error) {
       console.error('PersistentCacheService search error:', error);
-      return {
-        results: [],
-        totalResults: 0,
-        searchTime: Date.now() - startTime,
-        providers: [],
-        filters: params,
-        source: 'cached',
-        cacheAge: 'error',
-      };
+      return this.emptySearchResult(params, startTime, 'error');
     }
   }
 
-  /**
-   * Get cached data if valid (not expired)
-   */
-  async getCachedData(
-    city: string,
-    date: string
-  ): Promise<{ slots: CourtSlot[]; collectionTimestamp: string } | null> {
-    try {
-      const cacheKey = this.getCacheKey(city, date);
+  private emptySearchResult(
+    params: SearchParams,
+    startTime: number,
+    cacheAge: string
+  ): SearchResult {
+    return {
+      results: [],
+      totalResults: 0,
+      searchTime: Date.now() - startTime,
+      providers: [],
+      filters: params,
+      source: 'persistent_cache',
+      cacheAge,
+    };
+  }
 
-      const { data, error } = await this.supabase
-        .from('playscanner_cache')
-        .select('*')
-        .eq('cache_key', cacheKey)
-        .gt('expires_at', new Date().toISOString())
-        .single();
-
-      if (error) {
-        if (error.code === 'PGRST116') {
-          // No rows found - this is expected for cache misses
-          return null;
-        }
-        console.error('Error fetching cached data:', error);
-        return null;
-      }
-
-      if (!data || !data.slots) {
-        return null;
-      }
-
-      console.log(
-        `📚 Serving ${data.slots.length} slots from persistent cache: ${cacheKey}`
-      );
-
-      // Return both slots and the collection timestamp from metadata
-      return {
-        slots: data.slots,
-        collectionTimestamp: data.metadata?.collectedAt || data.created_at,
-      };
-    } catch (error) {
-      console.error('getCachedData error:', error);
-      return null;
-    }
+  private describeAge(ageMs: number): string {
+    const minutes = Math.floor(ageMs / 60000);
+    if (minutes < 1) return 'fresh';
+    if (minutes < 60) return `${minutes}m old`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours}h old`;
   }
 
   /**
@@ -520,124 +496,6 @@ export class PersistentCacheService {
       console.error('getCollectionSuccessRate error:', error);
       return 0;
     }
-  }
-  /**
-   * Transform lambda slot format to frontend CourtSlot format
-   */
-  private transformLambdaSlot(
-    slot: any,
-    collectionTimestamp?: string
-  ): CourtSlot {
-    // Handle different venue address formats
-    const venueCity =
-      slot.venue?.address?.city || slot.venue?.location?.city || 'London';
-    const venueAddress = slot.venue?.address || slot.venue?.location || {};
-
-    // Determine sport — prefer explicit slot.sport, fallback to provider-based detection
-    const footballOnlyProviders = [
-      'openactive',
-      'powerleague',
-      'goals',
-      'footy_addicts',
-      'fc_urban',
-      'hireapitch',
-    ];
-    const padelOnlyProviders = ['padel_mates'];
-
-    let sport: 'padel' | 'football' | 'tennis' | 'basketball';
-    if (
-      slot.sport === 'tennis' ||
-      slot.sport === 'football' ||
-      slot.sport === 'padel' ||
-      slot.sport === 'basketball'
-    ) {
-      sport = slot.sport;
-    } else if (footballOnlyProviders.includes(slot.provider)) {
-      sport = 'football';
-    } else if (padelOnlyProviders.includes(slot.provider)) {
-      sport = 'padel';
-    } else {
-      sport = 'padel'; // default for Playtomic, MATCHi, Flow without explicit sport
-    }
-    const provider = (slot.provider || 'playtomic') as Provider;
-
-    return {
-      id: `${slot.venue?.id}-${slot.court?.id || 'court'}-${slot.startTime}-${slot.endTime}`,
-      sport,
-      provider,
-      listingType: slot.listingType || 'pitch_hire',
-      venue: {
-        id: slot.venue?.id || '',
-        name: slot.venue?.name || 'Unknown Venue',
-        provider,
-        location: {
-          address: venueAddress.street || venueAddress.address || '',
-          city: venueCity,
-          postcode: venueAddress.postal_code || venueAddress.postcode || '',
-          coordinates: {
-            lat: venueAddress.coordinate?.lat || slot.venue?.latitude || 0,
-            lng: venueAddress.coordinate?.lon || slot.venue?.longitude || 0,
-          },
-        },
-        // Add address field for compatibility
-        address: {
-          city: venueCity,
-          postcode: venueAddress.postal_code || venueAddress.postcode || '',
-          street: venueAddress.street || venueAddress.address || '',
-        },
-        amenities: [],
-        images: [],
-        contact: {},
-        _raw: slot.venue,
-      },
-      startTime: slot.startTime,
-      endTime: slot.endTime,
-      duration: slot.duration || 90,
-      price: slot.price || 0,
-      durationOptions: slot.durationOptions,
-      currency: slot.currency || 'GBP',
-      bookingUrl: slot.link || `https://playtomic.com/venue/${slot.venue?.id}`,
-      collectedAt: slot._collectedAt || collectionTimestamp,
-      courtName: slot.court?.name || undefined,
-      availability: {
-        spotsAvailable: slot.available ? 1 : 0,
-        totalSpots: 1,
-      },
-      features: {
-        indoor: slot.venue?.indoor || false,
-        lights: true,
-        surface:
-          slot.court?.surface === 'unknown'
-            ? 'artificial'
-            : slot.court?.surface || slot.venue?.surface || 'artificial',
-      },
-      sportMeta:
-        sport === 'football'
-          ? {
-              format: '5v5' as const,
-              organized: false,
-              level: 'casual' as const,
-              requiresTeam: false,
-            }
-          : sport === 'tennis'
-            ? {
-                courtType: slot.venue?.indoor
-                  ? ('indoor' as const)
-                  : ('outdoor' as const),
-                surface: 'hard' as const,
-                format: 'doubles' as const,
-              }
-            : sport === 'basketball'
-              ? { format: '5v5' as const, level: 'casual' as const }
-              : {
-                  courtType: slot.venue?.indoor
-                    ? ('indoor' as const)
-                    : ('outdoor' as const),
-                  level: 'open' as const,
-                  doubles: true,
-                },
-      lastUpdated: collectionTimestamp || new Date().toISOString(),
-    };
   }
 }
 

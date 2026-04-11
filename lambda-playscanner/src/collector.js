@@ -14,9 +14,10 @@ const { HireAPitchProvider } = require('./providers/hireapitch');
 const { FlowProvider } = require('./providers/flow');
 const { setCachedData, writeSlots, logCollection } = require('./supabase');
 
-// Sport resolution must match collectCityDateProvider below — duplicated only
-// so we can compute the scope for the flat-table writer without changing the
-// existing method's return shape.
+// Sport resolution for the flat-table writer scope. Must match what the
+// provider actually emits. Several EventBridge schedules send per-provider
+// group names (matchi, hireapitch) that existed before multi-sport routing,
+// so we map them explicitly rather than defaulting.
 const FOOTBALL_PROVIDER_NAMES = [
   'powerleague',
   'goals',
@@ -24,9 +25,15 @@ const FOOTBALL_PROVIDER_NAMES = [
   'fc_urban',
   'hireapitch',
 ];
+const GROUP_TO_SPORT = {
+  padel: 'padel',
+  matchi: 'padel',
+  tennis: 'tennis',
+  football: 'football',
+  hireapitch: 'football',
+};
 function resolveRunSport(group, providerName) {
-  if (group === 'tennis') return 'tennis';
-  if (group === 'football') return 'football';
+  if (group && GROUP_TO_SPORT[group]) return GROUP_TO_SPORT[group];
   if (!group && FOOTBALL_PROVIDER_NAMES.includes(providerName))
     return 'football';
   return 'padel';
