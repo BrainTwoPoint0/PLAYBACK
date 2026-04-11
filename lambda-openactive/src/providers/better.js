@@ -41,6 +41,11 @@ const TENNIS_NAME_PATTERN = /\b(tennis)\b/i;
 const FOOTBALL_NAME_PATTERN =
   /\b(football|pitch|5[- ]?a[- ]?side|6[- ]?a[- ]?side|7[- ]?a[- ]?side|8[- ]?a[- ]?side|9[- ]?a[- ]?side|11[- ]?a[- ]?side|3[gG]|4[gG]|astro|futsal|muga)\b/i;
 
+// Table tennis / ping pong — a different sport from tennis. Checked first so
+// "Table Tennis" never matches the TENNIS_NAME_PATTERN below.
+const TABLE_TENNIS_NAME_PATTERN = /\btable[\s-]?tennis\b|\bping[\s-]?pong\b/i;
+const TABLE_TENNIS_URL_PATTERN = /table[-_]tennis|ping[-_]pong/i;
+
 // Sport URL path patterns
 const BASKETBALL_URL_PATTERN = /\/(basketball|basket-ball|nba-court)/i;
 const TENNIS_URL_PATTERN = /\/(tennis)/i;
@@ -459,6 +464,12 @@ class BetterProvider {
    * @returns {string|null}
    */
   detectSport(text, url) {
+    // Table tennis is a different sport — skip before tennis matching kicks in.
+    if (
+      TABLE_TENNIS_NAME_PATTERN.test(text) ||
+      TABLE_TENNIS_URL_PATTERN.test(url)
+    )
+      return null;
     if (BASKETBALL_NAME_PATTERN.test(text) || BASKETBALL_URL_PATTERN.test(url))
       return 'basketball';
     if (PADEL_NAME_PATTERN.test(text) || PADEL_URL_PATTERN.test(url))
@@ -476,6 +487,7 @@ class BetterProvider {
    */
   detectSportFromUrl(url) {
     if (!url) return null;
+    if (TABLE_TENNIS_URL_PATTERN.test(url)) return null;
     if (BASKETBALL_URL_PATTERN.test(url)) return 'basketball';
     if (PADEL_URL_PATTERN.test(url)) return 'padel';
     if (TENNIS_URL_PATTERN.test(url)) return 'tennis';
