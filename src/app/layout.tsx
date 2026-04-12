@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import NextTopLoader from 'nextjs-toploader';
 import './globals.css';
 import NavBar from '@/components/NavBar';
 import { Footer } from '@braintwopoint0/playback-commons/ui';
@@ -38,6 +39,12 @@ export default function RootLayout({
       />
       <link rel="manifest" href="/site.webmanifest" />
       <body className={inter.className}>
+        <NextTopLoader
+          color="#d6d5c9"
+          height={2}
+          showSpinner={false}
+          shadow="0 0 10px #d6d5c9,0 0 5px #d6d5c9"
+        />
         <AuthProvider>
           <NavBar />
           {children}

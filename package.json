@@ -53,6 +53,7 @@
     "motion": "^12.23.22",
     "next": "15.5.7",
     "next-sanity": "^11.5.5",
+    "nextjs-toploader": "^3.9.17",
     "node-fetch": "^3.3.2",
     "react": "^19.2.0",
     "react-circle-flags": "^0.0.27",
