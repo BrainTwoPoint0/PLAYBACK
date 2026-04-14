@@ -45,3 +45,6 @@ next-env.d.ts
 test-results/
 supabase/.temp/
 .env.local
+
+# Claude Code local agent state
+.claude/
