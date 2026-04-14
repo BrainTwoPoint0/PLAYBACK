@@ -14,6 +14,7 @@ import { createClient } from '@braintwopoint0/playback-commons/supabase';
 import { Button, Input, Label } from '@braintwopoint0/playback-commons/ui';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { AlertCircle, Mail, Lock, Check, X, Loader2 } from 'lucide-react';
+import posthog from 'posthog-js';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -156,6 +157,11 @@ export default function RegisterPage() {
             'An account with this email already exists. Please sign in instead.'
           );
         } else {
+          posthog.identify(data.user.id, { email, username: username.trim() });
+          posthog.capture('user_signed_up', {
+            email,
+            username: username.trim(),
+          });
           // Success -> show verify email instructions
           router.push('/auth/verify-email');
         }

@@ -8,6 +8,7 @@ import SportIcon from './SportIcon';
 import { MapPinIcon } from 'lucide-react';
 import { Sport, CourtSlot } from '@/lib/playscanner/types';
 import { playscannerAnalytics } from '@/lib/playscanner/analytics';
+import posthog from 'posthog-js';
 
 /* ── Date helpers ─────────────────────────────────────── */
 const DATES = (() => {
@@ -103,6 +104,14 @@ export default function PLAYScannerMain() {
       setSearchId(sid);
       setResults(data.results || []);
       setHasSearched(true);
+      posthog.capture('playscanner_search_performed', {
+        sport: s,
+        date: d,
+        location: 'London',
+        result_count: data.results?.length || 0,
+        providers,
+        duration_ms: Date.now() - t0,
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Search failed');
     } finally {
@@ -133,7 +142,15 @@ export default function PLAYScannerMain() {
               {DATES.map((d) => (
                 <button
                   key={d.value}
-                  onClick={() => setDate(d.value)}
+                  onClick={() => {
+                    if (d.value !== date) {
+                      posthog.capture('playscanner_date_changed', {
+                        date: d.value,
+                        sport,
+                      });
+                    }
+                    setDate(d.value);
+                  }}
                   className={`shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all ${
                     date === d.value
                       ? 'bg-white/[0.12] text-white'
@@ -152,7 +169,16 @@ export default function PLAYScannerMain() {
                 {SPORTS.map((s) => (
                   <button
                     key={s.id}
-                    onClick={() => setSport(s.id)}
+                    onClick={() => {
+                      if (s.id !== sport) {
+                        posthog.capture('playscanner_sport_changed', {
+                          sport: s.id,
+                          previous_sport: sport,
+                          date,
+                        });
+                      }
+                      setSport(s.id);
+                    }}
                     className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
                       sport === s.id
                         ? 'bg-[#00FF88] text-[#0a100d] shadow-sm shadow-[#00FF88]/20'

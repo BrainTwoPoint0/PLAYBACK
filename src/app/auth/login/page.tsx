@@ -16,6 +16,7 @@ import {
 } from '@braintwopoint0/playback-commons/ui';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { AlertCircle, Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import posthog from 'posthog-js';
 
 function LoginForm() {
   const [email, setEmail] = useState('');
@@ -66,6 +67,8 @@ function LoginForm() {
       if (error) {
         setError(getAuthErrorMessage(error));
       } else {
+        posthog.identify(email);
+        posthog.capture('user_logged_in', { email });
         // Success - redirect will be handled by AuthProvider
         router.push('/dashboard');
       }

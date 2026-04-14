@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import posthog from 'posthog-js';
 import {
   SearchResultsProps,
   CourtSlot,
@@ -26,6 +27,7 @@ import VenueCard, { groupSlotsByVenue } from './VenueCard';
 import BookingConfirm from './BookingConfirm';
 import SportIcon from './SportIcon';
 import { TIME_CHIPS } from './QuickFilters';
+import { ProviderRequestGotcha } from './ProviderRequestGotcha';
 
 type ViewMode = 'list' | 'map';
 
@@ -197,6 +199,16 @@ export default function SearchResults({
   const hasMore = venueGroups.length > showCount;
 
   const handleBook = useCallback((slot: CourtSlot) => {
+    posthog.capture('playscanner_slot_selected', {
+      provider: slot.provider,
+      sport: slot.sport,
+      venue_id: slot.venue.id,
+      venue_name: slot.venue.name,
+      price_pence: slot.price,
+      currency: slot.currency,
+      start_time: slot.startTime,
+      listing_type: slot.listingType,
+    });
     setSelectedSlot(slot);
   }, []);
 
@@ -317,6 +329,8 @@ export default function SearchResults({
             )}
           </button>
 
+          <ProviderRequestGotcha />
+
           <div className="ml-auto flex items-center gap-2">
             {stats && (
               <span className="hidden sm:inline text-[11px] text-gray-600">
@@ -343,13 +357,29 @@ export default function SearchResults({
             )}
             <div className="flex items-center gap-0.5 rounded-lg border border-white/[0.1] p-0.5">
               <button
-                onClick={() => setViewMode('list')}
+                onClick={() => {
+                  if (viewMode !== 'list') {
+                    posthog.capture('playscanner_view_mode_changed', {
+                      view_mode: 'list',
+                      sport,
+                    });
+                  }
+                  setViewMode('list');
+                }}
                 className={`rounded-md p-1.5 transition-colors ${viewMode === 'list' ? 'bg-white/10 text-white' : 'text-gray-600 hover:text-gray-400'}`}
               >
                 <ListIcon className="h-3.5 w-3.5" />
               </button>
               <button
-                onClick={() => setViewMode('map')}
+                onClick={() => {
+                  if (viewMode !== 'map') {
+                    posthog.capture('playscanner_view_mode_changed', {
+                      view_mode: 'map',
+                      sport,
+                    });
+                  }
+                  setViewMode('map');
+                }}
                 className={`rounded-md p-1.5 transition-colors ${viewMode === 'map' ? 'bg-white/10 text-white' : 'text-gray-600 hover:text-gray-400'}`}
               >
                 <MapIcon className="h-3.5 w-3.5" />
@@ -621,7 +651,19 @@ export default function SearchResults({
           {/* Apply / results count footer */}
           <div className="sticky bottom-0 mt-6 pt-4 border-t border-white/[0.06] bg-[#0a100d]">
             <button
-              onClick={() => setFilterOpen(false)}
+              onClick={() => {
+                if (activeFilterCount > 0) {
+                  posthog.capture('playscanner_filter_applied', {
+                    sport,
+                    provider_count: selectedProviders.size,
+                    venue_count: selectedVenues.size,
+                    has_price_filter: priceRange !== null,
+                    has_time_filter: timeRange !== null,
+                    result_count: filteredResults.length,
+                  });
+                }
+                setFilterOpen(false);
+              }}
               className="w-full rounded-lg bg-[#00FF88] py-2.5 text-sm font-semibold text-[#0a100d] hover:bg-[#00E077] transition-colors"
             >
               Show {filteredResults.length} results

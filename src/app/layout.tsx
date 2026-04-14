@@ -5,6 +5,8 @@ import './globals.css';
 import NavBar from '@/components/NavBar';
 import { Footer } from '@braintwopoint0/playback-commons/ui';
 import { AuthProvider } from '@braintwopoint0/playback-commons/auth';
+import { GotchaProvider } from '@/components/GotchaProvider';
+import { PostHogProvider } from '@/components/PostHogProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -46,9 +48,13 @@ export default function RootLayout({
           shadow="0 0 10px #d6d5c9,0 0 5px #d6d5c9"
         />
         <AuthProvider>
-          <NavBar />
-          {children}
-          <Footer />
+          <PostHogProvider>
+            <GotchaProvider>
+              <NavBar />
+              {children}
+              <Footer />
+            </GotchaProvider>
+          </PostHogProvider>
         </AuthProvider>
       </body>
     </html>

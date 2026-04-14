@@ -44,3 +44,4 @@ next-env.d.ts
 .eslintcache
 test-results/
 supabase/.temp/
+.env.local
