@@ -70,124 +70,122 @@ class FootyAddictsProvider {
     const games = [];
     const now = Date.now();
 
-    $('a[href*="/football-games/"]').each((_, el) => {
-      try {
-        const $card = $(el);
-        const href = $card.attr('href') || '';
+    // Each date section is a div whose first child holds the date label
+    // (class "text-black mb-2 ml-1 text-xs font-medium uppercase tracking-wider")
+    // and whose second child holds the game cards.
+    $('div.text-black.uppercase.tracking-wider').each((_, labelEl) => {
+      const dateLabel = $(labelEl).text().trim();
+      const ukDate = this.parseDateLabel(dateLabel);
+      if (!ukDate) return;
 
-        // Skip non-game links (must have a numeric ID)
-        if (!href.match(/\/football-games\/\d+/)) return;
+      const $section = $(labelEl).parent();
+      $section.find('a.group.block').each((_, cardEl) => {
+        try {
+          const $card = $(cardEl);
+          const href = $card.attr('href') || '';
 
-        // Only London games
-        if (!href.includes('london') && !href.includes('greater-london'))
-          return;
+          if (!href.match(/\/football-games\/\d+/)) return;
+          if (!href.includes('london') && !href.includes('greater-london'))
+            return;
 
-        // Venue name from h2
-        const venueName = $card.find('h2').first().text().trim();
+          const venueName = $card.find('p.truncate').first().text().trim();
 
-        // Time: first <p> with AM/PM
-        let timeText = '';
-        $card.find('p').each((_, p) => {
-          const t = $(p).text().trim();
-          if (!timeText && /\d{1,2}:\d{2}\s*(AM|PM)/i.test(t)) timeText = t;
-        });
+          // Time: first span with HH:MM (24-hour)
+          let timeText = '';
+          $card.find('span').each((_, sp) => {
+            if (timeText) return;
+            const t = $(sp).text().trim();
+            if (/^\d{1,2}:\d{2}$/.test(t)) timeText = t;
+          });
 
-        if (!venueName || !timeText) return;
+          if (!venueName || !timeText) return;
 
-        const startTime = this.parseTimeText(timeText);
-        if (
-          !startTime ||
-          isNaN(startTime.getTime()) ||
-          startTime.getTime() < now
-        )
-          return;
+          const startTime = this.buildUkDateTime(ukDate, timeText);
+          if (
+            !startTime ||
+            isNaN(startTime.getTime()) ||
+            startTime.getTime() < now
+          )
+            return;
 
-        // Price from the bold text at bottom right
-        const priceText = $card.find('.font-bold').last().text().trim();
-        const priceMatch = priceText.match(/£(\d+(?:\.\d+)?)/);
-        const price = priceMatch
-          ? Math.round(parseFloat(priceMatch[1]) * 100)
-          : 0;
+          // Price lives in a div with class text-lg font-medium leading-none,
+          // and reads either "Free" or "£N" / "£N.NN".
+          let priceText = '';
+          $card.find('div.text-lg.font-medium').each((_, pe) => {
+            if (priceText) return;
+            const t = $(pe).text().trim();
+            if (/^free$/i.test(t) || /£\d/.test(t)) priceText = t;
+          });
+          const priceMatch = priceText.match(/£(\d+(?:\.\d+)?)/);
+          const price = priceMatch
+            ? Math.round(parseFloat(priceMatch[1]) * 100)
+            : 0;
 
-        // Format from badge text (e.g. "5v5", "7v7", "8v8")
-        const badges = [];
-        $card.find('span').each((_, badge) => {
-          badges.push($(badge).text().trim().toLowerCase());
-        });
-        const formatBadge = badges.find((b) => /^\d+v\d+$/.test(b));
-        const format = formatBadge || 'Football';
+          // Format badge text (e.g. "5v5", "6v6", "7v7")
+          let formatBadge = '';
+          $card.find('span').each((_, sp) => {
+            if (formatBadge) return;
+            const t = $(sp).text().trim().toLowerCase();
+            if (/^\d+v\d+$/.test(t)) formatBadge = t;
+          });
+          const format = formatBadge || 'Football';
 
-        // Game ID from URL
-        const idMatch = href.match(/\/(\d+)-/);
-        const gameId = idMatch ? idMatch[1] : href.split('/').pop();
+          const idMatch = href.match(/\/(\d+)-/);
+          const gameId = idMatch ? idMatch[1] : href.split('/').pop();
 
-        // Venue slug from URL (after the ID)
-        const slugMatch = href.match(/\/\d+-(.+)$/);
-        const venueSlug = slugMatch
-          ? slugMatch[1]
-          : venueName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          const slugMatch = href.match(/\/\d+-(.+)$/);
+          const venueSlug = slugMatch
+            ? slugMatch[1]
+            : venueName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
-        const endTime = new Date(startTime.getTime() + 60 * 60000);
+          const endTime = new Date(startTime.getTime() + 60 * 60000);
 
-        games.push({
-          provider: 'footy_addicts',
-          sport: 'football',
-          listingType: 'drop_in',
-          venue: {
-            id: `fa-${venueSlug}`,
-            name: venueName,
-            slug: venueSlug,
-            address: '',
-            postcode: '',
-            latitude: 0,
-            longitude: 0,
-            indoor: false,
-            surface: 'artificial',
-            amenities: [],
-          },
-          court: {
-            id: gameId,
-            name: `${format} Game`,
-            surface: 'artificial',
-          },
-          startTime: startTime.toISOString(),
-          endTime: endTime.toISOString(),
-          duration: 60,
-          price,
-          currency: 'GBP',
-          available: true,
-          link: `${this.baseUrl}${href}`,
-        });
-      } catch (e) {
-        console.warn(`  Card parse error: ${e.message}`);
-      }
+          games.push({
+            provider: 'footy_addicts',
+            sport: 'football',
+            listingType: 'drop_in',
+            venue: {
+              id: `fa-${venueSlug}`,
+              name: venueName,
+              slug: venueSlug,
+              address: '',
+              postcode: '',
+              latitude: 0,
+              longitude: 0,
+              indoor: false,
+              surface: 'artificial',
+              amenities: [],
+            },
+            court: {
+              id: gameId,
+              name: `${format} Game`,
+              surface: 'artificial',
+            },
+            startTime: startTime.toISOString(),
+            endTime: endTime.toISOString(),
+            duration: 60,
+            price,
+            currency: 'GBP',
+            available: true,
+            link: `${this.baseUrl}${href}`,
+          });
+        } catch (e) {
+          console.warn(`  Card parse error: ${e.message}`);
+        }
+      });
     });
 
     return games;
   }
 
   /**
-   * Parse relative time strings like "5:00 PM, Today", "7:30 PM, Tomorrow",
-   * "8:00 PM, Wed 2 Apr"
+   * Parse a section-header date label into a UK-calendar ISO date (YYYY-MM-DD).
+   * Accepts "Today", "Tomorrow", and full forms like "Sunday, 19 April 2026".
    */
-  parseTimeText(text) {
-    if (!text) return null;
+  parseDateLabel(label) {
+    if (!label) return null;
+    const lower = label.toLowerCase();
 
-    const timeMatch = text.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-    if (!timeMatch) return null;
-
-    let hours = parseInt(timeMatch[1], 10);
-    const minutes = parseInt(timeMatch[2], 10);
-    const ampm = timeMatch[3].toUpperCase();
-
-    if (ampm === 'PM' && hours !== 12) hours += 12;
-    if (ampm === 'AM' && hours === 12) hours = 0;
-
-    // Build a UK date string and let the Intl API handle timezone
-    const lower = text.toLowerCase();
-    let dateStr;
-
-    // Get today's date in UK timezone using Intl
     const ukFormatter = new Intl.DateTimeFormat('en-CA', {
       timeZone: 'Europe/London',
       year: 'numeric',
@@ -196,44 +194,49 @@ class FootyAddictsProvider {
     });
 
     if (lower.includes('today')) {
-      dateStr = ukFormatter.format(new Date());
-    } else if (lower.includes('tomorrow')) {
-      dateStr = ukFormatter.format(new Date(Date.now() + 86400000));
-    } else {
-      const dateMatch = text.match(
-        /(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i
-      );
-      if (!dateMatch) return null;
-
-      const day = parseInt(dateMatch[1], 10);
-      const monthNames = [
-        'jan',
-        'feb',
-        'mar',
-        'apr',
-        'may',
-        'jun',
-        'jul',
-        'aug',
-        'sep',
-        'oct',
-        'nov',
-        'dec',
-      ];
-      const month = monthNames.indexOf(dateMatch[2].toLowerCase());
-      if (month === -1) return null;
-
-      const year = new Date().getFullYear();
-      dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      return ukFormatter.format(new Date());
+    }
+    if (lower.includes('tomorrow')) {
+      return ukFormatter.format(new Date(Date.now() + 86400000));
     }
 
-    // Parse as UK local time using Intl timezone offset
-    // Create a date in UTC, then find what UTC time corresponds to this UK local time
-    const utcGuess = new Date(
-      `${dateStr}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00Z`
-    );
+    // Full form: "Sunday, 19 April 2026" or "19 April 2026"
+    const months = {
+      january: 1,
+      february: 2,
+      march: 3,
+      april: 4,
+      may: 5,
+      june: 6,
+      july: 7,
+      august: 8,
+      september: 9,
+      october: 10,
+      november: 11,
+      december: 12,
+    };
+    const m = label.match(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/);
+    if (!m) return null;
+    const day = parseInt(m[1], 10);
+    const month = months[m[2].toLowerCase()];
+    const year = parseInt(m[3], 10);
+    if (!month || !day || !year) return null;
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  }
 
-    // Get the UK offset at this point in time (handles BST/GMT)
+  /**
+   * Combine a UK date (YYYY-MM-DD) and HH:MM into a UTC Date, handling BST/GMT.
+   */
+  buildUkDateTime(ukDate, timeText) {
+    const m = timeText.match(/^(\d{1,2}):(\d{2})$/);
+    if (!m) return null;
+    const hours = parseInt(m[1], 10);
+    const minutes = parseInt(m[2], 10);
+    if (hours > 23 || minutes > 59) return null;
+
+    const utcGuess = new Date(
+      `${ukDate}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00Z`
+    );
     const ukParts = new Intl.DateTimeFormat('en-GB', {
       timeZone: 'Europe/London',
       hour: 'numeric',
@@ -243,9 +246,7 @@ class FootyAddictsProvider {
       ukParts.find((p) => p.type === 'hour')?.value || '0',
       10
     );
-    const utcHour = utcGuess.getUTCHours();
-    const offsetHours = ukHour - utcHour;
-
+    const offsetHours = ukHour - utcGuess.getUTCHours();
     const result = new Date(utcGuess.getTime() - offsetHours * 3600000);
     return isNaN(result.getTime()) ? null : result;
   }

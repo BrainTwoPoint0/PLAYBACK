@@ -40,6 +40,7 @@ next-env.d.ts
 
 /scripts
 !/scripts/check-playscanner-providers-drift.mjs
+!/scripts/check-playscanner-providers-health.mjs
 
 .env
 .eslintcache
