@@ -1,0 +1,33 @@
+{
+  "$comment": "Canonical PLAYScanner provider registry. Values MUST match the `provider:` field emitted by the lambda collectors in lambda-playscanner/src/providers/*.js and lambda-openactive/src/collector.js. The CI workflow `playscanner-providers-drift` asserts that every distinct value in `playscanner_slots.provider` appears below.",
+  "providers": [
+    "padel_mates",
+    "goals",
+    "playtomic",
+    "matchi",
+    "powerleague",
+    "footy_addicts",
+    "fc_urban",
+    "hireapitch",
+    "flow",
+    "better",
+    "openactive",
+    "clubspark"
+  ],
+  "validatingProviders": ["padel_mates", "goals", "playtomic"],
+  "allowedDomains": [
+    "playtomic.com",
+    "matchi.se",
+    "padelmates.se",
+    "powerleague.com",
+    "goalsfootball.co.uk",
+    "footyaddicts.com",
+    "fcurban.com",
+    "bookteq.com",
+    "hireapitch.com",
+    "flow.onl",
+    "better.org.uk",
+    "legendonlineservices.co.uk",
+    "clubspark.lta.org.uk"
+  ]
+}

@@ -39,6 +39,7 @@ next-env.d.ts
 .netlify
 
 /scripts
+!/scripts/check-playscanner-providers-drift.mjs
 
 .env
 .eslintcache
