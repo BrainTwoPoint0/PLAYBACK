@@ -46,7 +46,7 @@
     "country-data-list": "^1.6.0",
     "date-fns": "^4.1.0",
     "framer-motion": "^11.16.4",
-    "gotcha-feedback": "^1.1.12",
+    "gotcha-feedback": "^1.2.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.475.0",
     "meshline": "^3.3.1",
