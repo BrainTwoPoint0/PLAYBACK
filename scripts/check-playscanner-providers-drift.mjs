@@ -34,15 +34,44 @@ const supabase = createClient(supabaseUrl, serviceRoleKey, {
 
 const sinceIso = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-const { data, error } = await supabase
-  .from('playscanner_slots')
-  .select('provider')
-  .gte('start_time', new Date().toISOString())
-  .gte('collected_at', sinceIso);
+const { data, error } = await queryWithRetry(
+  () =>
+    supabase
+      .from('playscanner_slots')
+      .select('provider')
+      .gte('start_time', new Date().toISOString())
+      .gte('collected_at', sinceIso),
+  'slots'
+);
 
 if (error) {
-  console.error('Query failed:', error.message);
+  console.error('Query failed:', error.message || error);
   process.exit(2);
+}
+
+async function queryWithRetry(fn, label, attempts = 3, baseDelayMs = 2000) {
+  const isTransient = (msg) =>
+    /fetch failed|network|timeout|ECONNRESET|ETIMEDOUT|EAI_AGAIN|unexpected token|502|503|504|bad gateway|service unavailable|gateway timeout/i.test(
+      String(msg || '')
+    );
+  let lastErr;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const result = await fn();
+      if (!result.error) return result;
+      lastErr = result.error;
+      if (!isTransient(result.error.message) || i === attempts - 1) return result;
+    } catch (e) {
+      lastErr = e;
+      if (!isTransient(e?.message) || i === attempts - 1) throw e;
+    }
+    const delay = baseDelayMs * 2 ** i;
+    console.warn(
+      `[${label}] transient error (attempt ${i + 1}/${attempts}): ${lastErr?.message || lastErr}. Retrying in ${delay}ms...`
+    );
+    await new Promise((r) => setTimeout(r, delay));
+  }
+  return { data: null, error: lastErr };
 }
 
 const cacheProviders = new Set(data.map((r) => r.provider).filter(Boolean));
