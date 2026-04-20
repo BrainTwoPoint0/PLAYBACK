@@ -32,7 +32,7 @@ const navItems: NavItem[] = [
   },
   {
     href: '/academy',
-    label: 'For players',
+    label: 'Academy',
     description: 'Match footage, AI highlights, player profiles.',
     match: '/academy',
   },
@@ -352,7 +352,7 @@ const MOBILE_GROUPS: { label: string; items: NavItem[] }[] = [
   {
     label: 'Solutions',
     items: navItems.filter((i) =>
-      ['For clubs', 'For players', 'Tournaments'].includes(i.label)
+      ['For clubs', 'Academy', 'Tournaments'].includes(i.label)
     ),
   },
   {
