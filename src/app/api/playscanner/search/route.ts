@@ -50,17 +50,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // date: shape + not in past
+    // date: shape + not in past. Compare as calendar-day strings (timezone-
+    // independent) rather than Date objects so a UTC-midnight "today" from a
+    // client east of UTC doesn't get flagged as yesterday on a UTC server.
     if (typeof date !== 'string' || !DATE_PATTERN.test(date)) {
       return validationError('Invalid date format. Use YYYY-MM-DD', 'date');
     }
-    const searchDate = new Date(date);
-    if (Number.isNaN(searchDate.getTime())) {
+    if (Number.isNaN(new Date(date).getTime())) {
       return validationError('Invalid date value', 'date');
     }
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (searchDate < today) {
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+    // Accept today or any future day. Accept yesterday too as a grace window
+    // for clients whose clock or timezone serialisation is a few hours skewed.
+    if (date < yesterdayStr) {
       return validationError('Date cannot be in the past', 'date');
     }
 

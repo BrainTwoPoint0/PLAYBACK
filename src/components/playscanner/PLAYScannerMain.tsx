@@ -11,12 +11,22 @@ import { playscannerAnalytics } from '@/lib/playscanner/analytics';
 import posthog from 'posthog-js';
 
 /* ── Date helpers ─────────────────────────────────────── */
+// Formats a Date as YYYY-MM-DD in the user's LOCAL timezone.
+// toISOString() would serialise in UTC, which can shift the day (and trip the
+// server's "date cannot be in the past" check) for users east of UTC.
+function toLocalISODate(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 const DATES = (() => {
   const dates: { label: string; shortLabel: string; value: string }[] = [];
   for (let i = 0; i < 7; i++) {
     const d = new Date();
     d.setDate(d.getDate() + i);
-    const value = d.toISOString().split('T')[0];
+    const value = toLocalISODate(d);
     const label =
       i === 0
         ? 'Today'
