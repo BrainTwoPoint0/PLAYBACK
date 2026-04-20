@@ -128,7 +128,7 @@ export interface CourtSlot {
   courtName?: string; // e.g. "Court 1", "5-a-side - Pitch 8"
   sportMeta: PadelMeta | FootballMeta | TennisMeta | BasketballMeta;
   lastUpdated: string; // ISO 8601
-  collectedAt?: string; // ISO 8601 — when the provider data was fetched
+  collectedAt?: string; // ISO 8601 - when the provider data was fetched
 }
 
 // Sport-specific metadata

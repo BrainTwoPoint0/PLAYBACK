@@ -322,10 +322,10 @@ export default function MapView({ results, sport }: MapViewProps) {
 
   return (
     <div className="relative h-[500px] rounded-xl overflow-hidden">
-      {/* Skeleton overlay — visible until tiles load, then fades out */}
+      {/* Skeleton overlay - visible until tiles load, then fades out */}
       {!tilesReady && <MapSkeleton />}
 
-      {/* Actual map — renders underneath skeleton, invisible until tiles ready */}
+      {/* Actual map - renders underneath skeleton, invisible until tiles ready */}
       {isClient && leafletLoaded && (
         <MapContainer
           center={center}

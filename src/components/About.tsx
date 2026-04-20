@@ -1,276 +1,111 @@
-import React from 'react';
-import { cn } from '@/lib/utils';
-import Image from 'next/image';
-import createGlobe from 'cobe';
-import { useEffect, useRef } from 'react';
-import { motion } from 'motion/react';
-import { IconBrandYoutubeFilled } from '@tabler/icons-react';
+'use client';
+
 import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 import SectionTitle from './ui/section-title';
-import Statistics from './Statistics';
+
+type Audience = {
+  eyebrow: string;
+  headline: string;
+  body: string;
+  bullets: string[];
+  cta: { label: string; href: string };
+};
+
+const audiences: Audience[] = [
+  {
+    eyebrow: 'For clubs & academies',
+    headline: 'The last partner you\u2019ll ever need.',
+    body: 'AI, software, media, and cloud - all built in-house. Layered on top of best-in-class hardware from the likes of Veo, Spiideo, and Clutch. One operating system for every team, season, and venue.',
+    bullets: [
+      'In-house AI, software, and cloud architecture',
+      'Media automations - clips, graphics, distribution',
+      'Elite hardware included - Veo, Spiideo, Clutch, GameCam, Hudl, FairVision, PlayerData',
+      'Performance-based model - we grow together',
+    ],
+    cta: { label: 'Join the Network', href: '/#contact' },
+  },
+  {
+    eyebrow: 'For players & parents',
+    headline: 'Access the Moment.',
+    body: 'Our AI captures every match, clips every goal, and builds the profile scouts can actually find. The same tech pros rely on, put to work for the 99% who play.',
+    bullets: [
+      'AI-generated highlights, delivered in minutes',
+      'PLAYBACK Profile - the LinkedIn for Sports',
+      'GPS, analytics, and match graphics built in',
+      '25 trials secured through PLAYBACK profiles',
+    ],
+    cta: { label: 'Join the Academy', href: '/academy' },
+  },
+  {
+    eyebrow: 'For coaches & staff',
+    headline: 'Video, GPS, Ops - one stack.',
+    body: 'Our software replaces the six tools most coaches stitch together. Tagging, analytics, clip distribution, player data - one interface, built by us to work together.',
+    bullets: [
+      'AI match tagging and instant video breakdowns',
+      'GPS, events, and benchmarks per player',
+      'AI-native processes for ops automation',
+      'Automated clip delivery to players and parents',
+    ],
+    cta: { label: 'See the platform', href: '/#services' },
+  },
+];
 
 export function About() {
-  const features = [
-    {
-      title: 'You PLAY - We BACK',
-      description:
-        'PLAYBACK is a solutions aggregator powering sports clubs, leagues, tournaments, academies, players, analysts, agents, scouts, and fans. Using curated partnerships, in-house software, and AI-powered equipment, PLAYBACK is commercialising access to premium services by suppressing financial and operational burdens.',
-      skeleton: <SkeletonOne />,
-      className:
-        'col-span-1 lg:col-span-4 border-b lg:border-r border-neutral-800 h-full',
-    },
-    {
-      title: 'Premium Partners',
-      description:
-        'PLAYBACK leverages its network of partners to provide you with top of the line products and services within a business model promoting growth and development.',
-      skeleton: <SkeletonTwo />,
-      className: 'border-b col-span-1 lg:col-span-2 border-neutral-800',
-    },
-    {
-      title: 'Share the Moment',
-      description:
-        'PLAYBACK social media accounts help you stay updated on the latest news and watch streams & highlights.',
-      skeleton: <SkeletonThree />,
-      className: 'col-span-1 lg:col-span-3 lg:border-r border-neutral-800',
-    },
-    {
-      title: 'Scaling Worldwide',
-      description:
-        'The PLAYBACK Network includes sports organisations in 6 countries, with partners pending onboarding in 12 more countries.',
-      skeleton: <SkeletonFour />,
-      className: 'col-span-1 lg:col-span-3 border-b lg:border-none',
-    },
-  ];
   return (
-    <div className="relative z-20 my-12 max-w-7xl mx-auto">
-      <SectionTitle title="About" />
-
-      <div className="relative ">
-        <div className="grid grid-cols-1 lg:grid-cols-6 mt-12 xl:border rounded-md border-neutral-800">
-          {features.map((feature) => (
-            <FeatureCard key={feature.title} className={feature.className}>
-              <FeatureTitle>{feature.title}</FeatureTitle>
-              <FeatureDescription>{feature.description}</FeatureDescription>
-              <div className="w-full">{feature.skeleton}</div>
-            </FeatureCard>
+    <section id="audiences" className="relative mt-32 md:mt-40">
+      <div className="mx-auto max-w-[1400px] px-6 sm:px-10">
+        <SectionTitle eyebrow="Built for" title="One Network. Every side." />
+        <div className="grid grid-cols-1 gap-5 md:gap-6 lg:grid-cols-3">
+          {audiences.map((a) => (
+            <AudienceCard key={a.eyebrow} audience={a} />
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
-const FeatureCard = ({
-  children,
-  className,
-}: {
-  children?: React.ReactNode;
-  className?: string;
-}) => {
+function AudienceCard({ audience }: { audience: Audience }) {
   return (
-    <div className={cn(`p-4 sm:p-8 relative overflow-hidden`, className)}>
-      {children}
-    </div>
-  );
-};
-
-const FeatureTitle = ({ children }: { children?: React.ReactNode }) => {
-  return (
-    <p className=" max-w-5xl mx-auto text-left tracking-tight text-white text-xl md:text-2xl md:leading-snug">
-      {children}
-    </p>
-  );
-};
-
-const FeatureDescription = ({ children }: { children?: React.ReactNode }) => {
-  return (
-    <p
-      className={cn(
-        'text-sm md:text-base text-left mx-auto',
-        'text-center font-normal text-neutral-300',
-        'text-left mx-0 md:text-sm my-2'
-      )}
-    >
-      {children}
-    </p>
-  );
-};
-
-export const SkeletonOne = () => {
-  return (
-    <div className="relative flex py-3 px-2">
-      <div className="w-full p-5 mx-auto">
-        <div className="flex w-full flex-col space-y-2 ">
-          <Statistics />
-        </div>
+    <article className="group relative flex flex-col gap-6 rounded-2xl border border-line-strong p-7 md:p-8 transition-colors duration-300 hover:border-timberwolf/30">
+      <div className="flex flex-col gap-4">
+        <span className="text-[12px] uppercase tracking-[0.16em] text-ink-subtle">
+          {audience.eyebrow}
+        </span>
+        <h3 className="font-display font-semibold text-[clamp(20px,2vw,24px)] leading-[1.15] tracking-[-0.03em] text-timberwolf text-balance">
+          {audience.headline}
+        </h3>
+        <p className="text-[15px] leading-[1.6] text-ink-muted">
+          {audience.body}
+        </p>
       </div>
-    </div>
-  );
-};
-
-export const SkeletonTwo = () => {
-  const imagesFirst = [
-    '/showcase/veo-platform/platform-analytics.png',
-    '/showcase/player-profile/player-highlights.png',
-    '/showcase/veo-platform/platform-recordings.png',
-    '/showcase/veo-platform/content-example-2.png',
-    '/branding/simple-logo.png',
-  ];
-
-  const imagesSecond = [
-    '/showcase/veo-platform/platform-teams.png',
-    '/showcase/player-profile/player-positions.png',
-    '/branding/PLAYBACK-Icon.png',
-    '/showcase/veo-platform/platform-metrics.png',
-    '/showcase/subscriptions/subscription-options.png',
-  ];
-
-  // Pre-defined rotation values to avoid hydration mismatch
-  const rotationsFirst = [-3, 5, -7, 2, -4];
-  const rotationsSecond = [4, -6, 3, -2, 7];
-
-  const imageVariants = {
-    whileHover: {
-      scale: 1.1,
-      rotate: 0,
-      zIndex: 100,
-    },
-    whileTap: {
-      scale: 1.1,
-      rotate: 0,
-      zIndex: 100,
-    },
-  };
-  return (
-    <div className="relative flex flex-col justify-center items-center p-8 gap-6 overflow-hidden">
-      <div className="flex flex-row justify-center items-center md:hidden">
-        {imagesFirst.map((image, idx) => (
-          <motion.div
-            key={'images-first' + idx}
-            style={{
-              rotate: rotationsFirst[idx],
-            }}
-            variants={imageVariants}
-            whileHover="whileHover"
-            whileTap="whileTap"
-            className="rounded-xl -mr-4 mt-4 p-1 bg-neutral-800 border-neutral-700 border flex-shrink-0 overflow-hidden"
+      <ul className="flex flex-col gap-2 border-t border-line pt-5">
+        {audience.bullets.map((b) => (
+          <li
+            key={b}
+            className="flex items-start gap-3 text-[14px] text-ink-muted"
           >
-            <Image
-              src={image}
-              alt="PLAYBACK Service Images"
-              width="300"
-              height="300"
-              className="rounded-lg h-20 w-20 md:h-32 md:w-32 object-cover flex-shrink-0"
+            <span
+              aria-hidden
+              className="mt-[0.55rem] inline-block h-px w-4 bg-ash-grey flex-shrink-0"
             />
-          </motion.div>
+            {b}
+          </li>
         ))}
-      </div>
-      <div className="flex flex-row justify-center items-center">
-        {imagesSecond.map((image, idx) => (
-          <motion.div
-            key={'images-second' + idx}
-            style={{
-              rotate: rotationsSecond[idx],
-            }}
-            variants={imageVariants}
-            whileHover="whileHover"
-            whileTap="whileTap"
-            className="rounded-xl -mr-4 mt-4 p-1 bg-neutral-800 border-neutral-700 border flex-shrink-0 overflow-hidden"
-          >
-            <Image
-              src={image}
-              alt="PLAYBACK Service Images"
-              width="300"
-              height="300"
-              className="rounded-lg h-20 w-20 md:h-32 md:w-32 object-cover flex-shrink-0"
-            />
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-export const SkeletonThree = () => {
-  return (
-    <Link
-      href="https://www.youtube.com/shorts/YxtmxB-BaT8"
-      target="__blank"
-      className="relative flex group/image"
-    >
-      <div className="w-full mx-auto bg-transparent group ">
-        <div className="flex flex-1 w-full justify-center items-center flex-col space-y-2 relative">
-          <IconBrandYoutubeFilled className="h-20 w-20 absolute z-10 inset-0 text-red-500 m-auto " />
-          <Image
-            src="/showcase/veo-platform/content-example-2.png"
-            alt="header"
-            width={600}
-            height={500}
-            className="aspect-square object-cover object-center rounded-sm blur-none group-hover/image:blur-md transition-all duration-200"
+      </ul>
+      <div className="mt-auto pt-2">
+        <Link
+          href={audience.cta.href}
+          className="group/link inline-flex items-center gap-2 text-[14px] text-timberwolf rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-timberwolf focus-visible:ring-offset-2 focus-visible:ring-offset-surface-1"
+        >
+          {audience.cta.label}
+          <ArrowRight
+            className="h-4 w-4 transition-transform duration-300 group-hover/link:translate-x-0.5"
+            aria-hidden
           />
-        </div>
+        </Link>
       </div>
-    </Link>
+    </article>
   );
-};
-
-export const SkeletonFour = () => {
-  return (
-    <div className="h-60 md:h-60  flex flex-col items-center relative bg-transparent mt-10">
-      <Globe className="absolute -right-10 md:-right-10 -bottom-80 md:-bottom-72" />
-    </div>
-  );
-};
-
-export const Globe = ({ className }: { className?: string }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    let phi = 0;
-
-    if (!canvasRef.current) return;
-
-    const globe = createGlobe(canvasRef.current, {
-      devicePixelRatio: 2,
-      width: 600 * 2,
-      height: 600 * 2,
-      phi: 0,
-      theta: 0,
-      dark: 1,
-      diffuse: 1.2,
-      mapSamples: 16000,
-      mapBrightness: 6,
-      baseColor: [0.3, 0.3, 0.3],
-      markerColor: [0.1, 0.8, 1],
-      glowColor: [1, 1, 1],
-      markers: [
-        // longitude latitude
-        { location: [51.37178860433438, 0.561636584656944], size: 0.06 }, // Kent
-        { location: [41.07904357011636, 29.022866484615545], size: 0.04 }, //TURKEY
-        { location: [24.39766023964695, 54.53680134963848], size: 0.04 }, // UAE
-        { location: [29.3117, 47.4818], size: 0.04 }, // KUWAIT
-        { location: [48.8575, 2.3514], size: 0.04 }, // PARIS
-        { location: [26.4207, 50.0888], size: 0.04 }, // DAMMAM
-        { location: [24.7136, 46.6753], size: 0.04 }, // RIYADH
-      ],
-      onRender: (state) => {
-        // Called on every animation frame.
-        // `state` will be an empty object, return updated params.
-        state.phi = phi;
-        phi += 0.01;
-      },
-    });
-
-    return () => {
-      globe.destroy();
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{ width: 600, height: 600, maxWidth: '100%', aspectRatio: 1 }}
-      className={className}
-    />
-  );
-};
+}

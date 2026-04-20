@@ -700,7 +700,7 @@ function DashboardContent() {
         setPlayhubRecordings(data.recordings || []);
       }
     } catch {
-      // Silently fail — user may not have PLAYHUB access
+      // Silently fail - user may not have PLAYHUB access
     }
     setLoadingRecordings(false);
   }, []);
@@ -940,7 +940,7 @@ function DashboardContent() {
 
         {/* Two-column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          {/* Left column — Modules + Social */}
+          {/* Left column - Modules + Social */}
           <div className="lg:col-span-2 space-y-8">
             {/* Profile Modules */}
             <FadeIn delay={200}>
@@ -1258,7 +1258,7 @@ function DashboardContent() {
             </FadeIn>
           </div>
 
-          {/* Right column — Highlights */}
+          {/* Right column - Highlights */}
           <div className="lg:col-span-3">
             {hasPlayerVariant && (
               <FadeIn delay={200}>

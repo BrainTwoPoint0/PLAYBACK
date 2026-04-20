@@ -95,7 +95,7 @@ export function ProfileHero({
         )}
       </div>
 
-      {/* Profile info — overlapping the cover */}
+      {/* Profile info - overlapping the cover */}
       <div className="px-6 md:px-8 pb-8 -mt-24 sm:-mt-20 relative z-10">
         <div className="flex flex-col sm:flex-row sm:items-end gap-5">
           {/* Avatar */}

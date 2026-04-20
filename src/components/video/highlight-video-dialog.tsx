@@ -55,7 +55,7 @@ export function HighlightVideoDialog({
         setLoading(false);
       }
     } else {
-      // Direct URL — determine type
+      // Direct URL - determine type
       const isYouTube =
         videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be');
       const isVeo = videoUrl.includes('veo.co');

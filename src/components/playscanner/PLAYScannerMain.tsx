@@ -133,10 +133,10 @@ export default function PLAYScannerMain() {
     <div className="relative z-20 mx-auto max-w-5xl px-4">
       {/* ━━━ Unified search bar ━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <div className="sticky top-0 z-30 -mx-4 px-4 pt-3 pb-2 bg-[var(--night)]/[.97] backdrop-blur-lg">
-        {/* Brand + Search controls — one unified bar */}
+        {/* Brand + Search controls - one unified bar */}
         <div className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-2 space-y-2">
-          {/* Desktop: single row — dates left, sports+location right */}
-          {/* Mobile: two rows — sports+location on top, dates below */}
+          {/* Desktop: single row - dates left, sports+location right */}
+          {/* Mobile: two rows - sports+location on top, dates below */}
           <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-2">
             <div className="flex items-center justify-evenly sm:justify-start gap-1 overflow-x-auto no-visible-scrollbar">
               {DATES.map((d) => (

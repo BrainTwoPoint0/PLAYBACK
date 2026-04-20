@@ -54,7 +54,7 @@ export default function VenueCard({ group, onBook }: VenueCardProps) {
       ? '/hr'
       : `/${displayDuration}min`;
 
-  // Features tags — sport-specific metadata first
+  // Features tags - sport-specific metadata first
   const tags: string[] = [];
   if (isDropIn) tags.push('DROP-IN');
 
@@ -110,7 +110,7 @@ export default function VenueCard({ group, onBook }: VenueCardProps) {
         ? uniqueCourts.slice(0, 2).join(', ')
         : '';
 
-  // Spots left for drop-in games — only show if we have real data (totalSpots > 1)
+  // Spots left for drop-in games - only show if we have real data (totalSpots > 1)
   const spotsLeft = isDropIn
     ? group.slots.reduce((sum, s) => {
         const total = s.availability?.totalSpots || 0;

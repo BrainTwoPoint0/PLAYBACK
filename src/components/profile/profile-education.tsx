@@ -53,7 +53,7 @@ export function ProfileEducation({ entries }: ProfileEducationProps) {
                 >
                   {[entry.degree_or_program, entry.field_of_study]
                     .filter(Boolean)
-                    .join(' \u2014 ')}
+                    .join(' - ')}
                 </p>
               )}
               <p
@@ -96,8 +96,8 @@ function formatDateRange(
   };
 
   if (!start && !end) return isCurrent ? 'Present' : '';
-  if (start && !end && isCurrent) return `${formatDate(start)} \u2014 Present`;
-  if (start && end) return `${formatDate(start)} \u2014 ${formatDate(end)}`;
+  if (start && !end && isCurrent) return `${formatDate(start)} - Present`;
+  if (start && end) return `${formatDate(start)} - ${formatDate(end)}`;
   if (start) return formatDate(start);
   return '';
 }

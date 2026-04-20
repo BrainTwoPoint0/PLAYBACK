@@ -121,10 +121,32 @@ export function LogoCarousel({ logos, columnCount = 5 }: LogoCarouselProps) {
   }, [initializeColumns]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTime((prev) => prev + 100);
-    }, 100);
-    return () => clearInterval(interval);
+    let interval: ReturnType<typeof setInterval> | null = null;
+
+    const start = () => {
+      if (interval) return;
+      interval = setInterval(() => {
+        setTime((prev) => prev + 100);
+      }, 100);
+    };
+
+    const stop = () => {
+      if (!interval) return;
+      clearInterval(interval);
+      interval = null;
+    };
+
+    const onVisibility = () => {
+      if (document.hidden) stop();
+      else start();
+    };
+
+    start();
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      stop();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, []);
 
   return (

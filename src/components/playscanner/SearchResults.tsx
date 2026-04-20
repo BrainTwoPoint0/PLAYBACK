@@ -135,7 +135,7 @@ export default function SearchResults({
   const filteredResults = useMemo(() => {
     let filtered = [...results];
 
-    // Time-of-day filter (chip or slider — mutually exclusive)
+    // Time-of-day filter (chip or slider - mutually exclusive)
     if (activeTimeFilter) {
       const chip = TIME_CHIPS.find((t) => t.id === activeTimeFilter);
       if (chip) {
@@ -435,7 +435,7 @@ export default function SearchResults({
         </div>
       </div>
 
-      {/* ─── Filter Sheet — bottom on mobile, right on desktop ─── */}
+      {/* ─── Filter Sheet - bottom on mobile, right on desktop ─── */}
       <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
         <SheetContent
           side={isMobile ? 'bottom' : 'right'}

@@ -209,7 +209,7 @@ export function PlayerProfileForm({
               <SelectContent>
                 {FOOTBALL_POSITIONS.map((pos) => (
                   <SelectItem key={pos} value={pos}>
-                    {pos} — {FOOTBALL_POSITION_LABELS[pos]}
+                    {pos} - {FOOTBALL_POSITION_LABELS[pos]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -279,7 +279,7 @@ export function PlayerProfileForm({
             />
             <SummaryRow
               label="Primary Position"
-              value={`${primaryPosition} — ${FOOTBALL_POSITION_LABELS[primaryPosition as FootballPosition] || primaryPosition}`}
+              value={`${primaryPosition} - ${FOOTBALL_POSITION_LABELS[primaryPosition as FootballPosition] || primaryPosition}`}
             />
             {secondaryPositions.length > 0 && (
               <SummaryRow

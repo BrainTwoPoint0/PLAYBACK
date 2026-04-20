@@ -34,6 +34,66 @@ export type Database = {
   };
   public: {
     Tables: {
+      newsletter_subscribers: {
+        Row: {
+          id: string;
+          email: string;
+          status: string;
+          source: string | null;
+          role: string | null;
+          resend_contact_id: string | null;
+          resend_synced_at: string | null;
+          resend_sync_attempts: number;
+          confirmation_token: string | null;
+          confirmation_sent_at: string | null;
+          confirmed_at: string | null;
+          unsubscribed_at: string | null;
+          ip_hash: string | null;
+          user_agent: string | null;
+          metadata: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          status?: string;
+          source?: string | null;
+          role?: string | null;
+          resend_contact_id?: string | null;
+          resend_synced_at?: string | null;
+          resend_sync_attempts?: number;
+          confirmation_token?: string | null;
+          confirmation_sent_at?: string | null;
+          confirmed_at?: string | null;
+          unsubscribed_at?: string | null;
+          ip_hash?: string | null;
+          user_agent?: string | null;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          status?: string;
+          source?: string | null;
+          role?: string | null;
+          resend_contact_id?: string | null;
+          resend_synced_at?: string | null;
+          resend_sync_attempts?: number;
+          confirmation_token?: string | null;
+          confirmation_sent_at?: string | null;
+          confirmed_at?: string | null;
+          unsubscribed_at?: string | null;
+          ip_hash?: string | null;
+          user_agent?: string | null;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       basketball_player_profiles: {
         Row: {
           created_at: string | null;

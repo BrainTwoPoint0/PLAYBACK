@@ -602,7 +602,7 @@ function FootballEditor({
           <SelectContent>
             {FOOTBALL_POSITIONS.map((pos) => (
               <SelectItem key={pos} value={pos}>
-                {pos} — {FOOTBALL_POSITION_LABELS[pos]}
+                {pos} - {FOOTBALL_POSITION_LABELS[pos]}
               </SelectItem>
             ))}
           </SelectContent>

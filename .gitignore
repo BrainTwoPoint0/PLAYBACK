@@ -50,3 +50,6 @@ supabase/.temp/
 
 # Claude Code local agent state
 .claude/
+
+# Hero video — served from Supabase Storage (marketing-assets bucket)
+/public/hero/*.mp4

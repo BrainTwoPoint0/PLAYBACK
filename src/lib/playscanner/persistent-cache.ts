@@ -73,7 +73,7 @@ export class PersistentCacheService {
 
   /**
    * Search `playscanner_slots` via the `playscanner_search_slots_json`
-   * Postgres function. One round-trip, jsonb-aggregated response —
+   * Postgres function. One round-trip, jsonb-aggregated response -
    * bypasses PostgREST's default 1000-row cap so padel/football slices
    * with 2k+ rows finish in a single network hop instead of 2-3 paged
    * trans-Atlantic round-trips.
@@ -255,7 +255,7 @@ export class PersistentCacheService {
   }
 
   /**
-   * Health check — verify database connection by probing playscanner_slots.
+   * Health check - verify database connection by probing playscanner_slots.
    */
   async healthCheck(): Promise<{ healthy: boolean; details: any }> {
     try {
@@ -293,7 +293,7 @@ export class PersistentCacheService {
   /**
    * Delete truly old rows from `playscanner_slots`. The writer's tombstone
    * sweep handles the hot path (booked-out slots flip to available=FALSE),
-   * but tombstones accumulate — this wipes anything older than 7 days,
+   * but tombstones accumulate - this wipes anything older than 7 days,
    * which is well beyond any possible future-date read.
    */
   async cleanup(): Promise<number> {

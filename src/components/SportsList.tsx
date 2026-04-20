@@ -6,14 +6,21 @@ import SectionTitle from './ui/section-title';
 
 export function SportsList() {
   return (
-    <div className="mt-20 mb-20 rounded-md flex flex-col antialiased items-center justify-center overflow-hidden">
-      <SectionTitle title="Sports POWERED" />
-      <InfiniteMovingCards
-        items={sportsList}
-        direction="right"
-        speed="normal"
-      />
-    </div>
+    <section className="relative mt-32 md:mt-40">
+      <div className="mx-auto max-w-[1400px] px-6 sm:px-10">
+        <SectionTitle
+          eyebrow="Sports powered"
+          title="For every sport, every pitch."
+        />
+      </div>
+      <div className="antialiased overflow-hidden">
+        <InfiniteMovingCards
+          items={sportsList}
+          direction="right"
+          speed="normal"
+        />
+      </div>
+    </section>
   );
 }
 

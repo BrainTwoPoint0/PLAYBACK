@@ -25,9 +25,14 @@ const partnerLogos: Logo[] = [
 
 export const Network = () => {
   return (
-    <section className="container mt-20">
-      <SectionTitle title="The Network" />
-      <LogoCarousel logos={partnerLogos} columnCount={4} />
+    <section id="network" className="relative mt-32 md:mt-40 scroll-mt-24">
+      <div className="mx-auto max-w-[1400px] px-6 sm:px-10">
+        <SectionTitle
+          eyebrow="The PLAYBACK Network"
+          title="Powered by PLAYBACK."
+        />
+        <LogoCarousel logos={partnerLogos} columnCount={4} />
+      </div>
     </section>
   );
 };

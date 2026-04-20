@@ -5,22 +5,37 @@
 @font-face {
   font-family: 'AvertaStd-Semibold';
   src: url('/fonts/AvertaStd-Semibold.ttf') format('truetype');
+  font-display: swap;
 }
 
 @font-face {
   font-family: 'AvertaStd-Thin';
   src: url('/fonts/AvertaStd-Thin.ttf') format('truetype');
+  font-display: swap;
 }
 
 :root {
   --night: #0a100d;
   --ash-grey: #b9baa3;
   --timberwolf: #d6d5c9;
+
+  --surface-0: #0a100d;
+  --surface-1: #0f1512;
+  --surface-2: #141a17;
+
+  --line: rgba(214, 213, 201, 0.08);
+  --line-strong: rgba(214, 213, 201, 0.16);
+
+  --text: #d6d5c9;
+  --text-muted: rgba(214, 213, 201, 0.64);
+  --text-subtle: rgba(214, 213, 201, 0.44);
+
+  --chrome-h: 112px;
 }
 
 body {
-  background-color: var(--night);
-  color: var(--timberwolf);
+  background-color: var(--surface-0);
+  color: var(--text);
 }
 
 /* Hide scrollbars site-wide */

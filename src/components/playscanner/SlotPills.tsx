@@ -22,7 +22,7 @@ export default function SlotPills({
 }: SlotPillsProps) {
   const [expanded, setExpanded] = useState(false);
 
-  // Group slots by time — show unique times with cheapest price + court count
+  // Group slots by time - show unique times with cheapest price + court count
   const timeGroups = useMemo(() => {
     const groups = new Map<string, TimeGroup>();
 

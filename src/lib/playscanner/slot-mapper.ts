@@ -90,7 +90,7 @@ function buildSportMeta(
 
 /**
  * Convert a flat `playscanner_slots` row into the CourtSlot shape the
- * frontend expects. Replaces persistent-cache.ts:transformLambdaSlot — all
+ * frontend expects. Replaces persistent-cache.ts:transformLambdaSlot - all
  * the fields the old transform had to derive from loose provider shapes
  * are already materialized in the row, so this is a straight
  * field-by-field build.
@@ -99,7 +99,7 @@ export function rowToCourtSlot(row: PlayscannerSlotRow): CourtSlot {
   const provider = row.provider as Provider;
   const indoor = row.venue_indoor === true;
 
-  // Booking URL fallback — mirrors the old transformLambdaSlot behaviour:
+  // Booking URL fallback - mirrors the old transformLambdaSlot behaviour:
   // Playtomic rows without a link fall back to the venue landing page.
   const bookingUrl =
     row.booking_url ||

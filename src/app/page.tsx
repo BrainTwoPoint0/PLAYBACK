@@ -1,48 +1,58 @@
 'use client';
 
-import { ParallaxText } from '@/components/ParallaxText';
+import { useEffect, useState } from 'react';
 import { Header } from '@/components/Header';
-import { Partners } from '@/components/Partners';
 import { About } from '@/components/About';
-import { SportsList } from '@/components/SportsList';
 import Services from '@/components/Services';
-import { ContactForm } from '@/components/Contact';
+import { Network } from '@/components/Network';
 import Press from '@/components/Press';
 import LatestNews from '@/components/LatestNews';
-import { useEffect, useState } from 'react';
-import { Network } from '@/components/Network';
+import { SportsList } from '@/components/SportsList';
+import { ContactForm } from '@/components/Contact';
+
+type LatestPost = {
+  _id: string;
+  title: string;
+  slug: { current: string };
+  coverImage: unknown;
+  publishedAt: string;
+  excerpt: string;
+  categories?: Array<{ title: string }>;
+};
 
 export default function Home() {
-  const [latestPosts, setLatestPosts] = useState([]);
+  const [latestPosts, setLatestPosts] = useState<LatestPost[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const controller = new AbortController();
     async function fetchPosts() {
       try {
-        const response = await fetch('/api/posts/latest');
+        const response = await fetch('/api/posts/latest', {
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        setLatestPosts(data);
+        if (Array.isArray(data)) setLatestPosts(data);
       } catch (error) {
-        console.error('Error fetching latest posts:', error);
+        if ((error as Error).name !== 'AbortError') {
+          console.error('Error fetching latest posts:', error);
+        }
       } finally {
         setLoading(false);
       }
     }
 
     fetchPosts();
+    return () => controller.abort();
   }, []);
 
   return (
-    <main className="overflow-hidden">
+    <main className="relative">
       <Header />
       <About />
-      <Network />
-      <div className="mt-20">
-        <ParallaxText baseVelocity={-3}>Access The Moment</ParallaxText>
-        <ParallaxText baseVelocity={3}>Unlock your Potential</ParallaxText>
-      </div>
-      {/* <Partners /> */}
       <Services />
+      <Network />
       <Press />
       <LatestNews posts={latestPosts} loading={loading} />
       <SportsList />

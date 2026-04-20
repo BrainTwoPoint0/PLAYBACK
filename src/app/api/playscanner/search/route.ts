@@ -7,7 +7,7 @@ const SPORT_ALLOWLIST = ['padel', 'football', 'tennis', 'basketball'] as const;
 const LOCATION_PATTERN = /^[a-zA-Z][a-zA-Z\s\-']{0,63}$/;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
-const MAX_PRICE_CEILING = 1_000_000; // pence — sanity ceiling, not a real product limit
+const MAX_PRICE_CEILING = 1_000_000; // pence - sanity ceiling, not a real product limit
 
 function validationError(message: string, field?: string) {
   return NextResponse.json(
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
       indoor = body.indoor;
     }
 
-    // Build search parameters from validated inputs only — don't pass body
+    // Build search parameters from validated inputs only - don't pass body
     // through wholesale, defends against unexpected keys reaching downstream.
     searchParams = {
       sport,
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
     const searchResult = await persistentCache.search(searchParams);
     searchResult.source = 'persistent_cache';
 
-    // Debug payload is dev-only — never echo request data back to clients in
+    // Debug payload is dev-only - never echo request data back to clients in
     // production even if PLAYSCANNER_DEBUG is accidentally enabled.
     const debugInfo: any = {};
     if (
@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    // Server-side log only — never echo request bodies / params back to the
+    // Server-side log only - never echo request bodies / params back to the
     // client. The full structured details stay in the logs where they can
     // include sensitive data without leaking to a caller.
     console.error('PLAYScanner search error:', {

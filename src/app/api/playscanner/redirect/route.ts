@@ -29,7 +29,7 @@ const KNOWN_PROVIDERS: readonly string[] = providerRegistry.providers;
 const KNOWN_SPORTS = ['padel', 'tennis', 'football', 'basketball'];
 const KNOWN_CURRENCIES = ['GBP', 'USD', 'EUR', 'SEK'];
 
-// Path-safe identifier — rejects /, ?, #, &, =, .., URL-encoding, whitespace
+// Path-safe identifier - rejects /, ?, #, &, =, .., URL-encoding, whitespace
 const SAFE_ID = /^[A-Za-z0-9_-]{1,64}$/;
 const SAFE_SESSION_ID = /^[A-Za-z0-9_-]{1,128}$/;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;

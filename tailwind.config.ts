@@ -21,6 +21,34 @@ const config: Config = {
       },
     },
     extend: {
+      colors: {
+        night: 'var(--night)',
+        'ash-grey': 'var(--ash-grey)',
+        timberwolf: 'var(--timberwolf)',
+        surface: {
+          0: 'var(--surface-0)',
+          1: 'var(--surface-1)',
+          2: 'var(--surface-2)',
+        },
+        line: {
+          DEFAULT: 'var(--line)',
+          strong: 'var(--line-strong)',
+        },
+        ink: {
+          DEFAULT: 'var(--text)',
+          muted: 'var(--text-muted)',
+          subtle: 'var(--text-subtle)',
+        },
+      },
+      fontFamily: {
+        sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: [
+          'var(--font-sans)',
+          'ui-sans-serif',
+          'system-ui',
+          'sans-serif',
+        ],
+      },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic':
@@ -51,6 +79,7 @@ const config: Config = {
   },
   plugins: [
     require('tailwindcss-animate'),
+    require('@tailwindcss/typography'),
     addVariablesForColors,
     function ({ matchUtilities, theme }: any) {
       matchUtilities(

@@ -187,7 +187,7 @@ export default async function PlayerProfilePage({ params }: PageProps) {
       />
 
       <div className="relative z-10 max-w-4xl mx-auto pb-20">
-        {/* Hero — full width, no card wrapper */}
+        {/* Hero - full width, no card wrapper */}
         <ProfileLayout delay={0}>
           <ProfileHero
             fullName={profile.full_name || username}
@@ -212,9 +212,9 @@ export default async function PlayerProfilePage({ params }: PageProps) {
           />
         </ProfileLayout>
 
-        {/* Content — two-column on desktop */}
+        {/* Content - two-column on desktop */}
         <div className="mt-8 px-4 md:px-0 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          {/* Left column — info */}
+          {/* Left column - info */}
           <div className="lg:col-span-2 space-y-8">
             <ProfileLayout delay={100}>
               <ProfileAbout
@@ -257,7 +257,7 @@ export default async function PlayerProfilePage({ params }: PageProps) {
             )}
           </div>
 
-          {/* Right column — highlights + stats */}
+          {/* Right column - highlights + stats */}
           <div className="lg:col-span-3 space-y-8">
             <ProfileLayout delay={150}>
               <ProfileHighlights highlights={highlights} />
