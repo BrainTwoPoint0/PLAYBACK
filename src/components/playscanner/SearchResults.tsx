@@ -100,7 +100,7 @@ export default function SearchResults({
   }, [results]);
 
   const priceMax = useMemo(() => {
-    const prices = results.map((s) => s.price);
+    const prices = results.map((s) => s.price).filter((p) => p > 0);
     return prices.length > 0 ? Math.max(...prices) : 10000;
   }, [results]);
 
@@ -237,28 +237,31 @@ export default function SearchResults({
           {[0, 1, 2].map((i) => (
             <div
               key={i}
-              className="h-7 w-20 animate-pulse rounded-full bg-white/[0.04]"
+              className="h-7 w-20 animate-pulse rounded-full bg-[rgba(214,213,201,0.04)]"
             />
           ))}
-          <div className="ml-auto h-7 w-7 animate-pulse rounded-md bg-white/[0.04]" />
+          <div className="ml-auto h-7 w-7 animate-pulse rounded-md bg-[rgba(214,213,201,0.04)]" />
         </div>
         {/* Card skeletons */}
         {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
-            className="animate-pulse rounded-xl border border-white/[0.06] bg-white/[0.02] p-4"
+            className="animate-pulse rounded-xl border border-line bg-[rgba(214,213,201,0.02)] p-4"
             style={{ animationDelay: `${i * 80}ms` }}
           >
             <div className="flex justify-between">
               <div className="space-y-2">
-                <div className="h-4 w-40 rounded bg-white/[0.06]" />
-                <div className="h-3 w-56 rounded bg-white/[0.04]" />
+                <div className="h-4 w-40 rounded bg-[rgba(214,213,201,0.06)]" />
+                <div className="h-3 w-56 rounded bg-[rgba(214,213,201,0.04)]" />
               </div>
-              <div className="h-5 w-14 rounded bg-white/[0.06]" />
+              <div className="h-5 w-14 rounded bg-[rgba(214,213,201,0.06)]" />
             </div>
             <div className="mt-3 flex gap-1.5">
               {[...Array(5)].map((_, j) => (
-                <div key={j} className="h-8 w-16 rounded-lg bg-white/[0.04]" />
+                <div
+                  key={j}
+                  className="h-8 w-16 rounded-lg bg-[rgba(214,213,201,0.04)]"
+                />
               ))}
             </div>
           </div>
@@ -269,13 +272,13 @@ export default function SearchResults({
 
   if (error) {
     return (
-      <div className="rounded-xl border border-red-500/20 bg-red-500/[0.05] p-6 text-center">
-        <p className="text-red-400">{error.message}</p>
+      <div className="rounded-xl border border-[rgba(237,106,106,0.22)] bg-[rgba(237,106,106,0.05)] p-6 text-center">
+        <p className="text-[rgb(237,106,106)]">{error.message}</p>
         <button
           onClick={() => window.location.reload()}
-          className="mt-3 rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-400 hover:text-white"
+          className="mt-3 rounded-full border border-line-strong px-4 py-2 text-sm text-ink-muted hover:text-timberwolf hover:border-timberwolf/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-timberwolf/60 focus-visible:ring-offset-2 focus-visible:ring-offset-night"
         >
-          Try Again
+          Try again
         </button>
       </div>
     );
@@ -289,19 +292,23 @@ export default function SearchResults({
       basketball: 'basketball courts',
     };
     return (
-      <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-10 text-center">
-        <div className="mb-3 flex justify-center text-gray-600">
+      <div className="rounded-xl border border-line-strong bg-[rgba(214,213,201,0.02)] p-10 text-center">
+        <div className="mb-3 flex justify-center text-ink-muted">
           <SportIcon
             sport={sport as 'padel' | 'football' | 'tennis' | 'basketball'}
             size={40}
           />
         </div>
-        <h3 className="text-base font-semibold text-white mb-1">
-          No {labels[sport] || 'courts'} available
+        <h3 className="text-base font-display font-semibold text-timberwolf mb-1">
+          No {labels[sport] || 'courts'} for this day
         </h3>
-        <p className="text-sm text-gray-500">
-          Try a different date or check back later
+        <p className="text-sm text-ink-muted max-w-[40ch] mx-auto">
+          Try a different date, switch sport, or let us know which provider
+          you&rsquo;d like to see covered.
         </p>
+        <div className="mt-5 flex items-center justify-center gap-2">
+          <ProviderRequestGotcha />
+        </div>
       </div>
     );
   }
@@ -316,14 +323,14 @@ export default function SearchResults({
             onClick={() => setFilterOpen(true)}
             className={`relative rounded-lg border px-3 py-1.5 text-xs font-medium transition-all flex items-center gap-1.5 ${
               activeFilterCount > 0
-                ? 'border-[#00FF88]/40 bg-[#00FF88]/10 text-[#00FF88]'
-                : 'border-white/[0.1] bg-white/[0.03] text-gray-400 hover:border-white/[0.2] hover:text-white'
+                ? 'border-[rgba(214,213,201,0.4)] bg-[rgba(214,213,201,0.1)] text-timberwolf'
+                : 'border-line-strong bg-[rgba(214,213,201,0.03)] text-ink-muted hover:border-line-strong hover:text-timberwolf'
             }`}
           >
             <SlidersHorizontalIcon className="h-3 w-3" />
             Filters
             {activeFilterCount > 0 && (
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#00FF88] text-[10px] font-bold text-[#0a100d]">
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-timberwolf text-[10px] font-bold text-night">
                 {activeFilterCount}
               </span>
             )}
@@ -333,29 +340,42 @@ export default function SearchResults({
 
           <div className="ml-auto flex items-center gap-2">
             {stats && (
-              <span className="hidden sm:inline text-[11px] text-gray-600">
-                {venueGroups.length} venues
-                {stats.cheapest > 0 &&
-                  ` · from £${(stats.cheapest / 100).toFixed(0)}`}
+              <span className="text-[11px] text-ink-subtle tabular-nums">
+                <span className="sm:hidden">{venueGroups.length}v</span>
+                <span className="hidden sm:inline">
+                  {venueGroups.length} venues
+                </span>
+                {stats.cheapest > 0 && (
+                  <>
+                    <span className="sm:hidden">
+                      {' · £'}
+                      {(stats.cheapest / 100).toFixed(0)}
+                    </span>
+                    <span className="hidden sm:inline">
+                      {' · from £'}
+                      {(stats.cheapest / 100).toFixed(0)}
+                    </span>
+                  </>
+                )}
                 {stats.ageMin !== null && (
                   <>
                     {' · '}
                     <span
                       className={
                         stats.ageMin < 10
-                          ? 'text-green-500'
+                          ? 'text-[rgb(120,196,140)]'
                           : stats.ageMin < 30
-                            ? 'text-yellow-500'
-                            : 'text-amber-500'
+                            ? 'text-[rgb(224,173,98)]'
+                            : 'text-[rgb(214,151,98)]'
                       }
                     >
-                      {stats.ageMin < 1 ? 'just now' : `${stats.ageMin}m ago`}
+                      {stats.ageMin < 1 ? 'live' : `${stats.ageMin}m`}
                     </span>
                   </>
                 )}
               </span>
             )}
-            <div className="flex items-center gap-0.5 rounded-lg border border-white/[0.1] p-0.5">
+            <div className="flex items-center gap-0.5 rounded-lg border border-line-strong p-0.5">
               <button
                 onClick={() => {
                   if (viewMode !== 'list') {
@@ -366,7 +386,7 @@ export default function SearchResults({
                   }
                   setViewMode('list');
                 }}
-                className={`rounded-md p-1.5 transition-colors ${viewMode === 'list' ? 'bg-white/10 text-white' : 'text-gray-600 hover:text-gray-400'}`}
+                className={`rounded-md p-1.5 transition-colors ${viewMode === 'list' ? 'bg-[rgba(214,213,201,0.1)] text-timberwolf' : 'text-ink-subtle hover:text-ink-muted'}`}
               >
                 <ListIcon className="h-3.5 w-3.5" />
               </button>
@@ -380,7 +400,7 @@ export default function SearchResults({
                   }
                   setViewMode('map');
                 }}
-                className={`rounded-md p-1.5 transition-colors ${viewMode === 'map' ? 'bg-white/10 text-white' : 'text-gray-600 hover:text-gray-400'}`}
+                className={`rounded-md p-1.5 transition-colors ${viewMode === 'map' ? 'bg-[rgba(214,213,201,0.1)] text-timberwolf' : 'text-ink-subtle hover:text-ink-muted'}`}
               >
                 <MapIcon className="h-3.5 w-3.5" />
               </button>
@@ -401,8 +421,8 @@ export default function SearchResults({
               }}
               className={`flex-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all text-center ${
                 activeTimeFilter === chip.id
-                  ? 'border-[#00FF88]/40 bg-[#00FF88]/10 text-[#00FF88]'
-                  : 'border-white/[0.1] bg-white/[0.03] text-gray-400 hover:border-white/[0.2] hover:text-white'
+                  ? 'border-[rgba(214,213,201,0.4)] bg-[rgba(214,213,201,0.1)] text-timberwolf'
+                  : 'border-line-strong bg-[rgba(214,213,201,0.03)] text-ink-muted hover:border-line-strong hover:text-timberwolf'
               }`}
             >
               {chip.label}
@@ -413,8 +433,8 @@ export default function SearchResults({
               onClick={() => setShowIndoor(!showIndoor)}
               className={`flex-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all text-center ${
                 showIndoor
-                  ? 'border-[#00FF88]/40 bg-[#00FF88]/10 text-[#00FF88]'
-                  : 'border-white/[0.1] bg-white/[0.03] text-gray-400 hover:border-white/[0.2] hover:text-white'
+                  ? 'border-[rgba(214,213,201,0.4)] bg-[rgba(214,213,201,0.1)] text-timberwolf'
+                  : 'border-line-strong bg-[rgba(214,213,201,0.03)] text-ink-muted hover:border-line-strong hover:text-timberwolf'
               }`}
             >
               Indoor
@@ -425,8 +445,8 @@ export default function SearchResults({
               onClick={() => setShowDropIn(!showDropIn)}
               className={`flex-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all text-center ${
                 showDropIn
-                  ? 'border-[#00FF88]/40 bg-[#00FF88]/10 text-[#00FF88]'
-                  : 'border-white/[0.1] bg-white/[0.03] text-gray-400 hover:border-white/[0.2] hover:text-white'
+                  ? 'border-[rgba(214,213,201,0.4)] bg-[rgba(214,213,201,0.1)] text-timberwolf'
+                  : 'border-line-strong bg-[rgba(214,213,201,0.03)] text-ink-muted hover:border-line-strong hover:text-timberwolf'
               }`}
             >
               Drop-in
@@ -439,19 +459,19 @@ export default function SearchResults({
       <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
         <SheetContent
           side={isMobile ? 'bottom' : 'right'}
-          className={`border-white/[0.08] bg-[#0a100d] ${
+          className={`border-line bg-[#0a100d] ${
             isMobile
               ? 'max-h-[70vh] rounded-t-2xl overflow-y-auto'
               : 'w-[360px] sm:max-w-[360px] overflow-y-auto'
           }`}
         >
           <SheetHeader className="pb-4">
-            <SheetTitle className="text-white flex items-center justify-between">
+            <SheetTitle className="text-timberwolf flex items-center justify-between">
               <span>Filters</span>
               {activeFilterCount > 0 && (
                 <button
                   onClick={clearAllFilters}
-                  className="text-xs font-normal text-gray-500 hover:text-white transition-colors"
+                  className="text-xs font-normal text-ink-muted hover:text-timberwolf transition-colors"
                 >
                   Clear all
                 </button>
@@ -465,7 +485,7 @@ export default function SearchResults({
           <div className="space-y-6">
             {/* ── Price range ── */}
             <div>
-              <h4 className="text-xs font-medium uppercase tracking-wider text-gray-500 mb-3">
+              <h4 className="text-xs font-medium uppercase tracking-wider text-ink-muted mb-3">
                 Price range
               </h4>
               <div className="px-1">
@@ -481,7 +501,7 @@ export default function SearchResults({
                   max={priceMax}
                   step={100}
                 />
-                <div className="flex justify-between mt-2 text-xs text-gray-400">
+                <div className="flex justify-between mt-2 text-xs text-ink-muted">
                   <span>
                     £{((priceRange?.[0] ?? priceMin) / 100).toFixed(0)}
                   </span>
@@ -493,7 +513,7 @@ export default function SearchResults({
               {priceRange && (
                 <button
                   onClick={() => setPriceRange(null)}
-                  className="mt-1 text-[11px] text-gray-600 hover:text-white transition-colors"
+                  className="mt-1 text-[11px] text-ink-subtle hover:text-timberwolf transition-colors"
                 >
                   Reset price
                 </button>
@@ -502,7 +522,7 @@ export default function SearchResults({
 
             {/* ── Time range ── */}
             <div>
-              <h4 className="text-xs font-medium uppercase tracking-wider text-gray-500 mb-3">
+              <h4 className="text-xs font-medium uppercase tracking-wider text-ink-muted mb-3">
                 Time range
               </h4>
               <div className="px-1">
@@ -519,7 +539,7 @@ export default function SearchResults({
                   max={timeMax}
                   step={1}
                 />
-                <div className="flex justify-between mt-2 text-xs text-gray-400">
+                <div className="flex justify-between mt-2 text-xs text-ink-muted">
                   <span>{formatHour(timeRange?.[0] ?? timeMin)}</span>
                   <span>{formatHour(timeRange?.[1] ?? timeMax)}</span>
                 </div>
@@ -527,7 +547,7 @@ export default function SearchResults({
               {timeRange && (
                 <button
                   onClick={() => setTimeRange(null)}
-                  className="mt-1 text-[11px] text-gray-600 hover:text-white transition-colors"
+                  className="mt-1 text-[11px] text-ink-subtle hover:text-timberwolf transition-colors"
                 >
                   Reset time
                 </button>
@@ -536,7 +556,7 @@ export default function SearchResults({
 
             {/* ── Providers ── */}
             <div>
-              <h4 className="text-xs font-medium uppercase tracking-wider text-gray-500 mb-3">
+              <h4 className="text-xs font-medium uppercase tracking-wider text-ink-muted mb-3">
                 Providers
               </h4>
               <div className="space-y-1">
@@ -556,8 +576,8 @@ export default function SearchResults({
                       }}
                       className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-sm transition-all ${
                         isSelected
-                          ? 'border-[#00FF88]/30 bg-[#00FF88]/5 text-white'
-                          : 'border-white/[0.06] bg-white/[0.02] text-gray-400 hover:border-white/[0.12] hover:text-white'
+                          ? 'border-[rgba(214,213,201,0.3)] bg-[rgba(214,213,201,0.05)] text-timberwolf'
+                          : 'border-line bg-[rgba(214,213,201,0.02)] text-ink-muted hover:border-line-strong hover:text-timberwolf'
                       }`}
                     >
                       <div className="flex items-center gap-2">
@@ -569,7 +589,9 @@ export default function SearchResults({
                           {config?.displayName || id}
                         </span>
                       </div>
-                      <span className="text-[11px] text-gray-600">{count}</span>
+                      <span className="text-[11px] text-ink-subtle">
+                        {count}
+                      </span>
                     </button>
                   );
                 })}
@@ -577,7 +599,7 @@ export default function SearchResults({
               {selectedProviders.size > 0 && (
                 <button
                   onClick={() => setSelectedProviders(new Set())}
-                  className="mt-1 text-[11px] text-gray-600 hover:text-white transition-colors"
+                  className="mt-1 text-[11px] text-ink-subtle hover:text-timberwolf transition-colors"
                 >
                   Clear providers
                 </button>
@@ -586,18 +608,18 @@ export default function SearchResults({
 
             {/* ── Venues ── */}
             <div>
-              <h4 className="text-xs font-medium uppercase tracking-wider text-gray-500 mb-3">
+              <h4 className="text-xs font-medium uppercase tracking-wider text-ink-muted mb-3">
                 Venues ({availableVenues.length})
               </h4>
               {availableVenues.length > 8 && (
                 <div className="relative mb-2">
-                  <SearchIcon className="absolute left-2.5 top-1/2 h-3 w-3 -translate-y-1/2 text-gray-600" />
+                  <SearchIcon className="absolute left-2.5 top-1/2 h-3 w-3 -translate-y-1/2 text-ink-subtle" />
                   <input
                     type="text"
                     value={venueSearch}
                     onChange={(e) => setVenueSearch(e.target.value)}
                     placeholder="Search venues..."
-                    className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] py-1.5 pl-8 pr-3 text-xs text-white placeholder:text-gray-600 focus:border-white/[0.2] focus:outline-none"
+                    className="w-full rounded-lg border border-line bg-[rgba(214,213,201,0.03)] py-1.5 pl-8 pr-3 text-xs text-timberwolf placeholder:text-ink-subtle focus:border-line-strong focus:outline-none"
                   />
                 </div>
               )}
@@ -623,14 +645,14 @@ export default function SearchResults({
                         }}
                         className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left transition-all ${
                           isSelected
-                            ? 'border-[#00FF88]/30 bg-[#00FF88]/5 text-white'
-                            : 'border-white/[0.06] bg-white/[0.02] text-gray-400 hover:border-white/[0.12] hover:text-white'
+                            ? 'border-[rgba(214,213,201,0.3)] bg-[rgba(214,213,201,0.05)] text-timberwolf'
+                            : 'border-line bg-[rgba(214,213,201,0.02)] text-ink-muted hover:border-line-strong hover:text-timberwolf'
                         }`}
                       >
                         <span className="text-xs font-medium truncate mr-2">
                           {name}
                         </span>
-                        <span className="text-[11px] text-gray-600 shrink-0">
+                        <span className="text-[11px] text-ink-subtle shrink-0">
                           {count}
                         </span>
                       </button>
@@ -640,7 +662,7 @@ export default function SearchResults({
               {selectedVenues.size > 0 && (
                 <button
                   onClick={() => setSelectedVenues(new Set())}
-                  className="mt-1 text-[11px] text-gray-600 hover:text-white transition-colors"
+                  className="mt-1 text-[11px] text-ink-subtle hover:text-timberwolf transition-colors"
                 >
                   Clear venues
                 </button>
@@ -649,7 +671,7 @@ export default function SearchResults({
           </div>
 
           {/* Apply / results count footer */}
-          <div className="sticky bottom-0 mt-6 pt-4 border-t border-white/[0.06] bg-[#0a100d]">
+          <div className="sticky bottom-0 mt-6 pt-4 border-t border-line bg-[#0a100d]">
             <button
               onClick={() => {
                 if (activeFilterCount > 0) {
@@ -664,7 +686,7 @@ export default function SearchResults({
                 }
                 setFilterOpen(false);
               }}
-              className="w-full rounded-lg bg-[#00FF88] py-2.5 text-sm font-semibold text-[#0a100d] hover:bg-[#00E077] transition-colors"
+              className="w-full rounded-lg bg-timberwolf py-2.5 text-sm font-semibold text-night hover:bg-ash-grey transition-colors"
             >
               Show {filteredResults.length} results
             </button>
@@ -682,7 +704,11 @@ export default function SearchResults({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <MapView results={filteredResults} sport={sport} />
+            <MapView
+              results={filteredResults}
+              sport={sport}
+              onSlotSelect={handleBook}
+            />
           </motion.div>
         ) : (
           <motion.div
@@ -712,7 +738,7 @@ export default function SearchResults({
         <div className="flex justify-center pt-1">
           <button
             onClick={() => setShowCount((p) => p + 10)}
-            className="rounded-full border border-white/[0.06] px-5 py-2 text-xs text-gray-500 transition-colors hover:border-white/[0.12] hover:text-gray-300"
+            className="rounded-full border border-line px-5 py-2 text-xs text-ink-muted transition-colors hover:border-line-strong hover:text-timberwolf"
           >
             Show more ({venueGroups.length - showCount} remaining)
           </button>

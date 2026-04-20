@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { motion } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import SearchResults from './SearchResults';
 import SportIcon from './SportIcon';
 import { MapPinIcon } from 'lucide-react';
@@ -119,26 +119,55 @@ export default function PLAYScannerMain() {
     }
   }, []);
 
-  /* Auto-search + URL sync */
+  /* URL sync — runs on every sport/date change. router is intentionally not in
+     deps; App Router re-creates the router instance on render and listing it
+     would loop the effect and hammer /api/playscanner/search. */
   useEffect(() => {
     const p = new URLSearchParams();
     p.set('sport', sport);
     p.set('date', date);
     router.replace(`/playscanner?${p.toString()}`, { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sport, date]);
+
+  /* Auto-search — separate effect so URL sync doesn't re-trigger fetches. */
+  useEffect(() => {
     search(sport, date);
-  }, [sport, date, search, router]);
+  }, [sport, date, search]);
 
   /* ── Render ─────────────────────────────────────────── */
   return (
     <div className="relative z-20 mx-auto max-w-5xl px-4">
+      {/* ━━━ Context header ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <header className="pt-6 pb-3 sm:pt-8 sm:pb-4">
+        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-ink-subtle">
+          <span
+            aria-hidden
+            className="inline-block h-1.5 w-1.5 rounded-full bg-[rgb(224,173,98)] shadow-[0_0_8px_rgba(224,173,98,0.55)]"
+          />
+          PLAYSCANNER - London
+        </div>
+        <h1 className="mt-2 font-display font-semibold text-[clamp(24px,3.4vw,34px)] leading-[1.1] tracking-[-0.02em] text-timberwolf">
+          One search. Every slot.
+        </h1>
+        <p className="mt-1.5 max-w-[52ch] text-[13px] sm:text-[14px] leading-[1.5] text-ink-muted">
+          Aggregating 10+ providers - Playtomic, MATCHi, PowerLeague, Goals,
+          Footy Addicts and more. Data refreshes every 15 minutes.
+        </p>
+      </header>
+
       {/* ━━━ Unified search bar ━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <div className="sticky top-0 z-30 -mx-4 px-4 pt-3 pb-2 bg-[var(--night)]/[.97] backdrop-blur-lg">
         {/* Brand + Search controls - one unified bar */}
-        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-2 space-y-2">
+        <div
+          className={`rounded-2xl border bg-[rgba(214,213,201,0.025)] p-2 space-y-2 transition-colors ${
+            isSearching ? 'border-[rgba(214,213,201,0.22)]' : 'border-line'
+          }`}
+        >
           {/* Desktop: single row - dates left, sports+location right */}
           {/* Mobile: two rows - sports+location on top, dates below */}
           <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-2">
-            <div className="flex items-center justify-evenly sm:justify-start gap-1 overflow-x-auto no-visible-scrollbar">
+            <div className="flex items-center justify-start gap-1 overflow-x-auto no-visible-scrollbar">
               {DATES.map((d) => (
                 <button
                   key={d.value}
@@ -151,24 +180,32 @@ export default function PLAYScannerMain() {
                     }
                     setDate(d.value);
                   }}
-                  className={`shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all ${
+                  className={`shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-timberwolf/60 focus-visible:ring-offset-2 focus-visible:ring-offset-night ${
                     date === d.value
-                      ? 'bg-white/[0.12] text-white'
-                      : 'text-gray-600 hover:text-gray-400'
+                      ? 'bg-[rgba(214,213,201,0.12)] text-timberwolf'
+                      : 'text-ink-subtle hover:text-ink-muted'
                   }`}
                 >
-                  {d.label}
+                  <span className="sm:hidden">{d.shortLabel}</span>
+                  <span className="hidden sm:inline">{d.label}</span>
                 </button>
               ))}
             </div>
 
-            <div className="w-full h-px bg-white/[0.06] sm:hidden" />
+            <div className="w-full h-px bg-[rgba(214,213,201,0.06)] sm:hidden" />
 
             <div className="flex items-center sm:justify-end gap-1.5 shrink-0">
-              <div className="flex items-center rounded-xl bg-white/[0.04] p-0.5 shrink-0">
+              <div className="flex items-center rounded-xl bg-[rgba(214,213,201,0.04)] p-0.5 shrink-0">
                 {SPORTS.map((s) => (
-                  <button
+                  <motion.button
                     key={s.id}
+                    layout
+                    transition={{
+                      layout: {
+                        duration: 0.24,
+                        ease: [0.22, 1, 0.36, 1],
+                      },
+                    }}
                     onClick={() => {
                       if (s.id !== sport) {
                         posthog.capture('playscanner_sport_changed', {
@@ -179,22 +216,45 @@ export default function PLAYScannerMain() {
                       }
                       setSport(s.id);
                     }}
-                    className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                    aria-label={s.label}
+                    className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-timberwolf/60 focus-visible:ring-offset-2 focus-visible:ring-offset-night ${
                       sport === s.id
-                        ? 'bg-[#00FF88] text-[#0a100d] shadow-sm shadow-[#00FF88]/20'
-                        : 'text-gray-500 hover:text-white'
+                        ? 'bg-timberwolf text-night shadow-sm shadow-[0_1px_3px_rgba(214,213,201,0.2)]'
+                        : 'text-ink-muted hover:text-timberwolf'
                     }`}
                   >
-                    <SportIcon sport={s.id} size={12} />
+                    <motion.span layout="position" className="flex">
+                      <SportIcon sport={s.id} size={12} />
+                    </motion.span>
+                    {/* Desktop: label always visible */}
                     <span className="hidden sm:inline">{s.label}</span>
-                  </button>
+                    {/* Mobile: label animates in when this pill becomes selected */}
+                    <AnimatePresence initial={false} mode="popLayout">
+                      {sport === s.id && (
+                        <motion.span
+                          key="mobile-label"
+                          layout
+                          initial={{ opacity: 0, width: 0 }}
+                          animate={{ opacity: 1, width: 'auto' }}
+                          exit={{ opacity: 0, width: 0 }}
+                          transition={{
+                            duration: 0.22,
+                            ease: [0.22, 1, 0.36, 1],
+                          }}
+                          className="sm:hidden overflow-hidden whitespace-nowrap"
+                        >
+                          {s.label}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
                 ))}
               </div>
-              <span className="text-xs font-medium text-white sm:hidden">
-                {SPORTS.find((s) => s.id === sport)?.label}
-              </span>
-              <div className="flex shrink-0 items-center gap-1.5 rounded-xl bg-white/[0.04] px-3 py-1.5 text-xs text-gray-500 ml-auto sm:ml-0">
-                <MapPinIcon className="h-3 w-3" />
+              <div
+                className="flex shrink-0 items-center gap-1.5 rounded-xl bg-[rgba(214,213,201,0.04)] px-3 py-1.5 text-xs text-ink-muted ml-auto sm:ml-0"
+                title="London only - more cities coming"
+              >
+                <MapPinIcon className="h-3 w-3" aria-hidden />
                 London
               </div>
             </div>

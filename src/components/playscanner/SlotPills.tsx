@@ -67,16 +67,16 @@ export default function SlotPills({
           <button
             key={group.time}
             onClick={() => onBook(bestSlot)}
-            className="group relative flex items-center gap-1.5 rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5 text-sm transition-all hover:border-[#00FF88]/30 hover:bg-[#00FF88]/[0.04] active:scale-[0.97]"
+            className="group relative flex items-center gap-1.5 rounded-lg border border-line bg-[rgba(214,213,201,0.02)] px-2.5 py-1.5 text-sm transition-all hover:border-[rgba(214,213,201,0.3)] hover:bg-[rgba(214,213,201,0.04)] active:scale-[0.97]"
           >
-            <span className="font-medium text-white">{group.time}</span>
+            <span className="font-medium text-timberwolf">{group.time}</span>
             {price && (
-              <span className="text-[11px] text-gray-500 group-hover:text-[#00FF88]/70">
+              <span className="text-[11px] text-ink-muted group-hover:text-[rgba(214,213,201,0.7)]">
                 {price}
               </span>
             )}
             {courtCount > 1 && (
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/[0.08] text-[9px] text-gray-400">
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[rgba(214,213,201,0.08)] text-[9px] text-ink-muted">
                 {courtCount}
               </span>
             )}
@@ -86,7 +86,7 @@ export default function SlotPills({
       {hasMore && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5 text-xs text-gray-500 transition-colors hover:text-gray-300"
+          className="rounded-lg border border-line bg-[rgba(214,213,201,0.02)] px-2.5 py-1.5 text-xs text-ink-muted transition-colors hover:text-timberwolf"
         >
           {expanded ? 'Less' : `+${timeGroups.length - maxVisible}`}
         </button>

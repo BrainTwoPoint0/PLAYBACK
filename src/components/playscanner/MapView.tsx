@@ -29,6 +29,7 @@ const Popup = dynamic(() => import('react-leaflet').then((mod) => mod.Popup), {
 interface MapViewProps {
   results: CourtSlot[];
   sport: string;
+  onSlotSelect?: (slot: CourtSlot) => void;
 }
 
 // Inject Leaflet styles once globally
@@ -46,15 +47,15 @@ function injectLeafletStyles() {
   style.textContent = `
     .leaflet-marker-icon { background: none !important; border: none !important; }
     .leaflet-marker-icon img { width: 18px !important; height: 18px !important; }
-    .leaflet-popup-content-wrapper { background: #0a100d !important; border: 1px solid rgba(0,255,136,0.2) !important; border-radius: 12px !important; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.4) !important; }
-    .leaflet-popup-content { margin: 0 !important; color: white !important; }
-    .leaflet-popup-tip { background: #0a100d !important; border: 1px solid rgba(0,255,136,0.2) !important; box-shadow: none !important; }
-    .leaflet-popup-close-button { color: #00FF88 !important; font-size: 20px !important; font-weight: 300 !important; width: 24px !important; height: 24px !important; display: flex !important; align-items: center !important; justify-content: center !important; line-height: 1 !important; padding: 0 !important; top: 8px !important; right: 8px !important; }
-    .leaflet-popup-close-button:hover { color: #00E077 !important; background: rgba(0,255,136,0.1) !important; border-radius: 4px !important; }
-    .leaflet-control-zoom a { background: #0a100d !important; border: 1px solid rgba(0,255,136,0.2) !important; color: #00FF88 !important; display: flex !important; align-items: center !important; justify-content: center !important; width: 30px !important; height: 30px !important; line-height: 26px !important; font-size: 18px !important; }
-    .leaflet-control-zoom a:hover { background: rgba(0,255,136,0.1) !important; color: #00E077 !important; }
-    .leaflet-control-attribution { background: rgba(10,16,13,0.8) !important; color: #b9baa3 !important; border: 1px solid rgba(0,255,136,0.1) !important; border-radius: 6px !important; font-size: 10px !important; }
-    .leaflet-control-attribution a { color: #00FF88 !important; }
+    .leaflet-popup-content-wrapper { background: #0a100d !important; border: 1px solid rgba(214,213,201,0.16) !important; border-radius: 12px !important; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.4) !important; }
+    .leaflet-popup-content { margin: 0 !important; color: #d6d5c9 !important; }
+    .leaflet-popup-tip { background: #0a100d !important; border: 1px solid rgba(214,213,201,0.16) !important; box-shadow: none !important; }
+    .leaflet-popup-close-button { color: #d6d5c9 !important; font-size: 20px !important; font-weight: 300 !important; width: 24px !important; height: 24px !important; display: flex !important; align-items: center !important; justify-content: center !important; line-height: 1 !important; padding: 0 !important; top: 8px !important; right: 8px !important; }
+    .leaflet-popup-close-button:hover { color: #b9baa3 !important; background: rgba(214,213,201,0.08) !important; border-radius: 4px !important; }
+    .leaflet-control-zoom a { background: #0a100d !important; border: 1px solid rgba(214,213,201,0.16) !important; color: #d6d5c9 !important; display: flex !important; align-items: center !important; justify-content: center !important; width: 30px !important; height: 30px !important; line-height: 26px !important; font-size: 18px !important; }
+    .leaflet-control-zoom a:hover { background: rgba(214,213,201,0.08) !important; color: #b9baa3 !important; }
+    .leaflet-control-attribution { background: rgba(10,16,13,0.8) !important; color: #b9baa3 !important; border: 1px solid rgba(214,213,201,0.08) !important; border-radius: 6px !important; font-size: 10px !important; }
+    .leaflet-control-attribution a { color: #d6d5c9 !important; }
     @media (max-width: 640px) { .leaflet-popup-content-wrapper { max-width: 260px !important; } .leaflet-control-zoom a { width: 22px !important; height: 22px !important; } }
   `;
   document.head.appendChild(style);
@@ -79,34 +80,38 @@ function MapSkeleton() {
           />
         ))}
       </div>
-      <div className="absolute top-[30%] left-[40%] h-3 w-3 animate-pulse rounded-full bg-[#00FF88]/20" />
+      <div className="absolute top-[30%] left-[40%] h-3 w-3 animate-pulse rounded-full bg-[rgba(214,213,201,0.2)]" />
       <div
-        className="absolute top-[45%] left-[55%] h-3 w-3 animate-pulse rounded-full bg-[#00FF88]/20"
+        className="absolute top-[45%] left-[55%] h-3 w-3 animate-pulse rounded-full bg-[rgba(214,213,201,0.2)]"
         style={{ animationDelay: '150ms' }}
       />
       <div
-        className="absolute top-[35%] left-[60%] h-3 w-3 animate-pulse rounded-full bg-[#00FF88]/20"
+        className="absolute top-[35%] left-[60%] h-3 w-3 animate-pulse rounded-full bg-[rgba(214,213,201,0.2)]"
         style={{ animationDelay: '300ms' }}
       />
       <div
-        className="absolute top-[55%] left-[45%] h-3 w-3 animate-pulse rounded-full bg-[#00FF88]/20"
+        className="absolute top-[55%] left-[45%] h-3 w-3 animate-pulse rounded-full bg-[rgba(214,213,201,0.2)]"
         style={{ animationDelay: '100ms' }}
       />
       <div
-        className="absolute top-[50%] left-[35%] h-3 w-3 animate-pulse rounded-full bg-[#00FF88]/20"
+        className="absolute top-[50%] left-[35%] h-3 w-3 animate-pulse rounded-full bg-[rgba(214,213,201,0.2)]"
         style={{ animationDelay: '250ms' }}
       />
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="flex items-center gap-2 rounded-lg bg-white/[0.04] px-4 py-2 backdrop-blur-sm">
-          <MapPinIcon className="h-4 w-4 animate-pulse text-[#00FF88]/50" />
-          <span className="text-xs text-gray-600">Loading map</span>
+        <div className="flex items-center gap-2 rounded-lg bg-[rgba(214,213,201,0.04)] px-4 py-2 backdrop-blur-sm">
+          <MapPinIcon className="h-4 w-4 animate-pulse text-[rgba(214,213,201,0.5)]" />
+          <span className="text-xs text-ink-subtle">Loading map</span>
         </div>
       </div>
     </div>
   );
 }
 
-export default function MapView({ results, sport }: MapViewProps) {
+export default function MapView({
+  results,
+  sport,
+  onSlotSelect,
+}: MapViewProps) {
   const [isClient, setIsClient] = useState(false);
   const [leafletLoaded, setLeafletLoaded] = useState(false);
   const [tilesReady, setTilesReady] = useState(false);
@@ -126,7 +131,7 @@ export default function MapView({ results, sport }: MapViewProps) {
       const src = srcMap[sport] || '/assets/football.svg';
 
       const customIcon = L.divIcon({
-        html: `<div style="width:32px;height:32px;border-radius:50%;background:#00FF88;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.4);border:2px solid white;overflow:hidden;"><img src="${src}" style="display:block;width:18px;height:18px;max-width:18px;max-height:18px;" /></div>`,
+        html: `<div style="width:32px;height:32px;border-radius:50%;background:#d6d5c9;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.4);border:2px solid #0a100d;overflow:hidden;"><img src="${src}" style="display:block;width:18px;height:18px;max-width:18px;max-height:18px;" /></div>`,
         className: '',
         iconSize: [32, 32],
         iconAnchor: [16, 16],
@@ -217,10 +222,10 @@ export default function MapView({ results, sport }: MapViewProps) {
     slots: CourtSlot[];
     cheapestSlot: CourtSlot;
   }) => (
-    <div className="w-[240px] sm:min-w-[280px] sm:max-w-[320px] p-1 bg-[#0a100d] text-white">
+    <div className="w-[240px] sm:min-w-[280px] sm:max-w-[320px] p-1 bg-[#0a100d] text-timberwolf">
       <div className="mb-2 pt-2 px-2">
         <div className="mb-1">
-          <h3 className="font-semibold text-sm text-white leading-tight">
+          <h3 className="font-semibold text-sm text-timberwolf leading-tight">
             {venue.name}
           </h3>
         </div>
@@ -235,24 +240,24 @@ export default function MapView({ results, sport }: MapViewProps) {
           <div className="flex items-center gap-1.5">
             <Badge
               variant="outline"
-              className="border-[#00FF88] text-[#00FF88] px-1.5 py-0.5 text-[10px]"
+              className="border-timberwolf text-timberwolf px-1.5 py-0.5 text-[10px]"
             >
               {cheapestSlot.provider}
             </Badge>
-            <span className="text-[10px] text-gray-500">
+            <span className="text-[10px] text-ink-muted">
               {slots.length} slot{slots.length !== 1 ? 's' : ''}
             </span>
           </div>
         </div>
       </div>
 
-      <div className="bg-[#1a2520] rounded-lg p-2 mb-2 border border-[#00FF88]/20 mx-2">
+      <div className="bg-surface-1 rounded-lg p-2 mb-2 border border-line-strong mx-2">
         <div className="flex items-center justify-between">
           <div>
             <div className="text-[10px] text-[#b9baa3] uppercase tracking-wide font-medium">
               From
             </div>
-            <div className="text-base font-bold text-[#00FF88]">
+            <div className="text-base font-bold text-timberwolf">
               £{(cheapestSlot.price / 100).toFixed(2)}
             </div>
           </div>
@@ -260,7 +265,7 @@ export default function MapView({ results, sport }: MapViewProps) {
             <div className="text-[10px] text-[#b9baa3] uppercase tracking-wide font-medium">
               Next
             </div>
-            <div className="text-xs font-medium flex items-center justify-end text-white">
+            <div className="text-xs font-medium flex items-center justify-end text-timberwolf">
               <ClockIcon className="h-3 w-3 mr-1" />
               {new Date(cheapestSlot.startTime).toLocaleTimeString('en-GB', {
                 hour: '2-digit',
@@ -273,31 +278,11 @@ export default function MapView({ results, sport }: MapViewProps) {
 
       <div className="px-2">
         <button
-          onClick={async () => {
-            try {
-              const res = await fetch('/api/playscanner/redirect', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  provider: cheapestSlot.provider,
-                  venueName: cheapestSlot.venue.name,
-                  venueId: cheapestSlot.venue.id,
-                  bookingUrl: cheapestSlot.bookingUrl,
-                  price: cheapestSlot.price,
-                  sport: cheapestSlot.sport,
-                  startTime: cheapestSlot.startTime,
-                }),
-              });
-              const data = await res.json();
-              window.open(data.bookingUrl || cheapestSlot.bookingUrl, '_blank');
-            } catch {
-              window.open(cheapestSlot.bookingUrl, '_blank');
-            }
-          }}
-          className="w-full bg-[#00FF88] hover:bg-[#00E077] text-[#0a100d] font-medium py-1.5 px-3 rounded-lg flex items-center justify-center space-x-1 transition-colors text-xs"
+          onClick={() => onSlotSelect?.(cheapestSlot)}
+          className="w-full bg-timberwolf hover:bg-ash-grey text-night font-medium py-1.5 px-3 rounded-lg flex items-center justify-center space-x-1 transition-colors text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-timberwolf focus-visible:ring-offset-2 focus-visible:ring-offset-night"
         >
           <span>Book</span>
-          <ExternalLinkIcon className="h-3 w-3" />
+          <ExternalLinkIcon className="h-3 w-3" aria-hidden />
         </button>
       </div>
     </div>
@@ -308,12 +293,12 @@ export default function MapView({ results, sport }: MapViewProps) {
 
   if (isClient && leafletLoaded && uniqueVenues.length === 0) {
     return (
-      <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-10 text-center">
-        <MapPinIcon className="mx-auto h-8 w-8 text-gray-600 mb-3" />
-        <h3 className="text-base font-semibold text-white mb-1">
+      <div className="rounded-xl border border-line bg-[rgba(214,213,201,0.02)] p-10 text-center">
+        <MapPinIcon className="mx-auto h-8 w-8 text-ink-subtle mb-3" />
+        <h3 className="text-base font-semibold text-timberwolf mb-1">
           No venues to show on map
         </h3>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-ink-muted">
           Try a different search or check back later
         </p>
       </div>

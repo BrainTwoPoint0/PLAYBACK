@@ -42,8 +42,8 @@ export default function QuickFilters({
             onClick={() => onToggle(chip.id)}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
               active
-                ? 'bg-[#00FF88]/15 text-[#00FF88] border border-[#00FF88]/30'
-                : 'bg-white/[0.03] text-gray-500 border border-transparent hover:text-gray-300 hover:bg-white/[0.05]'
+                ? 'bg-[rgba(214,213,201,0.15)] text-timberwolf border border-[rgba(214,213,201,0.3)]'
+                : 'bg-[rgba(214,213,201,0.03)] text-ink-muted border border-transparent hover:text-timberwolf hover:bg-[rgba(214,213,201,0.05)]'
             }`}
           >
             {chip.label}

@@ -121,19 +121,19 @@ export default function VenueCard({ group, onBook }: VenueCardProps) {
 
   return (
     <div
-      className={`group rounded-xl border px-4 py-3 transition-colors hover:bg-white/[0.03] ${
+      className={`group rounded-xl border px-4 py-3 transition-colors hover:bg-[rgba(214,213,201,0.03)] ${
         isDropIn
-          ? 'border-orange-500/20 bg-orange-500/[0.02]'
-          : 'border-white/[0.06] bg-white/[0.02]'
+          ? 'border-[rgba(224,173,98,0.22)] bg-[rgba(224,173,98,0.03)]'
+          : 'border-line bg-[rgba(214,213,201,0.02)]'
       }`}
     >
       {/* Row 1: Venue name + price */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-base font-semibold text-white">
+          <h3 className="truncate font-display text-base font-semibold text-timberwolf tracking-[-0.01em]">
             {group.venueName}
           </h3>
-          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-gray-400">
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-ink-muted">
             <span
               className="inline-flex items-center gap-1"
               style={{ color: providerConfig.color }}
@@ -146,14 +146,14 @@ export default function VenueCard({ group, onBook }: VenueCardProps) {
             </span>
             {courtSummary && (
               <>
-                <span className="text-gray-600">·</span>
+                <span className="text-ink-subtle">·</span>
                 <span>{courtSummary}</span>
               </>
             )}
             {group.collectedAt && (
               <>
-                <span className="text-gray-600">·</span>
-                <span className="text-gray-500">
+                <span className="text-ink-subtle">·</span>
+                <span className="text-ink-muted">
                   {timeAgo(group.collectedAt)}
                 </span>
               </>
@@ -164,18 +164,20 @@ export default function VenueCard({ group, onBook }: VenueCardProps) {
         <div className="shrink-0 text-right">
           {group.cheapest > 0 ? (
             <>
-              <span className="text-lg font-bold text-[#00FF88]">
+              <span className="text-lg font-bold text-timberwolf">
                 £{(group.cheapest / 100).toFixed(0)}
                 {group.mostExpensive > group.cheapest && (
-                  <span className="text-sm font-medium text-gray-500">
+                  <span className="text-sm font-medium text-ink-muted">
                     –£{(group.mostExpensive / 100).toFixed(0)}
                   </span>
                 )}
               </span>
-              <span className="ml-0.5 text-xs text-gray-500">{priceLabel}</span>
+              <span className="ml-0.5 text-xs text-ink-muted">
+                {priceLabel}
+              </span>
             </>
           ) : (
-            <span className="text-xs text-gray-500">Price on site</span>
+            <span className="text-xs text-ink-muted">Price on site</span>
           )}
         </div>
       </div>
@@ -188,15 +190,15 @@ export default function VenueCard({ group, onBook }: VenueCardProps) {
               key={tag}
               className={`rounded-md px-2 py-0.5 text-[11px] font-medium ${
                 tag === 'DROP-IN'
-                  ? 'bg-orange-500/15 text-orange-400'
-                  : 'bg-white/[0.06] text-gray-400'
+                  ? 'bg-[rgba(224,173,98,0.15)] text-[rgb(224,173,98)]'
+                  : 'bg-[rgba(214,213,201,0.06)] text-ink-muted'
               }`}
             >
               {tag}
             </span>
           ))}
           {spotsLeft !== null && spotsLeft > 0 && (
-            <span className="rounded-md bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium text-amber-400">
+            <span className="rounded-md bg-[rgba(224,173,98,0.15)] px-2 py-0.5 text-[11px] font-medium text-[rgb(224,173,98)]">
               {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} left
             </span>
           )}

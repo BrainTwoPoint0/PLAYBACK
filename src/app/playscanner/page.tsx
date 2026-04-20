@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
 import { Suspense } from 'react';
 import PLAYScannerMain from '@/components/playscanner/PLAYScannerMain';
-import { ContactForm } from '@/components/Contact';
 
 export const metadata: Metadata = {
   title: 'PLAYSCANNER - Book Sports Courts & Pitches | PLAYBACK',
@@ -19,11 +18,10 @@ export const metadata: Metadata = {
 
 export default function PLAYScannerPage() {
   return (
-    <main className="min-h-screen bg-[var(--background)]">
+    <main className="min-h-screen bg-night">
       <Suspense>
         <PLAYScannerMain />
       </Suspense>
-      <ContactForm />
     </main>
   );
 }

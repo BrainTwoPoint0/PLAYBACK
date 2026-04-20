@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CourtSlot, PROVIDER_CONFIG } from '@/lib/playscanner/types';
 import { ExternalLinkIcon, XIcon, Loader2Icon } from 'lucide-react';
 import posthog from 'posthog-js';
@@ -23,6 +23,8 @@ export default function BookingConfirm({
     priceChanged: boolean;
   } | null>(null);
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const previouslyFocused = useRef<HTMLElement | null>(null);
 
   // Pre-validate on modal open
   useEffect(() => {
@@ -53,6 +55,45 @@ export default function BookingConfirm({
       })
       .catch(() => setValidating(false));
   }, [slot]);
+
+  // Escape-to-close + focus management + body scroll lock while open.
+  useEffect(() => {
+    if (!slot) return;
+    previouslyFocused.current = document.activeElement as HTMLElement | null;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusables = dialogRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    // Move focus into dialog on open.
+    const t = window.setTimeout(() => dialogRef.current?.focus(), 50);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+      window.clearTimeout(t);
+      // Restore focus to the element that triggered the modal.
+      previouslyFocused.current?.focus?.();
+    };
+  }, [slot, onClose]);
 
   if (!slot) return null;
 
@@ -101,22 +142,33 @@ export default function BookingConfirm({
       />
 
       {/* Bottom sheet */}
-      <div className="fixed inset-x-0 bottom-0 z-50 rounded-t-2xl border-t border-white/10 bg-[#0a100d] p-5 pb-8 shadow-2xl sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:max-w-md sm:rounded-2xl sm:border sm:pb-5">
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Book ${slot.venue.name}`}
+        className="fixed inset-x-0 bottom-0 z-50 rounded-t-2xl border-t border-line-strong bg-night p-5 pb-8 shadow-2xl focus:outline-none sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:max-w-md sm:rounded-2xl sm:border sm:pb-5"
+      >
         {/* Close button */}
         <button
+          type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1 text-gray-500 transition-colors hover:text-white"
+          aria-label="Close booking dialog"
+          className="absolute right-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-full text-ink-muted transition-colors hover:text-timberwolf hover:bg-[rgba(214,213,201,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-timberwolf/60"
         >
           <XIcon className="h-5 w-5" />
         </button>
 
         {/* Handle bar (mobile) */}
-        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-white/20 sm:hidden" />
+        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-[rgba(214,213,201,0.2)] sm:hidden" />
 
         {/* Content */}
-        <h3 className="text-lg font-semibold text-white">{slot.venue.name}</h3>
+        <h3 className="text-lg font-semibold text-timberwolf">
+          {slot.venue.name}
+        </h3>
 
-        <div className="mt-1 flex items-center gap-2 text-sm text-gray-400">
+        <div className="mt-1 flex items-center gap-2 text-sm text-ink-muted">
           <span
             className="inline-flex items-center gap-1"
             style={{ color: providerConfig.color }}
@@ -129,41 +181,41 @@ export default function BookingConfirm({
           </span>
           {slot.courtName && (
             <>
-              <span className="text-gray-600">·</span>
+              <span className="text-ink-subtle">·</span>
               <span>{slot.courtName}</span>
             </>
           )}
         </div>
 
-        <div className="mt-4 flex items-center justify-between rounded-lg bg-white/[0.04] p-3">
+        <div className="mt-4 flex items-center justify-between rounded-lg bg-[rgba(214,213,201,0.04)] p-3">
           <div>
-            <div className="text-sm text-gray-400">Time</div>
-            <div className="text-lg font-semibold text-white">
+            <div className="text-sm text-ink-muted">Time</div>
+            <div className="text-lg font-semibold text-timberwolf">
               {time} – {endTime}
             </div>
-            <div className="text-xs text-gray-500">{slot.duration} min</div>
+            <div className="text-xs text-ink-muted">{slot.duration} min</div>
           </div>
           <div className="text-right">
-            <div className="text-sm text-gray-400">
+            <div className="text-sm text-ink-muted">
               {isDropIn ? 'Per person' : 'Price'}
             </div>
             {slot.price === 0 ? (
-              <div className="text-sm font-medium text-gray-400">
+              <div className="text-sm font-medium text-ink-muted">
                 Price on site
               </div>
             ) : validation?.priceChanged &&
               validation.currentPrice != null &&
               validation.currentPrice > 0 ? (
               <div>
-                <span className="text-sm text-gray-600 line-through">
+                <span className="text-sm text-ink-subtle line-through">
                   £{(slot.price / 100).toFixed(2)}
                 </span>
-                <div className="text-2xl font-bold text-amber-400">
+                <div className="text-2xl font-bold text-[rgb(224,173,98)] tabular-nums">
                   £{(validation.currentPrice / 100).toFixed(2)}
                 </div>
               </div>
             ) : (
-              <div className="text-2xl font-bold text-[#00FF88]">
+              <div className="text-2xl font-bold text-timberwolf">
                 £{(slot.price / 100).toFixed(2)}
               </div>
             )}
@@ -172,14 +224,20 @@ export default function BookingConfirm({
 
         {/* Validation warnings */}
         {validation && !validation.available && (
-          <div className="mt-3 rounded-lg bg-red-500/10 p-3 text-sm text-red-400">
+          <div
+            role="alert"
+            className="mt-3 rounded-lg bg-[rgba(237,106,106,0.1)] p-3 text-sm text-[rgb(237,106,106)]"
+          >
             This slot may no longer be available. Try a different time.
           </div>
         )}
         {validation?.priceChanged &&
           validation.currentPrice != null &&
           validation.currentPrice > 0 && (
-            <div className="mt-3 rounded-lg bg-amber-500/10 p-3 text-sm text-amber-400">
+            <div
+              role="status"
+              className="mt-3 rounded-lg bg-[rgba(224,173,98,0.1)] p-3 text-sm text-[rgb(224,173,98)]"
+            >
               Price has changed since we last checked
             </div>
           )}
@@ -190,7 +248,7 @@ export default function BookingConfirm({
           disabled={
             validating || (validation !== null && !validation.available)
           }
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#00FF88] py-3.5 text-base font-semibold text-[#0a100d] transition-all hover:bg-[#00E077] active:scale-[0.98] disabled:opacity-50"
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-timberwolf py-3.5 text-base font-semibold text-night transition-all hover:bg-ash-grey active:scale-[0.98] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-timberwolf focus-visible:ring-offset-2 focus-visible:ring-offset-night shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_1px_2px_rgba(0,0,0,0.35)]"
         >
           {validating ? (
             <>
@@ -207,7 +265,7 @@ export default function BookingConfirm({
           )}
         </button>
 
-        <p className="mt-2 text-center text-[11px] text-gray-600">
+        <p className="mt-2 text-center text-[11px] text-ink-subtle">
           You&apos;ll be redirected to {providerConfig.displayName} to complete
           your booking
         </p>
