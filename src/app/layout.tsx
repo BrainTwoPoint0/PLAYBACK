@@ -25,7 +25,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
-    default: 'PLAYBACK - The top 1% of tools. For the 99% who play.',
+    default: 'PLAYBACK - The OS for Sports',
     template: '%s | PLAYBACK',
   },
   description:
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     siteName: 'PLAYBACK',
-    title: 'PLAYBACK - The top 1% of tools. For the 99% who play.',
+    title: 'PLAYBACK - The OS for Sports',
     description:
       'The Operating System for Sports. AI match recordings, highlights, analytics, and player profiles - for 75,000+ players across 25+ clubs in 10+ countries.',
     url: '/',
@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@playbacksports',
     creator: '@playbacksports',
-    title: 'PLAYBACK - The top 1% of tools. For the 99% who play.',
+    title: 'PLAYBACK - The OS for Sports',
     description:
       'The Operating System for Sports. AI match recordings, highlights, analytics, and player profiles.',
     images: ['/hero/hero-poster.jpg'],
