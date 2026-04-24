@@ -3,9 +3,10 @@ import { Suspense } from 'react';
 import PLAYScannerMain from '@/components/playscanner/PLAYScannerMain';
 
 export const metadata: Metadata = {
-  title: 'PLAYSCANNER - Book Sports Courts & Pitches | PLAYBACK',
+  title: 'PLAYSCANNER — Book Sports Courts & Pitches',
   description:
-    'Find and book football pitches, padel courts, basketball courts, and tennis courts across London. Compare prices from 10+ providers.',
+    'Find and book football pitches, padel courts, basketball courts, and tennis courts across London. Compare prices in real time across providers including Playtomic, MATCHi, and Padel Mates.',
+  alternates: { canonical: '/playscanner' },
   keywords: [
     'football booking',
     'padel booking',
@@ -13,7 +14,15 @@ export const metadata: Metadata = {
     'tennis booking',
     'sports courts london',
     'pitch booking',
+    'court booking aggregator',
   ],
+  openGraph: {
+    type: 'website',
+    url: '/playscanner',
+    title: 'PLAYSCANNER — Book Sports Courts & Pitches',
+    description:
+      'Aggregated court and pitch booking across providers. Compare prices in real time.',
+  },
 };
 
 export default function PLAYScannerPage() {

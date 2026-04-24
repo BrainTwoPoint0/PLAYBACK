@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy - PLAYBACK',
+  title: 'Privacy Policy',
   description: 'How PLAYBACK collects, uses, and protects your data.',
+  alternates: { canonical: '/legal/privacy' },
 };
 
 export default function PrivacyPage() {

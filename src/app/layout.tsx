@@ -4,6 +4,7 @@ import NextTopLoader from 'nextjs-toploader';
 import './globals.css';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
+import { JsonLd } from '@/components/JsonLd';
 import { AuthProvider } from '@braintwopoint0/playback-commons/auth';
 import { GotchaProvider } from '@/components/GotchaProvider';
 import { PostHogProvider } from '@/components/PostHogProvider';
@@ -25,7 +26,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
-    default: 'PLAYBACK - The OS for Sports',
+    default: 'PLAYBACK',
     template: '%s | PLAYBACK',
   },
   description:
@@ -48,7 +49,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     siteName: 'PLAYBACK',
-    title: 'PLAYBACK - The OS for Sports',
+    title: 'PLAYBACK',
     description:
       'The Operating System for Sports. AI match recordings, highlights, analytics, and player profiles - for 75,000+ players across 25+ clubs in 10+ countries.',
     url: '/',
@@ -66,7 +67,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@playbacksports',
     creator: '@playbacksports',
-    title: 'PLAYBACK - The OS for Sports',
+    title: 'PLAYBACK',
     description:
       'The Operating System for Sports. AI match recordings, highlights, analytics, and player profiles.',
     images: ['/hero/hero-poster.jpg'],
@@ -82,6 +83,111 @@ export const metadata: Metadata = {
       'max-video-preview': -1,
     },
   },
+};
+
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  '@id': `${APP_URL}/#organization`,
+  name: 'PLAYBACK',
+  legalName: 'PLAYBACK Sports Ltd',
+  alternateName: 'PLAYBACK Sports',
+  url: APP_URL,
+  logo: `${APP_URL}/branding/PLAYBACK-Icon.png`,
+  description:
+    'PLAYBACK is the Operating System for Sports - AI match recordings, highlights, analytics, and player profiles for clubs, academies, parents, and players.',
+  slogan: 'The OS for Sports',
+  foundingDate: '2024-04',
+  foundingLocation: {
+    '@type': 'Place',
+    name: 'London, United Kingdom',
+  },
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: '71-75 Shelton Street, Covent Garden',
+    addressLocality: 'London',
+    postalCode: 'WC2H 9JQ',
+    addressCountry: 'GB',
+  },
+  identifier: [
+    {
+      '@type': 'PropertyValue',
+      propertyID: 'UK Companies House',
+      value: '15638660',
+    },
+  ],
+  sameAs: [
+    'https://www.linkedin.com/company/playbacksports/',
+    'https://www.instagram.com/playback_global',
+    'https://www.tiktok.com/@playback_global',
+    'https://x.com/playbacksports',
+  ],
+  contactPoint: [
+    {
+      '@type': 'ContactPoint',
+      contactType: 'customer support',
+      url: `${APP_URL}/#contact`,
+      availableLanguage: ['English'],
+    },
+  ],
+  knowsAbout: [
+    'sports technology',
+    'AI match recording',
+    'football highlights',
+    'academy management',
+    'tournament broadcast',
+    'player development',
+    'sports analytics',
+  ],
+  areaServed: 'Worldwide',
+};
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': `${APP_URL}/#website`,
+  name: 'PLAYBACK',
+  alternateName: 'PLAYBACK Sports',
+  url: APP_URL,
+  description: 'The Operating System for Sports.',
+  publisher: { '@id': `${APP_URL}/#organization` },
+  inLanguage: 'en-GB',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: {
+      '@type': 'EntryPoint',
+      urlTemplate: `${APP_URL}/playscanner?city={search_term_string}`,
+    },
+    'query-input': 'required name=search_term_string',
+  },
+};
+
+const softwareApplicationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  '@id': `${APP_URL}/#software`,
+  name: 'PLAYBACK',
+  url: APP_URL,
+  description:
+    'AI match recordings, highlights, analytics, and player profiles for clubs, academies, and players.',
+  applicationCategory: 'SportsApplication',
+  applicationSubCategory: 'Sports Technology Platform',
+  operatingSystem: 'Web, iOS, Android',
+  publisher: { '@id': `${APP_URL}/#organization` },
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'GBP',
+    availability: 'https://schema.org/InStock',
+  },
+  featureList: [
+    'AI match recording',
+    'Automated highlights',
+    'Academy subscription management',
+    'Tournament broadcast',
+    'Court and pitch booking aggregation',
+    'Player profiles',
+  ],
 };
 
 export default function RootLayout({
@@ -109,6 +215,9 @@ export default function RootLayout({
         href="/favicon-16x16.png"
       />
       <link rel="manifest" href="/site.webmanifest" />
+      <JsonLd data={organizationSchema} />
+      <JsonLd data={websiteSchema} />
+      <JsonLd data={softwareApplicationSchema} />
       <body className="font-sans">
         <NextTopLoader
           color="#d6d5c9"

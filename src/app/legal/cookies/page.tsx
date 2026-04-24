@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Cookie Policy - PLAYBACK',
+  title: 'Cookie Policy',
   description: 'How PLAYBACK uses cookies and similar technologies.',
+  alternates: { canonical: '/legal/cookies' },
 };
 
 export default function CookiesPage() {

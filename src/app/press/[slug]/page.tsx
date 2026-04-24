@@ -6,6 +6,9 @@ import { client } from '@/sanity/lib/client';
 import { urlForImage } from '@/sanity/lib/image';
 import { formatDate } from '@/lib/utils';
 import { PortableText } from '@/components/ui/portable-text';
+import { JsonLd } from '@/components/JsonLd';
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://playbacksports.ai';
 
 interface PageProps {
   params: Promise<{
@@ -21,15 +24,31 @@ export async function generateMetadata({
 
   if (!post) {
     return {
-      title: 'Post Not Found | PLAYBACK',
+      title: 'Post Not Found',
     };
   }
 
+  const url = `/press/${slug}`;
+  const image = post.coverImage ? urlForImage(post.coverImage) : undefined;
+
   return {
-    title: `${post.title} | PLAYBACK`,
+    title: post.title,
     description: post.excerpt,
+    alternates: { canonical: url },
     openGraph: {
-      images: post.coverImage ? [urlForImage(post.coverImage)] : [],
+      type: 'article',
+      url,
+      title: post.title,
+      description: post.excerpt,
+      siteName: 'PLAYBACK',
+      publishedTime: post.publishedAt,
+      images: image ? [{ url: image, alt: post.title }] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.excerpt,
+      images: image ? [image] : undefined,
     },
   };
 }
@@ -63,8 +82,27 @@ export default async function PostPage({ params }: PageProps) {
     notFound();
   }
 
+  const canonicalUrl = `${APP_URL}/press/${slug}`;
+  const imageUrl = post.coverImage ? urlForImage(post.coverImage) : undefined;
+
+  const newsArticleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'NewsArticle',
+    headline: post.title,
+    description: post.excerpt,
+    datePublished: post.publishedAt,
+    dateModified: post.publishedAt,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
+    url: canonicalUrl,
+    image: imageUrl ? [imageUrl] : undefined,
+    articleSection: post.categories?.map((c: { title: string }) => c.title),
+    publisher: { '@id': `${APP_URL}/#organization` },
+    isPartOf: { '@id': `${APP_URL}/#website` },
+  };
+
   return (
     <article className="container py-16">
+      <JsonLd data={newsArticleSchema} />
       <Link
         href="/press"
         className="inline-flex items-center text-sm text-zinc-400 hover:text-white mb-8"

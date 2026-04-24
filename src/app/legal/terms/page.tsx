@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service - PLAYBACK',
-  description: 'PLAYBACK Terms of Service',
+  title: 'Terms of Service',
+  description:
+    'Terms of Service for PLAYBACK Sports Ltd, governing use of playbacksports.ai and the PLAYBACK platform.',
+  alternates: { canonical: '/legal/terms' },
 };
 
 export default function TermsPage() {

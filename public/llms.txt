@@ -1,0 +1,42 @@
+# PLAYBACK
+
+> PLAYBACK is the Operating System for Sports — AI-powered match recordings, highlights, analytics, academy management, and player profiles for clubs, academies, parents, and players.
+
+PLAYBACK Sports Ltd (company number 15638660) is headquartered in London, United Kingdom. The company was founded in April 2024 and began trading in November 2024. PLAYBACK now serves more than 75,000 players across 25+ clubs in 10+ countries.
+
+The platform unifies match capture (Veo, Spiideo, Pixellot integrations), highlight delivery, academy subscription management, tournament broadcasting, and venue/court discovery in a single product surface. PLAYBACK is built for the 99% of players who would never get filmed otherwise — making professional-grade sports tooling accessible to grassroots clubs, parents, and youth athletes.
+
+## Product
+
+- [PLAYBACK platform](https://playbacksports.ai/): AI match recordings, highlights, analytics, and player profiles
+- [PLAYBACK Academy](https://playbacksports.ai/academy): Subscription management, member access, and recording delivery for clubs and academies
+- [PLAYBACK Tournament](https://playbacksports.ai/tournament): Tournament broadcast and competition management
+- [PLAYSCANNER](https://playbacksports.ai/playscanner): Aggregated court and pitch booking across multiple providers including Playtomic, MATCHi, and Padel Mates
+- [PLAYHUB](https://playhub.playbacksports.ai): Marketplace for match recordings and highlights, academy subscription billing, Veo and Spiideo recording sync, and venue management for clubs
+
+## Press
+
+- [Press & news](https://playbacksports.ai/press): Latest releases, partnership announcements, and media coverage
+
+## Company
+
+- Legal name: PLAYBACK Sports Ltd
+- Company number: 15638660
+- Registered office: 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ, United Kingdom
+- Founded: April 2024
+- Trading since: November 2024
+- LinkedIn: https://www.linkedin.com/company/playbacksports/
+- Instagram: https://www.instagram.com/playback_global
+- TikTok: https://www.tiktok.com/@playback_global
+- X (Twitter): https://x.com/playbacksports
+
+## Legal
+
+- [Terms of Service](https://playbacksports.ai/legal/terms)
+- [Privacy Policy](https://playbacksports.ai/legal/privacy)
+- [Cookie Policy](https://playbacksports.ai/legal/cookies)
+
+## Optional
+
+- Newsletter: subscribe at https://playbacksports.ai/#footer
+- Contact: https://playbacksports.ai/#contact
