@@ -59,8 +59,9 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Define paths that require authentication
-  const protectedPaths = ['/dashboard'];
+  // Define paths that require authentication. The /admin route additionally
+  // checks profiles.is_admin inside src/app/admin/layout.tsx via requireAdmin().
+  const protectedPaths = ['/dashboard', '/admin'];
 
   // Define paths that should redirect authenticated users
   const authPaths = ['/auth/login', '/auth/register', '/auth/forgot-password'];

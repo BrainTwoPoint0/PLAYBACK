@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { CourtSlot, PROVIDER_CONFIG } from '@/lib/playscanner/types';
 import { ExternalLinkIcon, XIcon, Loader2Icon } from 'lucide-react';
-import posthog from 'posthog-js';
 
 interface BookingConfirmProps {
   slot: CourtSlot | null;
@@ -119,16 +118,6 @@ export default function BookingConfirm({
   const handleBook = () => {
     if (validation && !validation.available) return;
     onConversion?.(slot);
-    posthog.capture('playscanner_booking_redirect_clicked', {
-      provider: slot.provider,
-      sport: slot.sport,
-      venue_id: slot.venue.id,
-      venue_name: slot.venue.name,
-      price_pence: slot.price,
-      currency: slot.currency,
-      start_time: slot.startTime,
-      price_changed: validation?.priceChanged ?? false,
-    });
     window.open(resolvedUrl || slot.bookingUrl, '_blank');
     onClose();
   };

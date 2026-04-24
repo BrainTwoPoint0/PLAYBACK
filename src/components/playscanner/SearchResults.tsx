@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import posthog from 'posthog-js';
 import {
   SearchResultsProps,
   CourtSlot,
@@ -199,16 +198,6 @@ export default function SearchResults({
   const hasMore = venueGroups.length > showCount;
 
   const handleBook = useCallback((slot: CourtSlot) => {
-    posthog.capture('playscanner_slot_selected', {
-      provider: slot.provider,
-      sport: slot.sport,
-      venue_id: slot.venue.id,
-      venue_name: slot.venue.name,
-      price_pence: slot.price,
-      currency: slot.currency,
-      start_time: slot.startTime,
-      listing_type: slot.listingType,
-    });
     setSelectedSlot(slot);
   }, []);
 
@@ -378,12 +367,6 @@ export default function SearchResults({
             <div className="flex items-center gap-0.5 rounded-lg border border-line-strong p-0.5">
               <button
                 onClick={() => {
-                  if (viewMode !== 'list') {
-                    posthog.capture('playscanner_view_mode_changed', {
-                      view_mode: 'list',
-                      sport,
-                    });
-                  }
                   setViewMode('list');
                 }}
                 className={`rounded-md p-1.5 transition-colors ${viewMode === 'list' ? 'bg-[rgba(214,213,201,0.1)] text-timberwolf' : 'text-ink-subtle hover:text-ink-muted'}`}
@@ -392,12 +375,6 @@ export default function SearchResults({
               </button>
               <button
                 onClick={() => {
-                  if (viewMode !== 'map') {
-                    posthog.capture('playscanner_view_mode_changed', {
-                      view_mode: 'map',
-                      sport,
-                    });
-                  }
                   setViewMode('map');
                 }}
                 className={`rounded-md p-1.5 transition-colors ${viewMode === 'map' ? 'bg-[rgba(214,213,201,0.1)] text-timberwolf' : 'text-ink-subtle hover:text-ink-muted'}`}
@@ -674,16 +651,6 @@ export default function SearchResults({
           <div className="sticky bottom-0 mt-6 pt-4 border-t border-line bg-[#0a100d]">
             <button
               onClick={() => {
-                if (activeFilterCount > 0) {
-                  posthog.capture('playscanner_filter_applied', {
-                    sport,
-                    provider_count: selectedProviders.size,
-                    venue_count: selectedVenues.size,
-                    has_price_filter: priceRange !== null,
-                    has_time_filter: timeRange !== null,
-                    result_count: filteredResults.length,
-                  });
-                }
                 setFilterOpen(false);
               }}
               className="w-full rounded-lg bg-timberwolf py-2.5 text-sm font-semibold text-night hover:bg-ash-grey transition-colors"

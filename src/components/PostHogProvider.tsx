@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, Suspense } from 'react';
+import { useEffect, useRef, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import posthog from 'posthog-js';
 import { useAuth } from '@braintwopoint0/playback-commons/auth';
@@ -8,9 +8,17 @@ import { useAuth } from '@braintwopoint0/playback-commons/auth';
 function PostHogPageview() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const lastPathname = useRef<string | null>(null);
 
   useEffect(() => {
     if (!pathname || !posthog.__loaded) return;
+    // Only fire $pageview when the path actually changes. App Router re-runs
+    // this effect on every searchParams mutation — pages like /playscanner
+    // rewrite query params on every filter toggle, which otherwise spams
+    // synthetic pageviews and corrupts session-replay/path analysis.
+    if (lastPathname.current === pathname) return;
+    lastPathname.current = pathname;
+
     const query = searchParams?.toString();
     const url = query ? `${pathname}?${query}` : pathname;
     posthog.capture('$pageview', {
