@@ -8,7 +8,7 @@ import {
   useRef,
 } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import SearchResults from './SearchResults';
 import SportIcon from './SportIcon';
 import { MapPinIcon } from 'lucide-react';
@@ -295,31 +295,32 @@ export default function PLAYScannerMain() {
                         <SportIcon sport={s.id} size={12} />
                         {/* Desktop: label always visible. */}
                         <span className="hidden sm:inline">{s.label}</span>
-                        {/* Mobile: label expands AFTER the chip arrives so the
-                            eye reads "chip moved → label appeared" instead of
-                            both fighting at once. */}
-                        <AnimatePresence initial={false}>
-                          {active && (
-                            <motion.span
-                              key="mobile-label"
-                              initial={{ opacity: 0, width: 0 }}
-                              animate={{ opacity: 1, width: 'auto' }}
-                              exit={{ opacity: 0, width: 0 }}
-                              transition={
-                                reduceMotion
-                                  ? { duration: 0 }
-                                  : {
-                                      duration: 0.22,
-                                      ease: [0.32, 0.72, 0, 1],
-                                      delay: 0.12,
-                                    }
-                              }
-                              className="sm:hidden overflow-hidden whitespace-nowrap"
-                            >
-                              {s.label}
-                            </motion.span>
-                          )}
-                        </AnimatePresence>
+                        {/* Mobile: render the label directly when active —
+                            no width animation. The button's offsetWidth is
+                            therefore the full icon+label width on the same
+                            commit as setSport, so the chip morphs to the
+                            final width in one step (no growing as the text
+                            appears). The label itself only fades opacity in
+                            after the chip lands. */}
+                        {active && (
+                          <motion.span
+                            key="mobile-label"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={
+                              reduceMotion
+                                ? { duration: 0 }
+                                : {
+                                    duration: 0.22,
+                                    ease: [0.32, 0.72, 0, 1],
+                                    delay: 0.18,
+                                  }
+                            }
+                            className="sm:hidden whitespace-nowrap"
+                          >
+                            {s.label}
+                          </motion.span>
+                        )}
                       </motion.span>
                     </button>
                   );
