@@ -160,6 +160,13 @@ class HireAPitchProvider {
         venueName = this.extractVenueName(sampleName, id);
       }
 
+      // Hireapitch <title> tags routinely append " - Hire A Pitch" to the
+      // venue name, but the live site's URL pattern is /{kebab-name} WITHOUT
+      // that suffix — venue pages 404 when the suffix is included. Strip it
+      // before generating the slug, and apply the same cleanup to the
+      // displayed venue name so the UI stays consistent with the URL.
+      venueName = venueName.replace(/\s*-?\s*hire\s*a\s*pitch\s*$/i, '').trim();
+
       // URL slug is the venue name kebab-cased
       const slug =
         venueName
