@@ -41,6 +41,7 @@ next-env.d.ts
 /scripts
 !/scripts/check-playscanner-providers-drift.mjs
 !/scripts/check-playscanner-providers-health.mjs
+!/scripts/discover-hireapitch-slugs.mjs
 
 .env
 .eslintcache
