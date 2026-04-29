@@ -221,6 +221,28 @@ class PLAYScannerAnalytics {
 
   // Private helper methods
 
+  // Analytics writes are non-critical: a failure here (network blip, RLS,
+  // ad-blocker swallowing the request) must never affect the user-visible app.
+  // Supabase wraps non-PostgrestError failures in objects whose properties are
+  // non-enumerable, so a bare `console.error('...', error)` renders as `{}`
+  // in the Next.js dev overlay and pollutes the console with red errors that
+  // look broken. Pull the useful fields explicitly and downgrade to warn so
+  // the dev overlay doesn't surface them as crashes.
+  private logAnalyticsFailure(operation: string, error: unknown): void {
+    const e = error as Record<string, unknown> | null | undefined;
+    const detail = {
+      message: e?.message ?? null,
+      code: e?.code ?? null,
+      hint: e?.hint ?? null,
+      details: e?.details ?? null,
+    };
+    const hasAnyField = Object.values(detail).some((v) => v !== null);
+    console.warn(
+      `[playscanner-analytics] ${operation} failed`,
+      hasAnyField ? detail : '(empty error — likely network/ad-blocker)'
+    );
+  }
+
   private generateSessionId(): string {
     return `ps_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
@@ -238,7 +260,7 @@ class PLAYScannerAnalytics {
       .select();
 
     if (error) {
-      console.error('Failed to create session:', error);
+      this.logAnalyticsFailure('createSession', error);
     }
   }
 
@@ -248,7 +270,7 @@ class PLAYScannerAnalytics {
       .insert(pageViewData);
 
     if (error) {
-      console.error('Failed to create page view:', error);
+      this.logAnalyticsFailure('createPageView', error);
     }
   }
 
@@ -260,7 +282,7 @@ class PLAYScannerAnalytics {
       .single();
 
     if (error) {
-      console.error('Failed to create search:', error);
+      this.logAnalyticsFailure('createSearch', error);
       return '';
     }
 
@@ -273,7 +295,7 @@ class PLAYScannerAnalytics {
       .insert(conversionData);
 
     if (error) {
-      console.error('Failed to create conversion:', error);
+      this.logAnalyticsFailure('createConversion', error);
     }
   }
 
@@ -288,7 +310,7 @@ class PLAYScannerAnalytics {
       .eq('session_id', this.currentSessionId);
 
     if (error) {
-      console.error('Failed to update session activity:', error);
+      this.logAnalyticsFailure('updateSessionActivity', error);
     }
   }
 
@@ -302,7 +324,7 @@ class PLAYScannerAnalytics {
       .single();
 
     if (error) {
-      console.error('Failed to get session searches:', error);
+      this.logAnalyticsFailure('getSessionSearches', error);
       return;
     }
 
@@ -314,7 +336,7 @@ class PLAYScannerAnalytics {
       .eq('session_id', this.currentSessionId);
 
     if (updateError) {
-      console.error('Failed to increment session searches:', updateError);
+      this.logAnalyticsFailure('incrementSessionSearches', updateError);
     }
   }
 
@@ -328,7 +350,7 @@ class PLAYScannerAnalytics {
       .single();
 
     if (error) {
-      console.error('Failed to get session booking clicks:', error);
+      this.logAnalyticsFailure('getSessionBookingClicks', error);
       return;
     }
 
@@ -340,7 +362,7 @@ class PLAYScannerAnalytics {
       .eq('session_id', this.currentSessionId);
 
     if (updateError) {
-      console.error('Failed to increment session booking clicks:', updateError);
+      this.logAnalyticsFailure('incrementSessionBookingClicks', updateError);
     }
   }
 
@@ -374,7 +396,7 @@ class PLAYScannerAnalytics {
       });
 
     if (error) {
-      console.error('Failed to update provider analytics:', error);
+      this.logAnalyticsFailure('updateProviderAnalytics', error);
     }
   }
 }
