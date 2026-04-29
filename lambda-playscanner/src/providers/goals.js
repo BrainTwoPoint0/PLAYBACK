@@ -224,7 +224,36 @@ class GoalsProvider {
     return slots;
   }
 
-  httpRequest(url) {
+  // Wraps httpRequestOnce with retry-on-transient-error. Goals' upstream
+  // (goalsfootball.co.uk) intermittently rate-limits or returns Cloudflare
+  // challenges that resolve within seconds — a bare single attempt was
+  // dropping ~40% of requests during those windows and tripping the daily
+  // CI providers-health alert. 3 attempts × 8s per-attempt + ≤1.5s of
+  // backoff fits inside the collector's 35s per-provider budget.
+  async httpRequest(url) {
+    const attempts = 3;
+    const baseDelayMs = 500;
+    const isTransient = (err) => {
+      const msg = err && err.message ? err.message : '';
+      return (
+        /timeout|ECONNRESET|ETIMEDOUT|EAI_AGAIN|socket hang up/i.test(msg) ||
+        /^HTTP (408|425|429|5\d\d)\b/.test(msg)
+      );
+    };
+    let lastErr;
+    for (let i = 0; i < attempts; i++) {
+      try {
+        return await this.httpRequestOnce(url);
+      } catch (err) {
+        lastErr = err;
+        if (!isTransient(err) || i === attempts - 1) throw err;
+        await this.sleep(baseDelayMs * 2 ** i);
+      }
+    }
+    throw lastErr;
+  }
+
+  httpRequestOnce(url) {
     return new Promise((resolve, reject) => {
       const urlObj = new URL(url);
       const req = https.request(
@@ -235,9 +264,15 @@ class GoalsProvider {
           headers: {
             'Api-Key': this.apiKey,
             Accept: 'application/json',
-            'User-Agent': 'Mozilla/5.0',
+            'Accept-Language': 'en-GB,en;q=0.9',
+            // Bare 'Mozilla/5.0' was the most common signal Cloudflare uses
+            // to fingerprint a non-browser client. A real-Chrome string is
+            // not a guarantee against bot detection (TLS fingerprinting still
+            // applies) but it removes the most trivial reject path.
+            'User-Agent':
+              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
           },
-          timeout: 10000,
+          timeout: 8000,
         },
         (res) => {
           let data = '';
