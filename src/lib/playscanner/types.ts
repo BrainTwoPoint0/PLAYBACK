@@ -32,7 +32,7 @@ export type FootballProvider =
   | 'fives'
   | 'hireapitch'
   | 'flow';
-export type BasketballProvider = 'openactive';
+export type BasketballProvider = 'openactive' | 'better';
 export type Provider =
   | PadelProvider
   | TennisProvider

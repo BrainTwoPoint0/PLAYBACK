@@ -63,14 +63,26 @@ class OpenActiveCollector {
           const itemStartTime = Date.now();
 
           try {
-            const timeoutMs = providerName === 'better' ? 120000 : 60000;
-            const slots = await Promise.race([
-              provider.fetchAvailability({ date: dateString }),
-              this.timeout(
-                timeoutMs,
-                `Timeout for ${providerName} ${city} ${dateString}`
-              ),
-            ]);
+            // Bookteq: pollFeed has its own 60s timeout that saves the cursor
+            // and returns partial data. The previous outer Promise.race raced
+            // that same 60s and rejected before the 14k+ mapped items could
+            // reach setCachedData/writeSlots — but pollFeed had already
+            // advanced the cursor, so every hour the cursor moved and the data
+            // was dropped on the floor. Letting fetchAvailability resolve
+            // naturally lets the persistence stage actually run. The Lambda
+            // invocation timeout (set in index.js) still bounds total work.
+            // Better keeps its 120s outer guard because BetterProvider doesn't
+            // share Bookteq's internal timeout shape.
+            const slots =
+              providerName === 'better'
+                ? await Promise.race([
+                    provider.fetchAvailability({ date: dateString }),
+                    this.timeout(
+                      120000,
+                      `Timeout for ${providerName} ${city} ${dateString}`
+                    ),
+                  ])
+                : await provider.fetchAvailability({ date: dateString });
 
             const executionTime = Date.now() - itemStartTime;
             const uniqueVenues = [...new Set(slots.map((s) => s.venue.id))];
