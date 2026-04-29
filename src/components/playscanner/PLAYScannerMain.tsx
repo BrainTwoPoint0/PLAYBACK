@@ -1,6 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+} from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import SearchResults from './SearchResults';
@@ -137,6 +143,37 @@ export default function PLAYScannerMain() {
     search(sport, date);
   }, [sport, date, search]);
 
+  /* Sport-selector chip geometry — measure the active button's
+     container-relative offsetLeft / offsetWidth and animate a single shared
+     chip element to match. Container-relative coordinates stay correct
+     regardless of sticky positioning or scroll, unlike Framer's layoutId
+     which captures viewport rects and breaks once the bar is stuck.
+     ResizeObserver tracks the button's mobile-label expansion so the chip
+     width grows in step with the button. */
+  const sportSelectorRef = useRef<HTMLDivElement | null>(null);
+  const [sportChipRect, setSportChipRect] = useState<{
+    x: number;
+    w: number;
+  } | null>(null);
+  useLayoutEffect(() => {
+    const container = sportSelectorRef.current;
+    if (!container) return;
+    const findActive = () =>
+      container.querySelector<HTMLButtonElement>(
+        `button[data-sport="${sport}"]`
+      );
+    const measure = () => {
+      const btn = findActive();
+      if (!btn || btn.offsetWidth === 0) return;
+      setSportChipRect({ x: btn.offsetLeft, w: btn.offsetWidth });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(container);
+    for (const btn of container.querySelectorAll('button')) ro.observe(btn);
+    return () => ro.disconnect();
+  }, [sport]);
+
   /* ── Render ─────────────────────────────────────────── */
   return (
     <div className="relative z-20 mx-auto max-w-5xl px-4">
@@ -196,7 +233,31 @@ export default function PLAYScannerMain() {
             <div className="w-full h-px bg-[rgba(214,213,201,0.06)] sm:hidden" />
 
             <div className="flex items-center sm:justify-end gap-1.5 shrink-0">
-              <div className="flex items-center rounded-xl bg-[rgba(214,213,201,0.04)] p-0.5 shrink-0">
+              <div
+                ref={sportSelectorRef}
+                className="relative flex items-center rounded-xl bg-[rgba(214,213,201,0.04)] p-0.5 shrink-0"
+              >
+                {sportChipRect && (
+                  <motion.div
+                    aria-hidden
+                    className="pointer-events-none absolute top-0.5 bottom-0.5 left-0 rounded-lg bg-timberwolf shadow-sm shadow-[0_1px_3px_rgba(214,213,201,0.2)]"
+                    initial={false}
+                    animate={{
+                      x: sportChipRect.x,
+                      width: sportChipRect.w,
+                    }}
+                    transition={
+                      reduceMotion
+                        ? { duration: 0 }
+                        : {
+                            type: 'spring',
+                            stiffness: 500,
+                            damping: 38,
+                            mass: 0.8,
+                          }
+                    }
+                  />
+                )}
                 {SPORTS.map((s) => {
                   const active = sport === s.id;
                   const chipSpring = reduceMotion
@@ -210,6 +271,7 @@ export default function PLAYScannerMain() {
                   return (
                     <button
                       key={s.id}
+                      data-sport={s.id}
                       onClick={() => {
                         setSport(s.id);
                       }}
@@ -217,21 +279,11 @@ export default function PLAYScannerMain() {
                       aria-pressed={active}
                       className="relative flex shrink-0 items-center rounded-lg px-3 py-1.5 text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-timberwolf/60 focus-visible:ring-offset-2 focus-visible:ring-offset-night"
                     >
-                      {/* Shared chip: morphs between active pills via layoutId
-                          (iOS Segmented Control / Linear / Arc pattern). */}
-                      {active && (
-                        <motion.span
-                          aria-hidden
-                          layoutId="sport-chip"
-                          className="absolute inset-0 rounded-lg bg-timberwolf shadow-sm shadow-[0_1px_3px_rgba(214,213,201,0.2)]"
-                          transition={chipSpring}
-                        />
-                      )}
                       {/* Text colour rides the SAME spring as the chip so both
                           settle on the exact same frame — no lingering fade
                           after the chip has arrived. */}
                       <motion.span
-                        className="relative z-10 flex items-center gap-1.5"
+                        className="relative flex items-center gap-1.5"
                         initial={false}
                         animate={{
                           color: active
