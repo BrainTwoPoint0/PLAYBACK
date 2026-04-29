@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import SearchResults from './SearchResults';
 import SportIcon from './SportIcon';
 import { MapPinIcon } from 'lucide-react';
@@ -57,6 +57,7 @@ const SPORTS: { id: Sport; label: string }[] = [
 export default function PLAYScannerMain() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const reduceMotion = useReducedMotion();
 
   const urlSport = (searchParams.get('sport') as Sport) || 'padel';
   const urlDate = searchParams.get('date') || DATES[0].value;
@@ -158,7 +159,12 @@ export default function PLAYScannerMain() {
       </header>
 
       {/* ━━━ Unified search bar ━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <div className="sticky top-0 z-30 -mx-4 px-4 pt-3 pb-2 bg-[var(--night)]/[.97] backdrop-blur-lg">
+      {/* top offset tracks NavBar's --chrome-h (banner + header). -16px
+          matches the navbar's height shrink on scroll so no gap appears. */}
+      <div
+        style={{ top: 'calc(var(--chrome-h, 112px) - 16px)' }}
+        className="sticky z-30 -mx-4 px-4 pt-3 pb-2 bg-[var(--night)]/[.97] backdrop-blur-lg"
+      >
         {/* Brand + Search controls - one unified bar */}
         <div
           className={`rounded-2xl border bg-[rgba(214,213,201,0.025)] p-2 space-y-2 transition-colors ${
@@ -191,52 +197,81 @@ export default function PLAYScannerMain() {
 
             <div className="flex items-center sm:justify-end gap-1.5 shrink-0">
               <div className="flex items-center rounded-xl bg-[rgba(214,213,201,0.04)] p-0.5 shrink-0">
-                {SPORTS.map((s) => (
-                  <motion.button
-                    key={s.id}
-                    layout
-                    transition={{
-                      layout: {
-                        duration: 0.24,
-                        ease: [0.22, 1, 0.36, 1],
-                      },
-                    }}
-                    onClick={() => {
-                      setSport(s.id);
-                    }}
-                    aria-label={s.label}
-                    className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-timberwolf/60 focus-visible:ring-offset-2 focus-visible:ring-offset-night ${
-                      sport === s.id
-                        ? 'bg-timberwolf text-night shadow-sm shadow-[0_1px_3px_rgba(214,213,201,0.2)]'
-                        : 'text-ink-muted hover:text-timberwolf'
-                    }`}
-                  >
-                    <motion.span layout="position" className="flex">
-                      <SportIcon sport={s.id} size={12} />
-                    </motion.span>
-                    {/* Desktop: label always visible */}
-                    <span className="hidden sm:inline">{s.label}</span>
-                    {/* Mobile: label animates in when this pill becomes selected */}
-                    <AnimatePresence initial={false} mode="popLayout">
-                      {sport === s.id && (
+                {SPORTS.map((s) => {
+                  const active = sport === s.id;
+                  const chipSpring = reduceMotion
+                    ? { duration: 0 }
+                    : {
+                        type: 'spring' as const,
+                        stiffness: 500,
+                        damping: 38,
+                        mass: 0.8,
+                      };
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => {
+                        setSport(s.id);
+                      }}
+                      aria-label={s.label}
+                      aria-pressed={active}
+                      className="relative flex shrink-0 items-center rounded-lg px-3 py-1.5 text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-timberwolf/60 focus-visible:ring-offset-2 focus-visible:ring-offset-night"
+                    >
+                      {/* Shared chip: morphs between active pills via layoutId
+                          (iOS Segmented Control / Linear / Arc pattern). */}
+                      {active && (
                         <motion.span
-                          key="mobile-label"
-                          layout
-                          initial={{ opacity: 0, width: 0 }}
-                          animate={{ opacity: 1, width: 'auto' }}
-                          exit={{ opacity: 0, width: 0 }}
-                          transition={{
-                            duration: 0.22,
-                            ease: [0.22, 1, 0.36, 1],
-                          }}
-                          className="sm:hidden overflow-hidden whitespace-nowrap"
-                        >
-                          {s.label}
-                        </motion.span>
+                          aria-hidden
+                          layoutId="sport-chip"
+                          className="absolute inset-0 rounded-lg bg-timberwolf shadow-sm shadow-[0_1px_3px_rgba(214,213,201,0.2)]"
+                          transition={chipSpring}
+                        />
                       )}
-                    </AnimatePresence>
-                  </motion.button>
-                ))}
+                      {/* Text colour rides the SAME spring as the chip so both
+                          settle on the exact same frame — no lingering fade
+                          after the chip has arrived. */}
+                      <motion.span
+                        className="relative z-10 flex items-center gap-1.5"
+                        initial={false}
+                        animate={{
+                          color: active
+                            ? '#0a100d'
+                            : 'rgba(214, 213, 201, 0.7)',
+                        }}
+                        transition={chipSpring}
+                      >
+                        <SportIcon sport={s.id} size={12} />
+                        {/* Desktop: label always visible. */}
+                        <span className="hidden sm:inline">{s.label}</span>
+                        {/* Mobile: label expands AFTER the chip arrives so the
+                            eye reads "chip moved → label appeared" instead of
+                            both fighting at once. */}
+                        <AnimatePresence initial={false}>
+                          {active && (
+                            <motion.span
+                              key="mobile-label"
+                              initial={{ opacity: 0, width: 0 }}
+                              animate={{ opacity: 1, width: 'auto' }}
+                              exit={{ opacity: 0, width: 0 }}
+                              transition={
+                                reduceMotion
+                                  ? { duration: 0 }
+                                  : {
+                                      duration: 0.22,
+                                      ease: [0.32, 0.72, 0, 1],
+                                      delay: 0.12,
+                                    }
+                              }
+                              className="sm:hidden overflow-hidden whitespace-nowrap"
+                            >
+                              {s.label}
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </motion.span>
+                    </button>
+                  );
+                })}
               </div>
               <div
                 className="flex shrink-0 items-center gap-1.5 rounded-xl bg-[rgba(214,213,201,0.04)] px-3 py-1.5 text-xs text-ink-muted ml-auto sm:ml-0"
