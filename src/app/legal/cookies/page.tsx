@@ -65,8 +65,11 @@ export default function CookiesPage() {
             We use PostHog for product analytics. PostHog is configured to
             respect &ldquo;Do Not Track&rdquo; where supported and to anonymise
             IP addresses. PostHog may set first-party cookies for session
-            grouping. PLAYSCANNER additionally logs anonymised search terms and
-            click-throughs to help us improve venue coverage.
+            grouping. PLAYSCANNER additionally stores a non-cookie session token
+            in your browser&rsquo;s sessionStorage to group page views,
+            searches, and click-throughs within a single visit; the token is
+            discarded when you close the tab and is not shared with third
+            parties.
           </p>
         </div>
 

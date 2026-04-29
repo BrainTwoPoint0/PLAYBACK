@@ -68,9 +68,15 @@ export default function PrivacyPage() {
               <strong className="text-timberwolf">
                 PLAYSCANNER search data
               </strong>{' '}
-              - search terms, filters applied, and click-throughs to provider
-              sites. We also log hashed IP addresses for anti-abuse rate
-              limiting.
+              - when you use the PLAYSCANNER court / pitch search we record a
+              non-cookie session token (held in your browser&rsquo;s
+              sessionStorage and discarded when you close the tab) tied to the
+              searches you run (sport, location, date, filters), the pages you
+              view, and any click-throughs to third-party booking sites. This
+              feeds four internal tables - sessions, page views, searches, and
+              conversions - used solely to improve venue coverage and detect
+              abuse. No personal data is attached unless you are signed in. We
+              also log hashed IP addresses for anti-abuse rate limiting.
             </li>
           </ul>
         </div>
