@@ -5,42 +5,45 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@braintwopoint0/playback-commons/auth';
 import { LumaSpin } from '@braintwopoint0/playback-commons/ui';
 
+// NOTE: `requiredRole` was previously implemented by reading
+// `user.user_metadata.role`. That field is **client-writable** via the
+// Supabase `updateUser()` API — any signed-in user could mint themselves
+// the required role. Removed entirely to prevent accidental reuse for an
+// admin-gated route. Real role gating must come from a server-validated
+// claim (Supabase JWT custom claim, RLS check, or a server-side
+// `is_admin`/`is_platform_admin` lookup).
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: string;
   redirectTo?: string;
 }
 
 export function ProtectedRoute({
   children,
-  requiredRole,
   redirectTo = '/auth/login',
 }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push(redirectTo);
-        return;
-      }
-
-      // Check role if required
-      if (requiredRole && user.user_metadata?.role !== requiredRole) {
-        router.push('/unauthorized');
-        return;
-      }
+    if (!loading && !user) {
+      router.push(redirectTo);
     }
-  }, [user, loading, router, requiredRole, redirectTo]);
+  }, [user, loading, router, redirectTo]);
 
-  // Show loading while checking auth
+  // Show loading while checking auth. `text-center` alone doesn't center the
+  // LumaSpin (it's a block element); use a flex column with items-center so
+  // both the spinner and the text sit on the same vertical axis.
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: 'var(--night)' }}
+      >
+        <div className="flex flex-col items-center gap-3">
           <LumaSpin />
-          <p className="text-muted-foreground">Checking authentication...</p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Checking authentication…
+          </p>
         </div>
       </div>
     );
@@ -51,22 +54,14 @@ export function ProtectedRoute({
     return null;
   }
 
-  // Don't render if role check fails
-  if (requiredRole && user.user_metadata?.role !== requiredRole) {
-    return null;
-  }
-
   return <>{children}</>;
 }
 
 // Higher-order component version
-export function withAuth<P extends object>(
-  Component: React.ComponentType<P>,
-  requiredRole?: string
-) {
+export function withAuth<P extends object>(Component: React.ComponentType<P>) {
   return function AuthenticatedComponent(props: P) {
     return (
-      <ProtectedRoute requiredRole={requiredRole}>
+      <ProtectedRoute>
         <Component {...props} />
       </ProtectedRoute>
     );

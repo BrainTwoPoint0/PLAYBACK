@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   useAuth,
   useProfile,
@@ -9,7 +9,6 @@ import {
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Button, LumaSpin } from '@braintwopoint0/playback-commons/ui';
 import { LoadingSpinner } from '@/components/ui/loading';
-import { AvatarUpload } from '@/components/avatar/avatar-upload';
 import {
   Dialog,
   DialogContent,
@@ -19,13 +18,37 @@ import {
 } from '@/components/ui/dialog';
 import { PlayerProfileForm } from '@/components/profile/player-profile-form';
 import { ProfileEditForm } from '@/components/profile/profile-edit-form';
+import { DashboardTopBar } from '@/components/dashboard/dashboard-top-bar';
+import { DashboardFeed } from '@/components/dashboard/dashboard-feed';
+import { DashboardEmptyState } from '@/components/dashboard/dashboard-empty-state';
+import { DashboardModulesSection } from '@/components/dashboard/dashboard-modules-section';
+import { DashboardVerificationsSection } from '@/components/dashboard/dashboard-verifications-section';
+import { DashboardAccessSection } from '@/components/dashboard/dashboard-access-section';
+import { DashboardSection } from '@/components/dashboard/dashboard-section';
+import { EditProfileSheet } from '@/components/dashboard/edit-profile-sheet';
+import {
+  Input,
+  Label,
+  Checkbox,
+  DatePicker,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@braintwopoint0/playback-commons/ui';
+// Local Textarea (not the commons one): commons Textarea uses ShadCN theme
+// tokens (`bg-background`, `border-input`) that don't resolve in PLAYBACK's
+// theme and fall back to light/white — visually inconsistent with the
+// dark Input. The local component is brand-matched (zinc-800 + timberwolf
+// hover gradient).
+import { Textarea } from '@/components/ui/textarea';
 import { VideoUpload } from '@/components/video/video-upload';
 import { HighlightVideoDialog } from '@/components/video/highlight-video-dialog';
 import {
   createHighlight,
   deleteHighlight,
   importRecordingAsHighlight,
-  updateCoverImage,
   addCareerEntry,
   updateCareerEntry,
   deleteCareerEntry,
@@ -38,25 +61,15 @@ import {
 import { createBrowserClient } from '@supabase/ssr';
 import { FadeIn } from '@/components/FadeIn';
 import {
-  User,
-  Trophy,
   LogOut,
-  Camera,
   Instagram,
   Twitter,
   Linkedin,
   CheckCircle,
   ExternalLink,
-  Edit3,
-  Share2,
-  ChevronRight,
   Play,
   Plus,
-  Trash2,
   Film,
-  Crown,
-  Briefcase,
-  GraduationCap,
 } from 'lucide-react';
 
 // SocialLink Component (from public profile)
@@ -151,115 +164,107 @@ function CareerEntryForm({
   };
 
   return (
-    <div className="space-y-4">
-      {error && <p className="text-sm text-red-400">{error}</p>}
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSubmit();
+      }}
+      className="space-y-5"
+    >
+      {error && (
+        <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-md px-3 py-2">
+          {error}
+        </p>
+      )}
       <div className="space-y-2">
-        <label
-          className="text-sm font-medium"
-          style={{ color: 'var(--timberwolf)' }}
-        >
-          Organization *
-        </label>
-        <input
+        <Label htmlFor="career-org" className="text-[var(--timberwolf)]">
+          Organization <span className="text-red-400">*</span>
+        </Label>
+        <Input
+          id="career-org"
           value={orgName}
           onChange={(e) => setOrgName(e.target.value)}
           maxLength={255}
-          className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300"
           placeholder="e.g. Chelsea FC Academy"
         />
       </div>
       <div className="space-y-2">
-        <label
-          className="text-sm font-medium"
-          style={{ color: 'var(--timberwolf)' }}
-        >
+        <Label htmlFor="career-role" className="text-[var(--timberwolf)]">
           Role
-        </label>
-        <input
+        </Label>
+        <Input
+          id="career-role"
           value={role}
           onChange={(e) => setRole(e.target.value)}
           maxLength={100}
-          className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300"
           placeholder="e.g. Midfielder, U18 Captain"
         />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label
-            className="text-sm font-medium"
-            style={{ color: 'var(--timberwolf)' }}
-          >
+          <Label htmlFor="career-start" className="text-[var(--timberwolf)]">
             Start Date
-          </label>
-          <input
-            type="date"
+          </Label>
+          <DatePicker
+            id="career-start"
             value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] focus:outline-none focus:ring-1 focus:ring-zinc-300"
+            onChange={setStartDate}
+            placeholder="Select date"
           />
         </div>
         <div className="space-y-2">
-          <label
-            className="text-sm font-medium"
-            style={{ color: 'var(--timberwolf)' }}
-          >
+          <Label htmlFor="career-end" className="text-[var(--timberwolf)]">
             End Date
-          </label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            disabled={isCurrent}
-            className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] focus:outline-none focus:ring-1 focus:ring-zinc-300 disabled:opacity-40"
+          </Label>
+          <DatePicker
+            id="career-end"
+            value={isCurrent ? '' : endDate}
+            onChange={setEndDate}
+            placeholder={isCurrent ? 'Currently here' : 'Select date'}
+            min={startDate || undefined}
           />
         </div>
       </div>
-      <label className="flex items-center gap-2 cursor-pointer">
-        <input
-          type="checkbox"
+      <label className="flex items-center gap-2.5 cursor-pointer select-none">
+        <Checkbox
           checked={isCurrent}
-          onChange={(e) => setIsCurrent(e.target.checked)}
-          className="rounded border-neutral-600"
+          onCheckedChange={(c) => setIsCurrent(c === true)}
         />
-        <span className="text-sm" style={{ color: 'var(--timberwolf)' }}>
-          Currently here
-        </span>
+        <span className="text-sm text-[var(--timberwolf)]">Currently here</span>
       </label>
       <div className="space-y-2">
-        <label
-          className="text-sm font-medium"
-          style={{ color: 'var(--timberwolf)' }}
-        >
+        <Label htmlFor="career-desc" className="text-[var(--timberwolf)]">
           Description
-        </label>
-        <textarea
+        </Label>
+        <Textarea
+          id="career-desc"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           maxLength={500}
           rows={2}
-          className="flex w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300 resize-none"
-          placeholder="Brief description..."
+          placeholder="Brief description…"
         />
       </div>
       <div className="flex justify-end gap-2 pt-2">
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           onClick={onCancel}
-          style={{ color: 'var(--ash-grey)' }}
+          className="text-[var(--ash-grey)] hover:text-[var(--timberwolf)]"
         >
           Cancel
         </Button>
         <Button
+          type="submit"
           size="sm"
           disabled={saving}
-          onClick={handleSubmit}
           className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white"
         >
           {saving ? <LoadingSpinner size="sm" /> : 'Save'}
         </Button>
       </div>
-    </div>
+    </form>
   );
 }
 
@@ -315,136 +320,130 @@ function EducationEntryForm({
   };
 
   return (
-    <div className="space-y-4">
-      {error && <p className="text-sm text-red-400">{error}</p>}
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSubmit();
+      }}
+      className="space-y-5"
+    >
+      {error && (
+        <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-md px-3 py-2">
+          {error}
+        </p>
+      )}
       <div className="space-y-2">
-        <label
-          className="text-sm font-medium"
-          style={{ color: 'var(--timberwolf)' }}
-        >
-          Institution *
-        </label>
-        <input
+        <Label htmlFor="edu-inst" className="text-[var(--timberwolf)]">
+          Institution <span className="text-red-400">*</span>
+        </Label>
+        <Input
+          id="edu-inst"
           value={institutionName}
           onChange={(e) => setInstitutionName(e.target.value)}
           maxLength={255}
-          className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300"
           placeholder="e.g. University of Manchester"
         />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label
-            className="text-sm font-medium"
-            style={{ color: 'var(--timberwolf)' }}
-          >
+          <Label htmlFor="edu-type" className="text-[var(--timberwolf)]">
             Type
-          </label>
-          <select
-            value={institutionType}
-            onChange={(e) => setInstitutionType(e.target.value)}
-            className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] focus:outline-none focus:ring-1 focus:ring-zinc-300"
+          </Label>
+          <Select
+            value={institutionType || undefined}
+            onValueChange={(v) => setInstitutionType(v === '__none__' ? '' : v)}
           >
-            <option value="">Select type</option>
-            <option value="school">School</option>
-            <option value="college">College</option>
-            <option value="university">University</option>
-            <option value="academy">Academy</option>
-            <option value="other">Other</option>
-          </select>
+            <SelectTrigger id="edu-type" className="w-full">
+              <SelectValue placeholder="Select type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="school">School</SelectItem>
+              <SelectItem value="college">College</SelectItem>
+              <SelectItem value="university">University</SelectItem>
+              <SelectItem value="academy">Academy</SelectItem>
+              <SelectItem value="other">Other</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-2">
-          <label
-            className="text-sm font-medium"
-            style={{ color: 'var(--timberwolf)' }}
-          >
+          <Label htmlFor="edu-degree" className="text-[var(--timberwolf)]">
             Degree/Program
-          </label>
-          <input
+          </Label>
+          <Input
+            id="edu-degree"
             value={degree}
             onChange={(e) => setDegree(e.target.value)}
             maxLength={255}
-            className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300"
             placeholder="e.g. BSc"
           />
         </div>
       </div>
       <div className="space-y-2">
-        <label
-          className="text-sm font-medium"
-          style={{ color: 'var(--timberwolf)' }}
-        >
+        <Label htmlFor="edu-field" className="text-[var(--timberwolf)]">
           Field of Study
-        </label>
-        <input
+        </Label>
+        <Input
+          id="edu-field"
           value={fieldOfStudy}
           onChange={(e) => setFieldOfStudy(e.target.value)}
           maxLength={255}
-          className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300"
           placeholder="e.g. Sport Science"
         />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label
-            className="text-sm font-medium"
-            style={{ color: 'var(--timberwolf)' }}
-          >
+          <Label htmlFor="edu-start" className="text-[var(--timberwolf)]">
             Start Date
-          </label>
-          <input
-            type="date"
+          </Label>
+          <DatePicker
+            id="edu-start"
             value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] focus:outline-none focus:ring-1 focus:ring-zinc-300"
+            onChange={setStartDate}
+            placeholder="Select date"
           />
         </div>
         <div className="space-y-2">
-          <label
-            className="text-sm font-medium"
-            style={{ color: 'var(--timberwolf)' }}
-          >
+          <Label htmlFor="edu-end" className="text-[var(--timberwolf)]">
             End Date
-          </label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            disabled={isCurrent}
-            className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] focus:outline-none focus:ring-1 focus:ring-zinc-300 disabled:opacity-40"
+          </Label>
+          <DatePicker
+            id="edu-end"
+            value={isCurrent ? '' : endDate}
+            onChange={setEndDate}
+            placeholder={isCurrent ? 'Currently attending' : 'Select date'}
+            min={startDate || undefined}
           />
         </div>
       </div>
-      <label className="flex items-center gap-2 cursor-pointer">
-        <input
-          type="checkbox"
+      <label className="flex items-center gap-2.5 cursor-pointer select-none">
+        <Checkbox
           checked={isCurrent}
-          onChange={(e) => setIsCurrent(e.target.checked)}
-          className="rounded border-neutral-600"
+          onCheckedChange={(c) => setIsCurrent(c === true)}
         />
-        <span className="text-sm" style={{ color: 'var(--timberwolf)' }}>
+        <span className="text-sm text-[var(--timberwolf)]">
           Currently attending
         </span>
       </label>
       <div className="flex justify-end gap-2 pt-2">
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           onClick={onCancel}
-          style={{ color: 'var(--ash-grey)' }}
+          className="text-[var(--ash-grey)] hover:text-[var(--timberwolf)]"
         >
           Cancel
         </Button>
         <Button
+          type="submit"
           size="sm"
           disabled={saving}
-          onClick={handleSubmit}
           className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white"
         >
           {saving ? <LoadingSpinner size="sm" /> : 'Save'}
         </Button>
       </div>
-    </div>
+    </form>
   );
 }
 
@@ -464,6 +463,66 @@ function DashboardContent() {
   } | null>(null);
   const [highlightsCount, setHighlightsCount] = useState(0);
   const [playerVariantId, setPlayerVariantId] = useState<string | null>(null);
+  // Module visibility for the player variant — drives the privacy switch +
+  // determines whether the module is shareable. Fetched in checkPlayerVariant.
+  const [playerVariantVisibility, setPlayerVariantVisibility] = useState<
+    'public' | 'authenticated' | 'club_only' | 'private'
+  >('public');
+  const [playerModuleSlug, setPlayerModuleSlug] = useState<string | null>(null);
+  // Phase 6 dashboard state — recent attributed clips + verifications drive
+  // the new hero + activity feed + sidebar stats. All fetched alongside the
+  // existing variant flow in checkPlayerVariant.
+  const [attributedClips, setAttributedClips] = useState<
+    {
+      attributionId: string;
+      recordingId: string;
+      recordingTitle: string;
+      homeTeam: string;
+      awayTeam: string;
+      matchDate: string;
+      thumbnailUrl: string | null;
+      type: 'goal' | 'assist' | 'save' | 'tackle' | 'skill' | 'custom';
+      title: string | null;
+      attributedAt: string;
+      ownerOrgName: string | null;
+    }[]
+  >([]);
+  const [profileVerifications, setProfileVerifications] = useState<
+    {
+      id: string;
+      organizationName: string;
+      seasonLabel: string | null;
+      verifiedAt: string;
+    }[]
+  >([]);
+  // Phase 7.1 — `last_dashboard_view_at` snapshot taken at first fetch.
+  // Frozen for the session so NEW pills don't disappear mid-scroll. The
+  // post-paint write below pushes a fresh `now()` server-side; subsequent
+  // refreshes start with the new baseline.
+  const [lastSeenAt, setLastSeenAt] = useState<string | null>(null);
+  // Track the profile id we last fetched lastSeenAt for. When the user signs
+  // out + a different user signs in within the same component instance, the
+  // id changes and the next checkPlayerVariant pass re-fetches. A boolean
+  // would have left the previous user's value bleeding through.
+  const lastSeenFetchedFor = useRef<string | null>(null);
+  // Phase 7 — PLAYHUB ecosystem summary (access rights + purchases). Read
+  // directly from the shared Supabase project; both tables RLS-gated to the
+  // owning auth.uid() so cross-tenant leakage isn't possible.
+  const [accessSummary, setAccessSummary] = useState<{
+    recordingsAccessibleCount: number;
+    latestGrantedAt: string | null;
+    totalPurchases: number;
+    latestPurchasedAt: string | null;
+    latestPurchaseAmount: number | null;
+    latestPurchaseCurrency: string | null;
+  }>({
+    recordingsAccessibleCount: 0,
+    latestGrantedAt: null,
+    totalPurchases: 0,
+    latestPurchasedAt: null,
+    latestPurchaseAmount: null,
+    latestPurchaseCurrency: null,
+  });
   const [highlights, setHighlights] = useState<
     {
       id: string;
@@ -510,8 +569,6 @@ function DashboardContent() {
   const [editingEducationEntry, setEditingEducationEntry] = useState<
     any | null
   >(null);
-  const [uploadingCover, setUploadingCover] = useState(false);
-  const coverInputRef = useRef<HTMLInputElement>(null);
   const [activeHighlight, setActiveHighlight] = useState<{
     id: string;
     title: string;
@@ -527,24 +584,50 @@ function DashboardContent() {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
+    // .maybeSingle() — a brand-new user with no variant yet is the normal
+    // first-run case. .single() surfaced a 406 in Supabase telemetry on
+    // every dashboard navigation until the user created a variant.
+    // is_active=true: a soft-deactivated variant should not appear on the
+    // dashboard (settings page + public profile already filter on it).
     const { data: variant } = await supabase
       .from('profile_variants')
-      .select('id')
+      .select('id, module_slug')
       .eq('profile_id', profile.data.id)
       .eq('variant_type', 'player')
-      .single();
+      .eq('is_active', true)
+      .maybeSingle();
     setHasPlayerVariant(!!variant);
 
     if (variant) {
-      const typedVariant = variant as unknown as { id: string };
+      const typedVariant = variant as unknown as {
+        id: string;
+        module_slug: string;
+      };
       setPlayerVariantId(typedVariant.id);
+      setPlayerModuleSlug(typedVariant.module_slug);
+
+      // Pull current privacy so the switch shows the right state on first
+      // render. Missing row defaults to 'public' to mirror the AFTER INSERT
+      // trigger's default.
+      const { data: privacy } = await supabase
+        .from('profile_module_privacies')
+        .select('visibility')
+        .eq('profile_variant_id', typedVariant.id)
+        .maybeSingle();
+      if (privacy) {
+        setPlayerVariantVisibility(
+          (privacy as any).visibility as typeof playerVariantVisibility
+        );
+      }
+      // maybeSingle: a player variant without football data yet is normal
+      // (day-1 onboarding state) — `.single()` would log a console error.
       const { data: football } = await supabase
         .from('football_player_profiles')
         .select(
           'experience_level, preferred_foot, primary_position, secondary_positions, preferred_jersey_number'
         )
         .eq('profile_variant_id', typedVariant.id)
-        .single();
+        .maybeSingle();
       if (football) {
         setFootballData(football as unknown as typeof footballData);
       }
@@ -572,6 +655,40 @@ function DashboardContent() {
       setCareerEntries((careerData as any[]) || []);
     }
 
+    // Phase 7.1 — read `last_dashboard_view_at` once per session. Graceful
+    // fallback if the column hasn't been migrated yet: the catch leaves
+    // lastSeenAt at null, which the cards interpret as "first-ever load"
+    // (everything new) — correct day-1 UX even before migration runs.
+    if (profile.data?.id && lastSeenFetchedFor.current !== profile.data.id) {
+      const fetchingFor = profile.data.id;
+      lastSeenFetchedFor.current = fetchingFor;
+      // Reset state so the previous user's value can never bleed across.
+      setLastSeenAt(null);
+      try {
+        const { data: lastSeenRow, error: lastSeenError } = await supabase
+          .from('profiles')
+          .select('last_dashboard_view_at')
+          .eq('id', fetchingFor)
+          .maybeSingle();
+        // If the user changed mid-flight, drop this result.
+        if (lastSeenFetchedFor.current !== fetchingFor) {
+          // intentional no-op
+        } else if (lastSeenError) {
+          console.warn(
+            'dashboard: last_dashboard_view_at fetch failed (treat as first-load)',
+            lastSeenError
+          );
+        } else {
+          setLastSeenAt(lastSeenRow?.last_dashboard_view_at ?? null);
+        }
+      } catch (e) {
+        console.warn(
+          'dashboard: last_dashboard_view_at fetch threw (treat as first-load)',
+          e
+        );
+      }
+    }
+
     // Fetch education (uses profile_id, not variant_id)
     if (profile.data?.id) {
       const { data: educationData } = await supabase
@@ -582,86 +699,216 @@ function DashboardContent() {
         .eq('profile_id', profile.data.id)
         .order('display_order', { ascending: true });
       setEducationEntries((educationData as any[]) || []);
+
+      // Phase 6 — clip attributions for the dashboard hero + activity feed.
+      // Mirrors the public profile read path (Phase 5): inner-join clips +
+      // recordings, filter to published+non-deleted at the SQL level.
+      // Errors are logged but don't block render — empty arrays fall back
+      // to the empty-state copy in DashboardHero / DashboardActivityFeed.
+      const { data: attributionData, error: attributionError } = await supabase
+        .from('clip_attributions')
+        .select(
+          `id, attributed_at, jersey_number_at_match,
+           clips:clip_id!inner (
+             id, recording_id, type, title, deleted_at, owner_org_id,
+             playhub_match_recordings:recording_id!inner (
+               id, title, home_team, away_team, match_date,
+               thumbnail_url, status
+             ),
+             organizations:owner_org_id ( id, name )
+           )`
+        )
+        .eq('profile_id', profile.data.id)
+        .is('revoked_at', null)
+        .is('clips.deleted_at', null)
+        .eq('clips.playhub_match_recordings.status', 'published')
+        .order('attributed_at', { ascending: false })
+        .limit(24);
+
+      if (attributionError) {
+        console.warn(
+          'dashboard: clip_attributions fetch failed',
+          attributionError
+        );
+      }
+
+      const mappedClips = ((attributionData ?? []) as any[])
+        .map((a) => {
+          const clip = Array.isArray(a.clips) ? a.clips[0] : a.clips;
+          if (!clip) return null;
+          const rec = Array.isArray(clip.playhub_match_recordings)
+            ? clip.playhub_match_recordings[0]
+            : clip.playhub_match_recordings;
+          if (!rec) return null;
+          const org = Array.isArray(clip.organizations)
+            ? clip.organizations[0]
+            : clip.organizations;
+          return {
+            attributionId: a.id as string,
+            recordingId: rec.id as string,
+            recordingTitle: rec.title as string,
+            homeTeam: (rec.home_team as string) ?? '',
+            awayTeam: (rec.away_team as string) ?? '',
+            matchDate: rec.match_date as string,
+            thumbnailUrl: (rec.thumbnail_url as string | null) ?? null,
+            type:
+              (clip.type as
+                | 'goal'
+                | 'assist'
+                | 'save'
+                | 'tackle'
+                | 'skill'
+                | 'custom') ?? 'custom',
+            title: (clip.title as string | null) ?? null,
+            attributedAt: a.attributed_at as string,
+            ownerOrgName: (org?.name as string | null) ?? null,
+          };
+        })
+        .filter((c): c is NonNullable<typeof c> => c !== null);
+      setAttributedClips(mappedClips);
+
+      // Active verifications. Multi-club allowed (stack in the list).
+      const { data: verificationData, error: verificationError } =
+        await supabase
+          .from('profile_verifications')
+          .select(
+            'id, season_label, verified_at, verifying_org_id, organizations:verifying_org_id (id, name)'
+          )
+          .eq('profile_id', profile.data.id)
+          .is('revoked_at', null)
+          .order('verified_at', { ascending: false });
+
+      if (verificationError) {
+        console.warn(
+          'dashboard: profile_verifications fetch failed',
+          verificationError
+        );
+      }
+
+      const mappedVerifs = ((verificationData ?? []) as any[])
+        .map((v) => {
+          const org = Array.isArray(v.organizations)
+            ? v.organizations[0]
+            : v.organizations;
+          if (!org?.name) return null;
+          return {
+            id: v.id as string,
+            organizationName: org.name as string,
+            seasonLabel: (v.season_label as string | null) ?? null,
+            verifiedAt: v.verified_at as string,
+          };
+        })
+        .filter((v): v is NonNullable<typeof v> => v !== null);
+      setProfileVerifications(mappedVerifs);
+
+      // Phase 7 — PLAYHUB ecosystem summary. Owner-only RLS confirmed at
+      // current_schema.sql:3715 (access_rights) and :3729 (purchases).
+      if (user?.id) {
+        const nowIso = new Date().toISOString();
+        const [
+          { data: accessRows, error: accessError, count: accessCount },
+          { data: purchaseRows, error: purchaseError, count: purchaseCount },
+        ] = await Promise.all([
+          supabase
+            .from('playhub_access_rights')
+            .select('id, granted_at, expires_at', { count: 'exact' })
+            .eq('user_id', user.id)
+            .eq('is_active', true)
+            .or(`expires_at.is.null,expires_at.gt.${nowIso}`)
+            .order('granted_at', { ascending: false })
+            .limit(1),
+          supabase
+            .from('playhub_purchases')
+            .select('id, amount_paid, currency, purchased_at', {
+              count: 'exact',
+            })
+            .eq('user_id', user.id)
+            .eq('status', 'completed')
+            .order('purchased_at', { ascending: false })
+            .limit(1),
+        ]);
+
+        if (accessError) {
+          console.warn('dashboard: access_rights fetch failed', accessError);
+        }
+        if (purchaseError) {
+          console.warn('dashboard: purchases fetch failed', purchaseError);
+        }
+
+        const latestAccess = ((accessRows ?? []) as any[])[0] ?? null;
+        const latestPurchase = ((purchaseRows ?? []) as any[])[0] ?? null;
+
+        setAccessSummary({
+          recordingsAccessibleCount: accessCount ?? 0,
+          latestGrantedAt: (latestAccess?.granted_at as string | null) ?? null,
+          totalPurchases: purchaseCount ?? 0,
+          latestPurchasedAt:
+            (latestPurchase?.purchased_at as string | null) ?? null,
+          latestPurchaseAmount: latestPurchase?.amount_paid
+            ? Number(latestPurchase.amount_paid)
+            : null,
+          latestPurchaseCurrency:
+            (latestPurchase?.currency as string | null) ?? null,
+        });
+      }
     }
-  }, [profile.data?.id]);
+  }, [profile.data?.id, user?.id]);
 
   useEffect(() => {
     checkPlayerVariant();
   }, [checkPlayerVariant]);
 
-  // Calculate profile completion
-  const profileCompletion = useMemo(() => {
-    if (!profile.data) return 0;
-
-    const items = [
-      { completed: !!(profile.data.full_name && profile.data.bio), weight: 20 },
-      { completed: !!profile.data.avatar_url, weight: 15 },
-      { completed: !!profile.data.location, weight: 10 },
-      { completed: !!profile.data.username, weight: 10 },
-      {
-        completed: !!(
-          profile.data.social_links &&
-          Object.values(profile.data.social_links).some((link) => link)
-        ),
-        weight: 15,
-      },
-      { completed: hasPlayerVariant, weight: 15 },
-      { completed: !!footballData?.primary_position, weight: 15 },
-    ];
-
-    const totalWeight = items.reduce((sum, item) => sum + item.weight, 0);
-    const completedWeight = items
-      .filter((item) => item.completed)
-      .reduce((sum, item) => sum + item.weight, 0);
-    return totalWeight > 0
-      ? Math.round((completedWeight / totalWeight) * 100)
-      : 0;
-  }, [profile.data, hasPlayerVariant, footballData]);
+  // Phase 7.1 — push `last_dashboard_view_at = now()` ~3s after the dashboard
+  // mounts so the user has a real chance to see the NEW pulses before the
+  // server gets the fresh timestamp. Run once per page-load. Errors are
+  // non-fatal — RLS owner-only on profiles already gates this; if the column
+  // hasn't been migrated yet the UPDATE simply fails (PostgREST rejects
+  // unknown columns) and the next session keeps showing NEW pills.
+  //
+  // Cross-user safety: the effect's dep is `profile.data?.id`; on signOut →
+  // sign-in-as-different-user the dep changes and the cleanup `clearTimeout`
+  // cancels the pending write before it fires. We additionally cross-check
+  // against `lastSeenFetchedFor.current` (a ref updated on each fetch) so a
+  // mid-flight identity swap is caught even if the timer somehow survives.
+  useEffect(() => {
+    if (!profile.data?.id) return;
+    const profileId = profile.data.id;
+    const handle = setTimeout(async () => {
+      // Latest-fetch ref is the single source of truth for "who's the
+      // current user", refreshed on every checkPlayerVariant pass. If it
+      // doesn't match, a faster identity swap happened and we'd be writing
+      // the wrong row.
+      if (lastSeenFetchedFor.current !== profileId) return;
+      try {
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+        const { data, error } = await supabase
+          .from('profiles')
+          .update({ last_dashboard_view_at: new Date().toISOString() })
+          .eq('id', profileId)
+          .select('id')
+          .maybeSingle();
+        if (error) {
+          console.warn('dashboard: last_dashboard_view_at write failed', error);
+        } else if (!data) {
+          // 0 rows updated — RLS rejected the row, profile was deleted, or
+          // the column doesn't exist yet. Logged so this isn't silent.
+          console.warn(
+            'dashboard: last_dashboard_view_at write hit 0 rows for',
+            profileId
+          );
+        }
+      } catch (e) {
+        console.warn('dashboard: last_dashboard_view_at write threw', e);
+      }
+    }, 3000);
+    return () => clearTimeout(handle);
+  }, [profile.data?.id]);
 
   const handleSignOut = async () => {
     await signOut();
-  };
-
-  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) return;
-
-    setUploadingCover(true);
-    try {
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
-      const ext = file.name.split('.').pop();
-      const path = `${user.id}/${Date.now()}.${ext}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('covers')
-        .upload(path, file, { cacheControl: '3600', upsert: false });
-
-      if (uploadError) {
-        console.error('Cover upload failed:', uploadError);
-        setUploadingCover(false);
-        return;
-      }
-
-      const { data: urlData } = supabase.storage
-        .from('covers')
-        .getPublicUrl(path);
-
-      const result = await updateCoverImage(urlData.publicUrl);
-      if (result.success) {
-        refreshProfile(true);
-      }
-    } catch {
-      console.error('Cover upload failed');
-    }
-    setUploadingCover(false);
-    // Reset input so same file can be re-selected
-    if (coverInputRef.current) coverInputRef.current.value = '';
   };
 
   const handleSaveHighlight = async () => {
@@ -746,640 +993,119 @@ function DashboardContent() {
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
+        {/* v6.1 layout — match-grouped feed (Veo / Hudl baseline).
+            Single column. Top bar carries identity + actions; feed groups
+            attributed clips by recording. No tabs, no sidebar, no completion
+            bar. Settings live at /dashboard/settings. */}
         <FadeIn>
-          <div className="flex items-center justify-between mb-10">
-            <div>
-              <h1
-                className="text-3xl font-extrabold tracking-tight"
-                style={{ color: 'var(--timberwolf)' }}
-              >
-                Welcome back, {profile.data?.full_name?.split(' ')[0] || 'User'}
-              </h1>
-              <p className="text-sm mt-1" style={{ color: 'var(--ash-grey)' }}>
-                Manage your profile and highlights
-              </p>
-            </div>
-            <button
-              onClick={handleSignOut}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs hover:bg-neutral-800/50 transition-colors"
-              style={{ color: 'var(--ash-grey)' }}
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              Sign Out
-            </button>
-          </div>
+          <DashboardTopBar
+            username={profile.data?.username ?? ''}
+            fullName={profile.data?.full_name ?? null}
+            firstName={profile.data?.full_name?.split(' ')[0] || 'there'}
+            avatarUrl={profile.data?.avatar_url ?? null}
+            verifications={profileVerifications.map((v) => ({
+              id: v.id,
+              organizationName: v.organizationName,
+            }))}
+            publicVariants={
+              hasPlayerVariant && playerVariantId && playerModuleSlug
+                ? [
+                    {
+                      variantId: playerVariantId,
+                      moduleSlug: playerModuleSlug,
+                      label: 'Player',
+                      visibility: playerVariantVisibility,
+                    },
+                  ]
+                : []
+            }
+            onEditProfile={() => {
+              if (hasPlayerVariant && footballData) {
+                setShowEditForm(true);
+              } else {
+                setShowPlayerForm(true);
+              }
+            }}
+            onSignOut={handleSignOut}
+          />
         </FadeIn>
 
-        {/* Profile Card with mini hero */}
-        <FadeIn delay={100}>
-          <div className="rounded-2xl border border-neutral-800/50 overflow-hidden mb-8">
-            {/* Mini banner */}
-            <div className="h-24 sm:h-32 relative bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 group/cover">
-              {profile.data?.cover_image_url && (
-                <img
-                  src={profile.data.cover_image_url}
-                  alt=""
-                  className="w-full h-full object-cover"
+        {/* Phase 7 — vertical stack of distinct concerns. Match clips +
+            modules + verifications are the connective-tissue side; access +
+            settings are the account/ecosystem side. Same scroll, no tabs. */}
+        <div className="mt-8 space-y-10">
+          {/* Match clips — connective-tissue lede */}
+          <FadeIn delay={100}>
+            {attributedClips.length === 0 ? (
+              <DashboardSection title="Match clips">
+                <DashboardEmptyState hasAnyVariant={hasPlayerVariant} />
+              </DashboardSection>
+            ) : (
+              <DashboardSection
+                title="Match clips"
+                count={attributedClips.length}
+              >
+                <DashboardFeed
+                  clips={attributedClips}
+                  lastSeenAt={lastSeenAt}
                 />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-[var(--night)] to-transparent" />
-              {/* Cover upload button */}
-              <button
-                onClick={() => coverInputRef.current?.click()}
-                disabled={uploadingCover}
-                className="absolute top-3 right-3 p-2 rounded-full bg-black/40 backdrop-blur-sm opacity-0 group-hover/cover:opacity-100 transition-opacity hover:bg-black/60"
-              >
-                {uploadingCover ? (
-                  <LoadingSpinner size="sm" />
-                ) : (
-                  <Camera className="h-4 w-4 text-white" />
-                )}
-              </button>
-              <input
-                ref={coverInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={handleCoverUpload}
-              />
-            </div>
-
-            <div className="px-6 pb-6 -mt-12 relative z-10">
-              <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-                {/* Avatar */}
-                <div className="flex-shrink-0">
-                  {user && (
-                    <AvatarUpload
-                      userId={user.id}
-                      currentAvatarUrl={profile.data?.avatar_url}
-                      fullName={profile.data?.full_name || 'User'}
-                      onAvatarUpdate={() => refreshProfile(true)}
-                      size="lg"
-                    />
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0 pb-1">
-                  <h2
-                    className="text-xl font-bold"
-                    style={{ color: 'var(--timberwolf)' }}
-                  >
-                    {profile.data?.full_name || 'Your Name'}
-                  </h2>
-                  {profile.data?.username && (
-                    <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
-                      @{profile.data.username}
-                    </p>
-                  )}
-                  {profile.data?.bio && (
-                    <p
-                      className="text-sm mt-1 leading-relaxed line-clamp-2"
-                      style={{ color: 'var(--ash-grey)' }}
-                    >
-                      {profile.data.bio}
-                    </p>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-neutral-700 hover:bg-neutral-800/50"
-                    onClick={() => {
-                      if (profile.data?.username) {
-                        window.location.href = `/player/${profile.data.username}`;
-                      }
-                    }}
-                    disabled={!hasPlayerVariant}
-                  >
-                    <Share2
-                      className="h-3.5 w-3.5 mr-1.5"
-                      style={{ color: 'var(--ash-grey)' }}
-                    />
-                    <span style={{ color: 'var(--ash-grey)' }}>
-                      View Public
-                    </span>
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="bg-neutral-800 hover:bg-neutral-700 border border-neutral-700"
-                    onClick={() => {
-                      if (hasPlayerVariant && footballData) {
-                        setShowEditForm(true);
-                      } else {
-                        setShowPlayerForm(true);
-                      }
-                    }}
-                  >
-                    <Edit3
-                      className="h-3.5 w-3.5 mr-1.5"
-                      style={{ color: 'var(--timberwolf)' }}
-                    />
-                    <span style={{ color: 'var(--timberwolf)' }}>
-                      Edit Profile
-                    </span>
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Slim stats bar */}
-            <div className="px-6 py-3 border-t border-neutral-800/50 flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <span
-                  className="text-sm font-bold"
-                  style={{ color: 'var(--timberwolf)' }}
-                >
-                  {profileCompletion}%
-                </span>
-                <div className="w-24 h-1.5 rounded-full bg-neutral-800 overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-green-400/70 transition-all duration-500"
-                    style={{ width: `${profileCompletion}%` }}
-                  />
-                </div>
-                <span className="text-xs" style={{ color: 'var(--ash-grey)' }}>
-                  Profile
-                </span>
-              </div>
-              <div
-                className="w-px h-4"
-                style={{ backgroundColor: 'var(--ash-grey)', opacity: 0.2 }}
-              />
-              <div className="flex items-center gap-2">
-                <span
-                  className="text-sm font-bold"
-                  style={{ color: 'var(--timberwolf)' }}
-                >
-                  {highlightsCount}
-                </span>
-                <span className="text-xs" style={{ color: 'var(--ash-grey)' }}>
-                  {highlightsCount === 1 ? 'Highlight' : 'Highlights'}
-                </span>
-              </div>
-              {hasPlayerVariant && (
-                <>
-                  <div
-                    className="w-px h-4"
-                    style={{ backgroundColor: 'var(--ash-grey)', opacity: 0.2 }}
-                  />
-                  <div className="flex items-center gap-1.5">
-                    <CheckCircle className="h-3 w-3 text-green-400" />
-                    <span className="text-xs text-green-400 font-medium">
-                      Player Profile
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </FadeIn>
-
-        {/* Two-column layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          {/* Left column - Modules + Social */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Profile Modules */}
-            <FadeIn delay={200}>
-              <div>
-                <h3
-                  className="text-xs font-semibold uppercase tracking-widest mb-4"
-                  style={{ color: 'var(--ash-grey)' }}
-                >
-                  Profile Modules
-                </h3>
-                <div className="space-y-2">
-                  {/* Player Profile */}
-                  <button
-                    className="w-full flex items-center gap-3 p-3 rounded-xl border border-neutral-800/50 hover:border-neutral-600/50 transition-all duration-200 text-left group"
-                    onClick={() => {
-                      if (hasPlayerVariant) {
-                        window.location.href = `/player/${profile.data?.username}`;
-                      } else {
-                        setShowPlayerForm(true);
-                      }
-                    }}
-                  >
-                    <Trophy className="h-4 w-4 text-green-400 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className="text-sm font-medium group-hover:text-green-400 transition-colors"
-                        style={{ color: 'var(--timberwolf)' }}
-                      >
-                        Player Profile
-                      </p>
-                    </div>
-                    {hasPlayerVariant ? (
-                      <span className="text-[11px] text-green-400 font-medium">
-                        Active
-                      </span>
-                    ) : (
-                      <span
-                        className="text-[11px] font-medium"
-                        style={{ color: 'var(--ash-grey)' }}
-                      >
-                        Create
-                      </span>
-                    )}
-                    <ChevronRight className="h-3.5 w-3.5 text-neutral-600 group-hover:text-green-400 transition-colors" />
-                  </button>
-
-                  {/* Coach Profile */}
-                  <div className="flex items-center gap-3 p-3 rounded-xl border border-neutral-800/50 opacity-40">
-                    <User
-                      className="h-4 w-4 flex-shrink-0"
-                      style={{ color: 'var(--ash-grey)' }}
-                    />
-                    <p
-                      className="text-sm flex-1"
-                      style={{ color: 'var(--ash-grey)' }}
-                    >
-                      Coach Profile
-                    </p>
-                    <span
-                      className="text-[11px]"
-                      style={{ color: 'var(--ash-grey)' }}
-                    >
-                      Soon
-                    </span>
-                  </div>
-
-                  {/* Club Admin */}
-                  <div className="flex items-center gap-3 p-3 rounded-xl border border-neutral-800/50 opacity-40">
-                    <Crown
-                      className="h-4 w-4 flex-shrink-0"
-                      style={{ color: 'var(--ash-grey)' }}
-                    />
-                    <p
-                      className="text-sm flex-1"
-                      style={{ color: 'var(--ash-grey)' }}
-                    >
-                      Club Admin
-                    </p>
-                    <span
-                      className="text-[11px]"
-                      style={{ color: 'var(--ash-grey)' }}
-                    >
-                      Soon
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </FadeIn>
-
-            {/* Social Links */}
-            {profile.data?.social_links &&
-              Object.values(profile.data.social_links).some((link) => link) && (
-                <FadeIn delay={300}>
-                  <div>
-                    <h3
-                      className="text-xs font-semibold uppercase tracking-widest mb-4"
-                      style={{ color: 'var(--ash-grey)' }}
-                    >
-                      Connect
-                    </h3>
-                    <div className="space-y-2">
-                      {profile.data.social_links.instagram && (
-                        <SocialLink
-                          platform="instagram"
-                          username={profile.data.social_links.instagram}
-                        />
-                      )}
-                      {profile.data.social_links.twitter && (
-                        <SocialLink
-                          platform="twitter"
-                          username={profile.data.social_links.twitter}
-                        />
-                      )}
-                      {profile.data.social_links.linkedin && (
-                        <SocialLink
-                          platform="linkedin"
-                          username={profile.data.social_links.linkedin}
-                        />
-                      )}
-                    </div>
-                  </div>
-                </FadeIn>
-              )}
-
-            {/* Career History */}
-            {hasPlayerVariant && (
-              <FadeIn delay={350}>
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3
-                      className="text-xs font-semibold uppercase tracking-widest"
-                      style={{ color: 'var(--ash-grey)' }}
-                    >
-                      Career
-                    </h3>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-neutral-700 text-xs h-7"
-                      onClick={() => {
-                        setEditingCareerEntry(null);
-                        setShowCareerDialog(true);
-                      }}
-                    >
-                      <Plus className="h-3 w-3 mr-1" />
-                      <span style={{ color: 'var(--ash-grey)' }}>Add</span>
-                    </Button>
-                  </div>
-                  {careerEntries.length === 0 ? (
-                    <div className="text-center py-8 rounded-xl border border-neutral-800/50">
-                      <Briefcase
-                        className="h-5 w-5 mx-auto mb-2 opacity-30"
-                        style={{ color: 'var(--ash-grey)' }}
-                      />
-                      <p
-                        className="text-xs opacity-50"
-                        style={{ color: 'var(--ash-grey)' }}
-                      >
-                        No career entries yet
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {careerEntries.map((entry: any) => (
-                        <div
-                          key={entry.id}
-                          className="flex items-center gap-3 p-3 rounded-xl border border-neutral-800/50 group"
-                        >
-                          <Briefcase className="h-4 w-4 text-green-400 flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p
-                              className="text-sm font-medium truncate"
-                              style={{ color: 'var(--timberwolf)' }}
-                            >
-                              {entry.organization_name}
-                            </p>
-                            {entry.role && (
-                              <p
-                                className="text-xs truncate"
-                                style={{ color: 'var(--ash-grey)' }}
-                              >
-                                {entry.role}
-                              </p>
-                            )}
-                          </div>
-                          {entry.is_current && (
-                            <span className="text-[10px] text-green-400 font-medium flex-shrink-0">
-                              Current
-                            </span>
-                          )}
-                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                            <button
-                              onClick={() => {
-                                setEditingCareerEntry(entry);
-                                setShowCareerDialog(true);
-                              }}
-                              className="p-1 rounded hover:bg-neutral-800"
-                            >
-                              <Edit3
-                                className="h-3.5 w-3.5"
-                                style={{ color: 'var(--ash-grey)' }}
-                              />
-                            </button>
-                            <button
-                              onClick={async () => {
-                                await deleteCareerEntry(entry.id);
-                                checkPlayerVariant();
-                              }}
-                              className="p-1 rounded hover:bg-red-900/30"
-                            >
-                              <Trash2 className="h-3.5 w-3.5 text-red-400" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </FadeIn>
+              </DashboardSection>
             )}
+          </FadeIn>
 
-            {/* Education */}
-            <FadeIn delay={400}>
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3
-                    className="text-xs font-semibold uppercase tracking-widest"
-                    style={{ color: 'var(--ash-grey)' }}
-                  >
-                    Education
-                  </h3>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-neutral-700 text-xs h-7"
-                    onClick={() => {
-                      setEditingEducationEntry(null);
-                      setShowEducationDialog(true);
-                    }}
-                  >
-                    <Plus className="h-3 w-3 mr-1" />
-                    <span style={{ color: 'var(--ash-grey)' }}>Add</span>
-                  </Button>
-                </div>
-                {educationEntries.length === 0 ? (
-                  <div className="text-center py-8 rounded-xl border border-neutral-800/50">
-                    <GraduationCap
-                      className="h-5 w-5 mx-auto mb-2 opacity-30"
-                      style={{ color: 'var(--ash-grey)' }}
-                    />
-                    <p
-                      className="text-xs opacity-50"
-                      style={{ color: 'var(--ash-grey)' }}
-                    >
-                      No education entries yet
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {educationEntries.map((entry: any) => (
-                      <div
-                        key={entry.id}
-                        className="flex items-center gap-3 p-3 rounded-xl border border-neutral-800/50 group"
-                      >
-                        <GraduationCap className="h-4 w-4 text-blue-400 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p
-                            className="text-sm font-medium truncate"
-                            style={{ color: 'var(--timberwolf)' }}
-                          >
-                            {entry.institution_name}
-                          </p>
-                          {entry.degree_or_program && (
-                            <p
-                              className="text-xs truncate"
-                              style={{ color: 'var(--ash-grey)' }}
-                            >
-                              {entry.degree_or_program}
-                            </p>
-                          )}
-                        </div>
-                        {entry.is_current && (
-                          <span className="text-[10px] text-blue-400 font-medium flex-shrink-0">
-                            Current
-                          </span>
-                        )}
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                          <button
-                            onClick={() => {
-                              setEditingEducationEntry(entry);
-                              setShowEducationDialog(true);
-                            }}
-                            className="p-1 rounded hover:bg-neutral-800"
-                          >
-                            <Edit3
-                              className="h-3.5 w-3.5"
-                              style={{ color: 'var(--ash-grey)' }}
-                            />
-                          </button>
-                          <button
-                            onClick={async () => {
-                              await deleteEducationEntry(entry.id);
-                              checkPlayerVariant();
-                            }}
-                            className="p-1 rounded hover:bg-red-900/30"
-                          >
-                            <Trash2 className="h-3.5 w-3.5 text-red-400" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </FadeIn>
-          </div>
+          {/* Your modules */}
+          <FadeIn delay={150}>
+            <DashboardModulesSection
+              username={profile.data?.username ?? ''}
+              modules={
+                hasPlayerVariant && playerVariantId && playerModuleSlug
+                  ? [
+                      {
+                        variantId: playerVariantId,
+                        moduleSlug: playerModuleSlug,
+                        variantType: 'player',
+                        label: 'Player profile',
+                        visibility: playerVariantVisibility,
+                        isActive: true,
+                      },
+                    ]
+                  : []
+              }
+              onEditModule={() => {
+                // Phase 8 will route to per-module edit Sheets. Today we
+                // open the existing global Edit Profile Sheet for any module.
+                if (hasPlayerVariant && footballData) {
+                  setShowEditForm(true);
+                } else {
+                  setShowPlayerForm(true);
+                }
+              }}
+              onCreateFirstModule={() => setShowPlayerForm(true)}
+            />
+          </FadeIn>
 
-          {/* Right column - Highlights */}
-          <div className="lg:col-span-3">
-            {hasPlayerVariant && (
-              <FadeIn delay={200}>
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3
-                      className="text-xs font-semibold uppercase tracking-widest"
-                      style={{ color: 'var(--ash-grey)' }}
-                    >
-                      Highlights
-                      <span className="ml-2 normal-case tracking-normal font-normal">
-                        ({highlightsCount})
-                      </span>
-                    </h3>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-neutral-700 text-xs h-7"
-                        onClick={() => setShowPlayhubPicker(true)}
-                      >
-                        <Plus className="h-3 w-3 mr-1" />
-                        <span
-                          className="hidden sm:inline"
-                          style={{ color: 'var(--ash-grey)' }}
-                        >
-                          PLAYHUB
-                        </span>
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-xs h-7"
-                        onClick={() => setShowUploadDialog(true)}
-                      >
-                        <Plus className="h-3 w-3 mr-1" />
-                        <span style={{ color: 'var(--timberwolf)' }}>
-                          Upload
-                        </span>
-                      </Button>
-                    </div>
-                  </div>
+          {/* Verifications */}
+          <FadeIn delay={200}>
+            <DashboardVerificationsSection
+              verifications={profileVerifications}
+              lastSeenAt={lastSeenAt}
+            />
+          </FadeIn>
 
-                  {highlights.length === 0 ? (
-                    <div className="text-center py-16 rounded-xl border border-neutral-800/50">
-                      <Play
-                        className="h-6 w-6 mx-auto mb-2 opacity-30"
-                        style={{ color: 'var(--ash-grey)' }}
-                      />
-                      <p
-                        className="text-sm opacity-50"
-                        style={{ color: 'var(--ash-grey)' }}
-                      >
-                        No highlights yet
-                      </p>
-                      <p
-                        className="text-xs mt-1 opacity-30"
-                        style={{ color: 'var(--ash-grey)' }}
-                      >
-                        Upload videos or import from PLAYHUB
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {highlights.map((h) => (
-                        <div
-                          key={h.id}
-                          className="group rounded-xl overflow-hidden bg-neutral-900/50 border border-neutral-800/50 hover:border-neutral-600/50 transition-all duration-300"
-                        >
-                          <button
-                            onClick={() => setActiveHighlight(h)}
-                            className="block w-full text-left"
-                          >
-                            <div className="relative aspect-video bg-neutral-900">
-                              {h.thumbnail_url ? (
-                                <img
-                                  src={h.thumbnail_url}
-                                  alt={h.title}
-                                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <Play className="h-8 w-8 text-neutral-700" />
-                                </div>
-                              )}
-                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
-                                <div className="bg-white/10 backdrop-blur-sm rounded-full p-3 scale-75 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300">
-                                  <Play className="h-5 w-5 text-white" />
-                                </div>
-                              </div>
-                              {h.metadata?.source === 'playhub' && (
-                                <span className="absolute top-2 left-2 bg-blue-500/90 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
-                                  PLAYHUB
-                                </span>
-                              )}
-                            </div>
-                          </button>
-                          <div className="p-3 flex items-center justify-between">
-                            <p
-                              className="text-sm font-medium truncate flex-1"
-                              style={{ color: 'var(--timberwolf)' }}
-                            >
-                              {h.title}
-                            </p>
-                            <button
-                              onClick={() => handleDeleteHighlight(h.id)}
-                              className="ml-2 p-1 rounded hover:bg-red-900/30 transition-colors opacity-0 group-hover:opacity-100"
-                            >
-                              <Trash2 className="h-4 w-4 text-red-400" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </FadeIn>
-            )}
-          </div>
+          {/* Subscriptions & access — PLAYHUB ecosystem */}
+          <FadeIn delay={250}>
+            <DashboardAccessSection summary={accessSummary} />
+          </FadeIn>
         </div>
       </div>
 
+      {/* Dialog cluster — the Highlight Upload, PLAYHUB Recordings Picker,
+          Career Entry, Education Entry, and Highlight Video dialogs are
+          mounted here without active triggers in the new dashboard layout
+          (Phase 6 stripped the buttons that opened them). They're preserved
+          for Phase 6.1 integration into EditProfileSheet so we don't lose the
+          state-management plumbing twice. The Player Profile Creation and
+          Profile Edit Sheet ARE active — their triggers live in DashboardSidebar. */}
       {/* Player Profile Creation Dialog */}
       <Dialog open={showPlayerForm} onOpenChange={setShowPlayerForm}>
         <DialogContent className="max-w-md">
@@ -1400,37 +1126,36 @@ function DashboardContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Profile Edit Dialog */}
-      <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Edit Profile</DialogTitle>
-            <DialogDescription>
-              Update your profile details across different sections.
-            </DialogDescription>
-          </DialogHeader>
-          {profile.data && footballData && (
-            <ProfileEditForm
-              profileData={{
-                full_name: profile.data.full_name ?? null,
-                bio: profile.data.bio ?? null,
-                social_links:
-                  (profile.data.social_links as Record<string, string>) ?? null,
-                height_cm: profile.data.height_cm ?? null,
-                weight_kg: profile.data.weight_kg ?? null,
-                date_of_birth: profile.data.date_of_birth ?? null,
-                location: profile.data.location ?? null,
-                nationality: profile.data.nationality ?? null,
-              }}
-              footballData={footballData}
-              onSaved={() => {
-                setShowEditForm(false);
-                checkPlayerVariant();
-              }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Profile Edit Sheet — slides in from right on desktop, fills screen
+          on mobile. Replaces the old Dialog modal which felt cramped for the
+          ~770-line edit form. */}
+      <EditProfileSheet
+        open={showEditForm}
+        onOpenChange={setShowEditForm}
+        title="Edit profile"
+        description="Update your profile details across modules."
+      >
+        {profile.data && footballData && (
+          <ProfileEditForm
+            profileData={{
+              full_name: profile.data.full_name ?? null,
+              bio: profile.data.bio ?? null,
+              social_links:
+                (profile.data.social_links as Record<string, string>) ?? null,
+              height_cm: profile.data.height_cm ?? null,
+              weight_kg: profile.data.weight_kg ?? null,
+              date_of_birth: profile.data.date_of_birth ?? null,
+              location: profile.data.location ?? null,
+              nationality: profile.data.nationality ?? null,
+            }}
+            footballData={footballData}
+            onSaved={() => {
+              setShowEditForm(false);
+              checkPlayerVariant();
+            }}
+          />
+        )}
+      </EditProfileSheet>
 
       {/* Upload Highlight Dialog */}
       <Dialog
@@ -1539,12 +1264,12 @@ function DashboardContent() {
           if (!open) setEditingCareerEntry(null);
         }}
       >
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>
+        <DialogContent className="max-w-lg sm:max-w-xl">
+          <DialogHeader className="pb-2 mb-2 border-b border-neutral-800/50">
+            <DialogTitle className="text-[var(--timberwolf)]">
               {editingCareerEntry ? 'Edit Career Entry' : 'Add Career Entry'}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-[var(--ash-grey)]">
               Add your clubs, academies, or team history.
             </DialogDescription>
           </DialogHeader>
@@ -1580,14 +1305,14 @@ function DashboardContent() {
           if (!open) setEditingEducationEntry(null);
         }}
       >
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>
+        <DialogContent className="max-w-lg sm:max-w-xl">
+          <DialogHeader className="pb-2 mb-2 border-b border-neutral-800/50">
+            <DialogTitle className="text-[var(--timberwolf)]">
               {editingEducationEntry
                 ? 'Edit Education Entry'
                 : 'Add Education Entry'}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-[var(--ash-grey)]">
               Add your schools, colleges, or courses.
             </DialogDescription>
           </DialogHeader>

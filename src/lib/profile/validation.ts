@@ -91,6 +91,31 @@ export interface UpdateBaseProfileInput {
   nationality?: string | null;
 }
 
+/**
+ * Validate a single social_links value as a safe public URL. Mirrors the
+ * defenses in the cover-image validator (HTTPS, no userinfo, no fragment,
+ * length cap). Without this, an authenticated user could persist
+ * arbitrary content (newline-injection into OG tags, javascript: URLs,
+ * Basic-auth-smuggled URLs) into a field that's rendered in metadata.
+ */
+function isSafeSocialUrl(value: string): boolean {
+  if (typeof value !== 'string') return false;
+  if (value.length > 500) return false;
+  let parsed: URL;
+  try {
+    parsed = new URL(value);
+  } catch {
+    return false;
+  }
+  if (parsed.protocol !== 'https:') return false;
+  if (parsed.username !== '' || parsed.password !== '') return false;
+  // Reject control characters and embedded newlines that would corrupt OG
+  // tags, link headers, or any future server-rendered HTML context.
+  // eslint-disable-next-line no-control-regex
+  if (/[\x00-\x1f\x7f]/.test(value)) return false;
+  return true;
+}
+
 export function validateUpdateBaseProfile(
   input: UpdateBaseProfileInput
 ): ValidationResult {
@@ -101,6 +126,9 @@ export function validateUpdateBaseProfile(
       errors.push('Full name must be at least 2 characters');
     } else if (input.full_name.length > 100) {
       errors.push('Full name must be 100 characters or less');
+      // eslint-disable-next-line no-control-regex
+    } else if (/[\x00-\x1f\x7f]/.test(input.full_name)) {
+      errors.push('Full name contains invalid characters');
     }
   }
 
@@ -126,6 +154,50 @@ export function validateUpdateBaseProfile(
       errors.push('Invalid date of birth');
     } else if (date > new Date()) {
       errors.push('Date of birth cannot be in the future');
+    }
+  }
+
+  if (input.location !== undefined && input.location !== null) {
+    if (input.location.length > 200) {
+      errors.push('Location must be 200 characters or less');
+      // eslint-disable-next-line no-control-regex
+    } else if (/[\x00-\x1f\x7f]/.test(input.location)) {
+      errors.push('Location contains invalid characters');
+    }
+  }
+
+  if (input.nationality !== undefined && input.nationality !== null) {
+    if (input.nationality.length > 100) {
+      errors.push('Nationality must be 100 characters or less');
+    }
+  }
+
+  if (input.social_links !== undefined && input.social_links !== null) {
+    if (
+      typeof input.social_links !== 'object' ||
+      Array.isArray(input.social_links)
+    ) {
+      errors.push('Social links must be an object');
+    } else {
+      const entries = Object.entries(input.social_links);
+      if (entries.length > 10) {
+        errors.push('Up to 10 social links allowed');
+      }
+      for (const [key, value] of entries) {
+        if (typeof key !== 'string' || !/^[a-z0-9_-]{1,30}$/i.test(key)) {
+          errors.push(
+            `Social link key "${key}" must be alphanumeric (≤30 chars)`
+          );
+          continue;
+        }
+        if (typeof value !== 'string' || value === '') {
+          errors.push(`Social link "${key}" must be a non-empty string`);
+          continue;
+        }
+        if (!isSafeSocialUrl(value)) {
+          errors.push(`Social link "${key}" must be an https URL (≤500 chars)`);
+        }
+      }
     }
   }
 

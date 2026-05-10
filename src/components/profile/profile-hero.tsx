@@ -63,13 +63,29 @@ export function ProfileHero({
               alt={featuredHighlight.title}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
             />
-            {/* Play button overlay */}
+            {/* Play disc — matches the dashboard MatchGroupCard treatment so
+                the public profile reads as the same product, not a YouTube
+                clone. Background uses the timberwolf token (not raw white)
+                and the icon is night-tinted, mirroring the dashboard. */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="bg-white/15 backdrop-blur-sm rounded-full p-4 transition-all duration-300 group-hover:bg-white/25 group-hover:scale-110">
-                <Play className="h-8 w-8 text-white ml-0.5" />
+              <div
+                className="rounded-full p-4 shadow-2xl transition-all duration-300 group-hover:scale-110"
+                style={{
+                  backgroundColor: 'rgba(214,213,201,0.95)',
+                  color: 'var(--night)',
+                }}
+              >
+                <Play className="h-8 w-8 fill-current ml-0.5" />
               </div>
             </div>
-            <span className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-1 rounded-full">
+            <span
+              className="absolute top-3 right-3 backdrop-blur-md text-[10px] font-semibold px-2.5 py-1 rounded-full"
+              style={{
+                backgroundColor: 'rgba(10,16,13,0.55)',
+                color: 'var(--timberwolf)',
+                boxShadow: 'inset 0 0 0 1px rgba(214,213,201,0.12)',
+              }}
+            >
               Featured Highlight
             </span>
           </button>

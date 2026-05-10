@@ -9,6 +9,15 @@ const nextConfig = {
   images: {
     domains: ['cdn.sanity.io'],
   },
+  async redirects() {
+    return [
+      {
+        source: '/player/:username',
+        destination: '/p/:username',
+        permanent: true,
+      },
+    ];
+  },
   webpack: (config, { isServer }) => {
     // Handle framer-motion and motion package conflicts
     config.resolve.alias = {

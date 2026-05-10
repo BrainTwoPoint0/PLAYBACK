@@ -1,4 +1,4 @@
--- pgTAP regression test for the profiles.is_admin RLS policy.
+-- pgTAP regression test for the profiles.is_admin RLS + grant lockdown.
 --
 -- Confirms that:
 --   1. The is_admin column exists.
@@ -11,6 +11,12 @@
 --   6. Cross-user UPDATEs are silently filtered to 0 rows by the USING
 --      clause (Postgres RLS does not throw on USING-rejected UPDATEs).
 --   7. The victim's is_admin is still false after the hostile attempt.
+--   8. INSERT-side: authenticated user A cannot INSERT a profile row with
+--      user_id = B (impersonation block — RLS WITH CHECK).
+--   9. INSERT-side: column-GRANT layer blocks setting is_admin from
+--      authenticated (42501 from the column ACL, before RLS even runs).
+--  10. UPDATE-side: setting is_platform_admin from authenticated is also
+--      blocked — mirror assertion validating the platform-admin gate.
 --
 -- Requires pgTAP:
 --   CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
@@ -33,7 +39,7 @@ CREATE TEMP TABLE tap_output (line_no serial, line text);
 GRANT ALL ON TABLE tap_output TO authenticated;
 GRANT USAGE, SELECT ON SEQUENCE tap_output_line_no_seq TO authenticated;
 
-INSERT INTO tap_output (line) SELECT plan(7);
+INSERT INTO tap_output (line) SELECT plan(10);
 
 -- ── Fixtures ──────────────────────────────────────────────────────────
 DO $$
@@ -127,6 +133,67 @@ INSERT INTO tap_output (line) SELECT is(
   false,
   'victim profile row is still is_admin = false after self-elevation attempt'
 );
+
+-- ── INSERT impersonation: switch back into authenticated victim role ──
+SET LOCAL ROLE authenticated;
+SELECT set_config(
+  'request.jwt.claims',
+  json_build_object(
+    'sub',  '00000000-0000-0000-0000-000000000aa1',
+    'role', 'authenticated'
+  )::text,
+  true
+);
+
+-- 8. Victim cannot INSERT a profile row carrying SOMEONE ELSE'S user_id.
+--    The unique constraint would also catch this since `other` already has
+--    a row, but the test asserts the RLS WITH CHECK boundary specifically.
+--    The test uses a fresh user_id (no row exists) so the only block is RLS.
+INSERT INTO tap_output (line) SELECT throws_ok(
+  $t$
+    INSERT INTO profiles (user_id, username, full_name)
+    VALUES (
+      '00000000-0000-0000-0000-0000000099ff'::uuid,
+      'rls-test-impersonator',
+      'Impersonator'
+    );
+  $t$,
+  '42501',
+  'new row violates row-level security policy for table "profiles"',
+  'authenticated user cannot INSERT a profile row carrying a foreign user_id'
+);
+
+-- 9. Column-GRANT layer blocks setting is_admin on INSERT. The error is
+--    `permission denied for column is_admin` (SQLSTATE 42501) raised by
+--    the executor before RLS runs. We don't pin the message text because
+--    Postgres versions vary; just match the SQLSTATE.
+INSERT INTO tap_output (line) SELECT throws_ok(
+  $t$
+    INSERT INTO profiles (user_id, username, full_name, is_admin)
+    VALUES (
+      '00000000-0000-0000-0000-0000000099fe'::uuid,
+      'rls-test-grant-block',
+      'Grant Block',
+      true
+    );
+  $t$,
+  '42501',
+  'authenticated user cannot INSERT a profile row that sets is_admin (column-grant block)'
+);
+
+-- 10. UPDATE-side mirror for is_platform_admin — guard_platform_admin_write
+--     trigger raises 42501 the same way. Confirms the platform-admin gate
+--     is active alongside is_admin.
+INSERT INTO tap_output (line) SELECT throws_ok(
+  $t$
+    UPDATE profiles SET is_platform_admin = true
+    WHERE user_id = '00000000-0000-0000-0000-000000000aa1'::uuid;
+  $t$,
+  '42501',
+  'authenticated user cannot self-elevate via UPDATE on is_platform_admin'
+);
+
+RESET ROLE;
 
 INSERT INTO tap_output (line) SELECT * FROM finish();
 

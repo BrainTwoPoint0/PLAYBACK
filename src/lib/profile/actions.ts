@@ -45,31 +45,49 @@ export async function createPlayerVariant(
   }
 
   // Get user's profile
-  const { data: profileData, error: profileError } = await supabase
+  const { data: profileData } = await supabase
     .from('profiles')
     .select('id')
     .eq('user_id', user.id)
-    .single();
+    .maybeSingle();
 
-  if (profileError || !profileData) {
+  if (!profileData) {
     return { success: false, error: 'Profile not found' };
   }
 
   const profile = profileData as unknown as { id: string };
 
-  // Check if user already has a player variant
+  // Check if user already has a player variant. `.maybeSingle()` because
+  // missing-row is the normal "first-time onboarding" case here.
+  // Returns `id` so we can recover from a partial-create state — see below.
   const { data: existingVariant } = await supabase
     .from('profile_variants')
     .select('id')
     .eq('profile_id', profile.id)
     .eq('variant_type', 'player')
-    .single();
+    .maybeSingle();
 
+  // Idempotent-recovery path: if a previous create failed mid-way (variant
+  // INSERT succeeded but football INSERT failed AND the rollback delete also
+  // failed — network blip, RLS regression), we'd be stuck with a dangling
+  // variant that blocks the next attempt. Detect that case by checking
+  // whether the football child row exists; if not, skip ahead to creating it.
+  let variantId: string | null = null;
   if (existingVariant) {
-    return { success: false, error: 'You already have a player profile' };
+    const variantRow = existingVariant as unknown as { id: string };
+    const { data: football } = await supabase
+      .from('football_player_profiles')
+      .select('profile_variant_id')
+      .eq('profile_variant_id', variantRow.id)
+      .maybeSingle();
+    if (football) {
+      return { success: false, error: 'You already have a player profile' };
+    }
+    // Variant exists but no football data — resume from this point.
+    variantId = variantRow.id;
   }
 
-  // Get football sport ID
+  // Get football sport ID (seed data — must exist; .single() is correct here).
   const { data: sportData, error: sportError } = await supabase
     .from('sports')
     .select('id')
@@ -82,33 +100,36 @@ export async function createPlayerVariant(
 
   const sport = sportData as unknown as { id: string };
 
-  // Create profile variant
-  const { data: variantData, error: variantError } = await supabase
-    .from('profile_variants')
-    .insert({
-      profile_id: profile.id,
-      variant_type: 'player' as const,
-      sport_id: sport.id,
-      is_active: true,
-      is_primary: true,
-    } as any)
-    .select('id')
-    .single();
+  // Create profile variant — only if we don't already have one from the
+  // recovery branch above.
+  if (variantId === null) {
+    const { data: variantData, error: variantError } = await supabase
+      .from('profile_variants')
+      .insert({
+        profile_id: profile.id,
+        variant_type: 'player' as const,
+        sport_id: sport.id,
+        is_active: true,
+        is_primary: true,
+      } as any)
+      .select('id')
+      .single();
 
-  if (variantError || !variantData) {
-    return {
-      success: false,
-      error: variantError?.message || 'Failed to create player variant',
-    };
+    if (variantError || !variantData) {
+      return {
+        success: false,
+        error: variantError?.message || 'Failed to create player variant',
+      };
+    }
+
+    variantId = (variantData as unknown as { id: string }).id;
   }
 
-  const variant = variantData as unknown as { id: string };
-
-  // Create football player profile
+  // Create football player profile.
   const { error: footballError } = await supabase
     .from('football_player_profiles')
     .insert({
-      profile_variant_id: variant.id,
+      profile_variant_id: variantId,
       experience_level: input.experience_level,
       preferred_foot: input.preferred_foot,
       primary_position: input.primary_position,
@@ -117,15 +138,20 @@ export async function createPlayerVariant(
     } as any);
 
   if (footballError) {
-    // Rollback: delete the variant if football profile creation fails
-    await supabase.from('profile_variants').delete().eq('id', variant.id);
+    // Best-effort rollback: delete the variant if football profile creation
+    // fails AND we created the variant in this call (don't roll back a
+    // pre-existing dangling variant — that would lose the user's resume
+    // anchor for the next retry).
+    if (existingVariant === null) {
+      await supabase.from('profile_variants').delete().eq('id', variantId);
+    }
     return {
       success: false,
       error: footballError.message || 'Failed to create football profile',
     };
   }
 
-  return { success: true, data: { variantId: variant.id } };
+  return { success: true, data: { variantId } };
 }
 
 // Helper: get authenticated user's profile ID
@@ -147,7 +173,7 @@ async function getAuthenticatedProfileId(): Promise<
     .from('profiles')
     .select('id')
     .eq('user_id', user.id)
-    .single();
+    .maybeSingle();
 
   if (!profileData) {
     return { error: 'Profile not found' };
@@ -219,13 +245,14 @@ export async function updateFootballProfile(
 
   const supabase = await createClient();
 
-  // Get the user's player variant
+  // Get the user's player variant. .maybeSingle() — first-time users may
+  // hit this before they've created a variant.
   const { data: variantData } = await supabase
     .from('profile_variants')
     .select('id')
     .eq('profile_id', auth.profileId)
     .eq('variant_type', 'player')
-    .single();
+    .maybeSingle();
 
   if (!variantData) {
     return { success: false, error: 'No player profile found' };
@@ -280,13 +307,14 @@ export async function createHighlight(
 
   const supabase = await createClient();
 
-  // Get player variant
+  // Get player variant. .maybeSingle() because pre-onboarding users
+  // legitimately have no variant yet.
   const { data: variantData } = await supabase
     .from('profile_variants')
     .select('id, sport_id')
     .eq('profile_id', auth.profileId)
     .eq('variant_type', 'player')
-    .single();
+    .maybeSingle();
 
   if (!variantData) {
     return { success: false, error: 'No player profile found' };
@@ -330,12 +358,12 @@ export async function deleteHighlight(
 
   const supabase = await createClient();
 
-  // Verify ownership by checking profile_id matches
+  // Verify ownership by checking profile_id matches.
   const { data: highlight } = await supabase
     .from('highlights')
     .select('id, profile_id')
     .eq('id', highlightId)
-    .single();
+    .maybeSingle();
 
   if (!highlight) {
     return { success: false, error: 'Highlight not found' };
@@ -363,6 +391,54 @@ export async function deleteHighlight(
   return { success: true };
 }
 
+/**
+ * Validates a cover-image URL is one we are willing to persist.
+ * Accepts either null/empty (clear) or an HTTPS URL whose host matches the
+ * Supabase project's host (NEXT_PUBLIC_SUPABASE_URL). This is an SSRF /
+ * arbitrary-origin defense — without it, any authenticated user could
+ * write a third-party tracking URL or a server-fetchable internal address
+ * into their cover_image_url, and any future code path that fetches it
+ * server-side would inherit the risk.
+ */
+function validateCoverImageUrl(input: string | null): string | null | false {
+  if (input === null || input === '') return null;
+  let parsed: URL;
+  try {
+    parsed = new URL(input);
+  } catch {
+    return false;
+  }
+  if (parsed.protocol !== 'https:') return false;
+  // Reject userinfo-smuggled URLs. Without this, an authenticated user could
+  // persist `https://attacker:pwd@<allowed-host>/...` — passes host check
+  // but propagates Basic-auth credentials to anyone who fetches the link.
+  if (parsed.username !== '' || parsed.password !== '') return false;
+  // Reject fragments — not part of the resource identity for storage URLs,
+  // and a future renderer that route-matches on `#fragment` could be tricked.
+  if (parsed.hash !== '') return false;
+  const allowedHost = (() => {
+    try {
+      return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).host;
+    } catch {
+      return null;
+    }
+  })();
+  if (!allowedHost) return false;
+  if (parsed.host !== allowedHost) return false;
+  // Restrict to the public storage path; signed-URL paths are also fine
+  // since they originate from the same host.
+  if (!parsed.pathname.startsWith('/storage/v1/object/')) return false;
+  // Path-traversal defense: WHATWG URL normalizes literal `..` segments
+  // (and literal `\` to `/`), but does NOT decode percent-encoded variants.
+  // Without this, a downstream consumer that decodes the path (e.g. the
+  // Supabase Storage resolver) sees `/storage/v1/object/../private/...`
+  // and escapes the object namespace. Reject `%2e` (encoded dot) and
+  // `%5c` (encoded backslash) anywhere in the pathname.
+  if (/%2e/i.test(parsed.pathname)) return false;
+  if (/%5c/i.test(parsed.pathname)) return false;
+  return parsed.toString();
+}
+
 export async function updateCoverImage(
   coverImageUrl: string | null
 ): Promise<ActionResult> {
@@ -371,10 +447,23 @@ export async function updateCoverImage(
     return { success: false, error: auth.error };
   }
 
+  const validated = validateCoverImageUrl(coverImageUrl);
+  if (validated === false) {
+    return {
+      success: false,
+      error: 'Cover image URL must be a Supabase Storage URL',
+    };
+  }
+
   const supabase = await createClient();
 
+  // The `as any` on the from() chain matches the rest of this file —
+  // @supabase/ssr's Update typing collapses to `never` on schemas with
+  // many cross-table relationships. Pre-existing pattern (see lines 192,
+  // 248, 298, 526). Type-safety still applies to the `validated` URL
+  // shape via `validateCoverImageUrl()` above.
   const { error } = await (supabase.from('profiles') as any)
-    .update({ cover_image_url: coverImageUrl })
+    .update({ cover_image_url: validated })
     .eq('id', auth.profileId);
 
   if (error) {
@@ -398,27 +487,28 @@ export async function importRecordingAsHighlight(
 
   const supabase = await createClient();
 
-  // Verify user has access to this recording
+  // Verify user has access to this recording. .maybeSingle() — no access
+  // is the normal "user hasn't bought it" case.
   const { data: access } = await supabase
     .from('playhub_access_rights')
     .select('id')
     .eq('user_id', auth.userId)
     .eq('match_recording_id', recordingId)
     .eq('is_active', true)
-    .single();
+    .maybeSingle();
 
   if (!access) {
     return { success: false, error: 'No access to this recording' };
   }
 
-  // Fetch recording details including content delivery info
+  // Fetch recording details including content delivery info.
   const { data: recording } = await supabase
     .from('playhub_match_recordings')
     .select(
       'id, title, thumbnail_url, duration_seconds, home_team, away_team, content_type, external_url'
     )
     .eq('id', recordingId)
-    .single();
+    .maybeSingle();
 
   if (!recording) {
     return { success: false, error: 'Recording not found' };
@@ -435,13 +525,13 @@ export async function importRecordingAsHighlight(
     external_url: string | null;
   };
 
-  // Get player variant
+  // Get player variant. .maybeSingle() — pre-onboarding users have no variant.
   const { data: variantData } = await supabase
     .from('profile_variants')
     .select('id, sport_id')
     .eq('profile_id', auth.profileId)
     .eq('variant_type', 'player')
-    .single();
+    .maybeSingle();
 
   if (!variantData) {
     return { success: false, error: 'No player profile found' };
@@ -531,13 +621,13 @@ export async function addCareerEntry(
 
   const supabase = await createClient();
 
-  // Get player variant
+  // Get player variant. .maybeSingle() — pre-onboarding users have no variant.
   const { data: variant } = await supabase
     .from('profile_variants')
     .select('id')
     .eq('profile_id', auth.profileId)
     .eq('variant_type', 'player')
-    .single();
+    .maybeSingle();
 
   if (!variant) {
     return { success: false, error: 'No player profile found' };
@@ -545,12 +635,9 @@ export async function addCareerEntry(
 
   const typedVariant = variant as unknown as { id: string };
 
-  // Get next display_order
-  const { count } = await supabase
-    .from('career_history')
-    .select('id', { count: 'exact', head: true })
-    .eq('profile_variant_id', typedVariant.id);
-
+  // display_order is filled atomically by trg_career_history_set_display_order
+  // (BEFORE INSERT) when omitted — the previous client-side `count + 1` was
+  // racy under concurrent submits.
   const { error } = await (supabase.from('career_history') as any).insert({
     profile_variant_id: typedVariant.id,
     organization_name: input.organization_name.trim(),
@@ -559,7 +646,6 @@ export async function addCareerEntry(
     end_date: input.is_current ? null : input.end_date || null,
     is_current: input.is_current || false,
     description: input.description?.trim() || null,
-    display_order: (count || 0) + 1,
   });
 
   if (error) {
@@ -584,13 +670,14 @@ export async function updateCareerEntry(
 
   const supabase = await createClient();
 
-  // Verify ownership: entry must belong to user's player variant
+  // Verify ownership: entry must belong to user's player variant.
+  // .maybeSingle() — pre-onboarding users legitimately have no variant.
   const { data: variant } = await supabase
     .from('profile_variants')
     .select('id')
     .eq('profile_id', auth.profileId)
     .eq('variant_type', 'player')
-    .single();
+    .maybeSingle();
 
   if (!variant) {
     return { success: false, error: 'Profile variant not found' };
@@ -630,13 +717,14 @@ export async function deleteCareerEntry(
 
   const supabase = await createClient();
 
-  // Verify ownership: entry must belong to user's player variant
+  // Verify ownership: entry must belong to user's player variant.
+  // .maybeSingle() — pre-onboarding users legitimately have no variant.
   const { data: variant } = await supabase
     .from('profile_variants')
     .select('id')
     .eq('profile_id', auth.profileId)
     .eq('variant_type', 'player')
-    .single();
+    .maybeSingle();
 
   if (!variant) {
     return { success: false, error: 'Profile variant not found' };
@@ -682,12 +770,9 @@ export async function addEducationEntry(
 
   const supabase = await createClient();
 
-  // Get next display_order
-  const { count } = await supabase
-    .from('education')
-    .select('id', { count: 'exact', head: true })
-    .eq('profile_id', auth.profileId);
-
+  // display_order is filled atomically by trg_education_set_display_order
+  // (BEFORE INSERT) when omitted — the previous client-side `count + 1` was
+  // racy under concurrent submits.
   const { error } = await (supabase.from('education') as any).insert({
     profile_id: auth.profileId,
     institution_name: input.institution_name.trim(),
@@ -698,7 +783,6 @@ export async function addEducationEntry(
     end_date: input.is_current ? null : input.end_date || null,
     is_current: input.is_current || false,
     description: input.description?.trim() || null,
-    display_order: (count || 0) + 1,
   });
 
   if (error) {

@@ -7,6 +7,11 @@ export type Json =
   | Json[];
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: '12.2.3 (519615d)';
+  };
   graphql_public: {
     Tables: {
       [_ in never]: never;
@@ -34,66 +39,6 @@ export type Database = {
   };
   public: {
     Tables: {
-      newsletter_subscribers: {
-        Row: {
-          id: string;
-          email: string;
-          status: string;
-          source: string | null;
-          role: string | null;
-          resend_contact_id: string | null;
-          resend_synced_at: string | null;
-          resend_sync_attempts: number;
-          confirmation_token: string | null;
-          confirmation_sent_at: string | null;
-          confirmed_at: string | null;
-          unsubscribed_at: string | null;
-          ip_hash: string | null;
-          user_agent: string | null;
-          metadata: Json;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          email: string;
-          status?: string;
-          source?: string | null;
-          role?: string | null;
-          resend_contact_id?: string | null;
-          resend_synced_at?: string | null;
-          resend_sync_attempts?: number;
-          confirmation_token?: string | null;
-          confirmation_sent_at?: string | null;
-          confirmed_at?: string | null;
-          unsubscribed_at?: string | null;
-          ip_hash?: string | null;
-          user_agent?: string | null;
-          metadata?: Json;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          email?: string;
-          status?: string;
-          source?: string | null;
-          role?: string | null;
-          resend_contact_id?: string | null;
-          resend_synced_at?: string | null;
-          resend_sync_attempts?: number;
-          confirmation_token?: string | null;
-          confirmation_sent_at?: string | null;
-          confirmed_at?: string | null;
-          unsubscribed_at?: string | null;
-          ip_hash?: string | null;
-          user_agent?: string | null;
-          metadata?: Json;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
       basketball_player_profiles: {
         Row: {
           created_at: string | null;
@@ -205,6 +150,174 @@ export type Database = {
             foreignKeyName: 'career_history_profile_variant_id_fkey';
             columns: ['profile_variant_id'];
             isOneToOne: false;
+            referencedRelation: 'profile_variants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      clip_attributions: {
+        Row: {
+          attributed_at: string;
+          clip_id: string;
+          confidence: number | null;
+          created_at: string;
+          id: string;
+          jersey_number_at_match: number | null;
+          profile_id: string;
+          revocation_note: string | null;
+          revoked_at: string | null;
+          revoked_by: Database['public']['Enums']['attribution_revoker'] | null;
+          source: Database['public']['Enums']['attribution_source'];
+          updated_at: string;
+        };
+        Insert: {
+          attributed_at?: string;
+          clip_id: string;
+          confidence?: number | null;
+          created_at?: string;
+          id?: string;
+          jersey_number_at_match?: number | null;
+          profile_id: string;
+          revocation_note?: string | null;
+          revoked_at?: string | null;
+          revoked_by?:
+            | Database['public']['Enums']['attribution_revoker']
+            | null;
+          source?: Database['public']['Enums']['attribution_source'];
+          updated_at?: string;
+        };
+        Update: {
+          attributed_at?: string;
+          clip_id?: string;
+          confidence?: number | null;
+          created_at?: string;
+          id?: string;
+          jersey_number_at_match?: number | null;
+          profile_id?: string;
+          revocation_note?: string | null;
+          revoked_at?: string | null;
+          revoked_by?:
+            | Database['public']['Enums']['attribution_revoker']
+            | null;
+          source?: Database['public']['Enums']['attribution_source'];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'clip_attributions_clip_id_fkey';
+            columns: ['clip_id'];
+            isOneToOne: false;
+            referencedRelation: 'clips';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'clip_attributions_profile_id_fkey';
+            columns: ['profile_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      clips: {
+        Row: {
+          created_at: string;
+          deleted_at: string | null;
+          description: string | null;
+          id: string;
+          jersey_number_meta: number | null;
+          metadata: Json;
+          offset_end_ms: number;
+          offset_start_ms: number;
+          owner_org_id: string;
+          recording_id: string;
+          title: string | null;
+          type: Database['public']['Enums']['clip_type'];
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          deleted_at?: string | null;
+          description?: string | null;
+          id?: string;
+          jersey_number_meta?: number | null;
+          metadata?: Json;
+          offset_end_ms: number;
+          offset_start_ms: number;
+          owner_org_id: string;
+          recording_id: string;
+          title?: string | null;
+          type?: Database['public']['Enums']['clip_type'];
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          deleted_at?: string | null;
+          description?: string | null;
+          id?: string;
+          jersey_number_meta?: number | null;
+          metadata?: Json;
+          offset_end_ms?: number;
+          offset_start_ms?: number;
+          owner_org_id?: string;
+          recording_id?: string;
+          title?: string | null;
+          type?: Database['public']['Enums']['clip_type'];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'clips_owner_org_id_fkey';
+            columns: ['owner_org_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'clips_recording_id_fkey';
+            columns: ['recording_id'];
+            isOneToOne: false;
+            referencedRelation: 'playhub_match_recordings';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      coach_modules: {
+        Row: {
+          age_groups: string[];
+          coaching_philosophy: string | null;
+          created_at: string;
+          metadata: Json;
+          profile_variant_id: string;
+          qualifications: Json;
+          sports_coached: string[];
+          updated_at: string;
+        };
+        Insert: {
+          age_groups?: string[];
+          coaching_philosophy?: string | null;
+          created_at?: string;
+          metadata?: Json;
+          profile_variant_id: string;
+          qualifications?: Json;
+          sports_coached?: string[];
+          updated_at?: string;
+        };
+        Update: {
+          age_groups?: string[];
+          coaching_philosophy?: string | null;
+          created_at?: string;
+          metadata?: Json;
+          profile_variant_id?: string;
+          qualifications?: Json;
+          sports_coached?: string[];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'coach_modules_profile_variant_id_fkey';
+            columns: ['profile_variant_id'];
+            isOneToOne: true;
             referencedRelation: 'profile_variants';
             referencedColumns: ['id'];
           },
@@ -446,6 +559,137 @@ export type Database = {
           },
         ];
       };
+      match_jersey_maps: {
+        Row: {
+          club_org_id: string;
+          created_at: string;
+          id: string;
+          jersey_number: number;
+          locked_at: string | null;
+          mapped_at: string;
+          mapped_by_membership_id: string | null;
+          notes: string | null;
+          profile_id: string | null;
+          recording_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          club_org_id: string;
+          created_at?: string;
+          id?: string;
+          jersey_number: number;
+          locked_at?: string | null;
+          mapped_at?: string;
+          mapped_by_membership_id?: string | null;
+          notes?: string | null;
+          profile_id?: string | null;
+          recording_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          club_org_id?: string;
+          created_at?: string;
+          id?: string;
+          jersey_number?: number;
+          locked_at?: string | null;
+          mapped_at?: string;
+          mapped_by_membership_id?: string | null;
+          notes?: string | null;
+          profile_id?: string | null;
+          recording_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'match_jersey_maps_club_org_id_fkey';
+            columns: ['club_org_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'match_jersey_maps_mapped_by_membership_id_fkey';
+            columns: ['mapped_by_membership_id'];
+            isOneToOne: false;
+            referencedRelation: 'organization_members';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'match_jersey_maps_profile_id_fkey';
+            columns: ['profile_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'match_jersey_maps_recording_id_fkey';
+            columns: ['recording_id'];
+            isOneToOne: false;
+            referencedRelation: 'playhub_match_recordings';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      newsletter_subscribers: {
+        Row: {
+          confirmation_sent_at: string | null;
+          confirmation_token: string | null;
+          confirmed_at: string | null;
+          created_at: string;
+          email: string;
+          id: string;
+          ip_hash: string | null;
+          metadata: Json;
+          resend_contact_id: string | null;
+          resend_sync_attempts: number;
+          resend_synced_at: string | null;
+          role: string | null;
+          source: string | null;
+          status: string;
+          unsubscribed_at: string | null;
+          updated_at: string;
+          user_agent: string | null;
+        };
+        Insert: {
+          confirmation_sent_at?: string | null;
+          confirmation_token?: string | null;
+          confirmed_at?: string | null;
+          created_at?: string;
+          email: string;
+          id?: string;
+          ip_hash?: string | null;
+          metadata?: Json;
+          resend_contact_id?: string | null;
+          resend_sync_attempts?: number;
+          resend_synced_at?: string | null;
+          role?: string | null;
+          source?: string | null;
+          status?: string;
+          unsubscribed_at?: string | null;
+          updated_at?: string;
+          user_agent?: string | null;
+        };
+        Update: {
+          confirmation_sent_at?: string | null;
+          confirmation_token?: string | null;
+          confirmed_at?: string | null;
+          created_at?: string;
+          email?: string;
+          id?: string;
+          ip_hash?: string | null;
+          metadata?: Json;
+          resend_contact_id?: string | null;
+          resend_sync_attempts?: number;
+          resend_synced_at?: string | null;
+          role?: string | null;
+          source?: string | null;
+          status?: string;
+          unsubscribed_at?: string | null;
+          updated_at?: string;
+          user_agent?: string | null;
+        };
+        Relationships: [];
+      };
       organization_members: {
         Row: {
           contract_end: string | null;
@@ -516,6 +760,82 @@ export type Database = {
           },
         ];
       };
+      organization_venue_access: {
+        Row: {
+          billing_responsibility: string | null;
+          can_record: boolean | null;
+          can_stream: boolean | null;
+          created_at: string | null;
+          custom_billable_amount: number | null;
+          custom_currency: string | null;
+          default_graphic_package_id: string | null;
+          expires_at: string | null;
+          id: string;
+          is_active: boolean | null;
+          notes: string | null;
+          organization_id: string;
+          starts_at: string | null;
+          updated_at: string | null;
+          venue_organization_id: string;
+        };
+        Insert: {
+          billing_responsibility?: string | null;
+          can_record?: boolean | null;
+          can_stream?: boolean | null;
+          created_at?: string | null;
+          custom_billable_amount?: number | null;
+          custom_currency?: string | null;
+          default_graphic_package_id?: string | null;
+          expires_at?: string | null;
+          id?: string;
+          is_active?: boolean | null;
+          notes?: string | null;
+          organization_id: string;
+          starts_at?: string | null;
+          updated_at?: string | null;
+          venue_organization_id: string;
+        };
+        Update: {
+          billing_responsibility?: string | null;
+          can_record?: boolean | null;
+          can_stream?: boolean | null;
+          created_at?: string | null;
+          custom_billable_amount?: number | null;
+          custom_currency?: string | null;
+          default_graphic_package_id?: string | null;
+          expires_at?: string | null;
+          id?: string;
+          is_active?: boolean | null;
+          notes?: string | null;
+          organization_id?: string;
+          starts_at?: string | null;
+          updated_at?: string | null;
+          venue_organization_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'organization_venue_access_default_graphic_package_id_fkey';
+            columns: ['default_graphic_package_id'];
+            isOneToOne: false;
+            referencedRelation: 'playhub_graphic_packages';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'organization_venue_access_organization_id_fkey';
+            columns: ['organization_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'organization_venue_access_venue_organization_id_fkey';
+            columns: ['venue_organization_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       organizations: {
         Row: {
           contact_info: Json | null;
@@ -523,7 +843,12 @@ export type Database = {
           cover_image_url: string | null;
           created_at: string | null;
           created_by: string | null;
+          default_price_amount: number | null;
+          default_price_currency: string | null;
           description: string | null;
+          feature_graphic_packages: boolean | null;
+          feature_recordings: boolean | null;
+          feature_streaming: boolean | null;
           founded_year: number | null;
           id: string;
           is_active: boolean | null;
@@ -531,6 +856,7 @@ export type Database = {
           level: string | null;
           location: string | null;
           logo_url: string | null;
+          marketplace_enabled: boolean | null;
           member_count: number | null;
           name: string;
           parent_organization_id: string | null;
@@ -548,7 +874,12 @@ export type Database = {
           cover_image_url?: string | null;
           created_at?: string | null;
           created_by?: string | null;
+          default_price_amount?: number | null;
+          default_price_currency?: string | null;
           description?: string | null;
+          feature_graphic_packages?: boolean | null;
+          feature_recordings?: boolean | null;
+          feature_streaming?: boolean | null;
           founded_year?: number | null;
           id?: string;
           is_active?: boolean | null;
@@ -556,6 +887,7 @@ export type Database = {
           level?: string | null;
           location?: string | null;
           logo_url?: string | null;
+          marketplace_enabled?: boolean | null;
           member_count?: number | null;
           name: string;
           parent_organization_id?: string | null;
@@ -573,7 +905,12 @@ export type Database = {
           cover_image_url?: string | null;
           created_at?: string | null;
           created_by?: string | null;
+          default_price_amount?: number | null;
+          default_price_currency?: string | null;
           description?: string | null;
+          feature_graphic_packages?: boolean | null;
+          feature_recordings?: boolean | null;
+          feature_streaming?: boolean | null;
           founded_year?: number | null;
           id?: string;
           is_active?: boolean | null;
@@ -581,6 +918,7 @@ export type Database = {
           level?: string | null;
           location?: string | null;
           logo_url?: string | null;
+          marketplace_enabled?: boolean | null;
           member_count?: number | null;
           name?: string;
           parent_organization_id?: string | null;
@@ -609,38 +947,1598 @@ export type Database = {
           },
         ];
       };
-      playscanner_cache: {
+      playerdata_connections: {
         Row: {
-          cache_key: string;
-          city: string;
+          access_token: string;
           created_at: string | null;
-          date: string;
           expires_at: string;
           id: string;
-          metadata: Json | null;
-          slots: Json;
+          is_active: boolean | null;
+          refresh_token: string;
+          updated_at: string | null;
+          user_id: string;
         };
         Insert: {
-          cache_key: string;
-          city: string;
+          access_token: string;
           created_at?: string | null;
-          date: string;
           expires_at: string;
           id?: string;
-          metadata?: Json | null;
-          slots: Json;
+          is_active?: boolean | null;
+          refresh_token: string;
+          updated_at?: string | null;
+          user_id: string;
         };
         Update: {
-          cache_key?: string;
-          city?: string;
+          access_token?: string;
           created_at?: string | null;
-          date?: string;
           expires_at?: string;
           id?: string;
-          metadata?: Json | null;
-          slots?: Json;
+          is_active?: boolean | null;
+          refresh_token?: string;
+          updated_at?: string | null;
+          user_id?: string;
         };
         Relationships: [];
+      };
+      playhub_academy_config: {
+        Row: {
+          additional_stripe_product_ids: string[] | null;
+          club_slug: string;
+          created_at: string | null;
+          has_scholarships: boolean | null;
+          id: string;
+          is_active: boolean | null;
+          logo_url: string | null;
+          name: string;
+          organization_id: string | null;
+          stripe_product_id: string;
+          updated_at: string | null;
+          veo_club_slug: string | null;
+        };
+        Insert: {
+          additional_stripe_product_ids?: string[] | null;
+          club_slug: string;
+          created_at?: string | null;
+          has_scholarships?: boolean | null;
+          id?: string;
+          is_active?: boolean | null;
+          logo_url?: string | null;
+          name: string;
+          organization_id?: string | null;
+          stripe_product_id: string;
+          updated_at?: string | null;
+          veo_club_slug?: string | null;
+        };
+        Update: {
+          additional_stripe_product_ids?: string[] | null;
+          club_slug?: string;
+          created_at?: string | null;
+          has_scholarships?: boolean | null;
+          id?: string;
+          is_active?: boolean | null;
+          logo_url?: string | null;
+          name?: string;
+          organization_id?: string | null;
+          stripe_product_id?: string;
+          updated_at?: string | null;
+          veo_club_slug?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'playhub_academy_config_organization_id_fkey';
+            columns: ['organization_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      playhub_access_rights: {
+        Row: {
+          expires_at: string | null;
+          granted_at: string | null;
+          granted_by: string | null;
+          id: string;
+          invited_email: string | null;
+          is_active: boolean | null;
+          match_recording_id: string | null;
+          notes: string | null;
+          profile_id: string | null;
+          purchase_id: string | null;
+          revoked_at: string | null;
+          revoked_reason: string | null;
+          updated_at: string | null;
+          user_id: string | null;
+        };
+        Insert: {
+          expires_at?: string | null;
+          granted_at?: string | null;
+          granted_by?: string | null;
+          id?: string;
+          invited_email?: string | null;
+          is_active?: boolean | null;
+          match_recording_id?: string | null;
+          notes?: string | null;
+          profile_id?: string | null;
+          purchase_id?: string | null;
+          revoked_at?: string | null;
+          revoked_reason?: string | null;
+          updated_at?: string | null;
+          user_id?: string | null;
+        };
+        Update: {
+          expires_at?: string | null;
+          granted_at?: string | null;
+          granted_by?: string | null;
+          id?: string;
+          invited_email?: string | null;
+          is_active?: boolean | null;
+          match_recording_id?: string | null;
+          notes?: string | null;
+          profile_id?: string | null;
+          purchase_id?: string | null;
+          revoked_at?: string | null;
+          revoked_reason?: string | null;
+          updated_at?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'playhub_access_rights_match_recording_id_fkey';
+            columns: ['match_recording_id'];
+            isOneToOne: false;
+            referencedRelation: 'playhub_match_recordings';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'playhub_access_rights_profile_id_fkey';
+            columns: ['profile_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'playhub_access_rights_purchase_id_fkey';
+            columns: ['purchase_id'];
+            isOneToOne: false;
+            referencedRelation: 'playhub_purchases';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      playhub_audit_log: {
+        Row: {
+          action: string;
+          actor_user_id: string | null;
+          created_at: string;
+          id: string;
+          metadata: Json | null;
+          target_id: string | null;
+          target_organization_id: string | null;
+          target_recording_id: string | null;
+          target_type: string;
+          was_admin_override: boolean;
+        };
+        Insert: {
+          action: string;
+          actor_user_id?: string | null;
+          created_at?: string;
+          id?: string;
+          metadata?: Json | null;
+          target_id?: string | null;
+          target_organization_id?: string | null;
+          target_recording_id?: string | null;
+          target_type: string;
+          was_admin_override?: boolean;
+        };
+        Update: {
+          action?: string;
+          actor_user_id?: string | null;
+          created_at?: string;
+          id?: string;
+          metadata?: Json | null;
+          target_id?: string | null;
+          target_organization_id?: string | null;
+          target_recording_id?: string | null;
+          target_type?: string;
+          was_admin_override?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'playhub_audit_log_target_organization_id_fkey';
+            columns: ['target_organization_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'playhub_audit_log_target_recording_id_fkey';
+            columns: ['target_recording_id'];
+            isOneToOne: false;
+            referencedRelation: 'playhub_match_recordings';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      playhub_crop_feedback: {
+        Row: {
+          action: string;
+          created_at: string;
+          id: string;
+          job_id: string;
+          keyframes_after: Json | null;
+          keyframes_before: Json | null;
+          note: string | null;
+          user_id: string;
+        };
+        Insert: {
+          action: string;
+          created_at?: string;
+          id?: string;
+          job_id: string;
+          keyframes_after?: Json | null;
+          keyframes_before?: Json | null;
+          note?: string | null;
+          user_id: string;
+        };
+        Update: {
+          action?: string;
+          created_at?: string;
+          id?: string;
+          job_id?: string;
+          keyframes_after?: Json | null;
+          keyframes_before?: Json | null;
+          note?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'playhub_crop_feedback_job_id_fkey';
+            columns: ['job_id'];
+            isOneToOne: false;
+            referencedRelation: 'playhub_crop_jobs';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      playhub_crop_jobs: {
+        Row: {
+          codec_fingerprint: Json | null;
+          created_at: string;
+          error_code: string | null;
+          error_message: string | null;
+          id: string;
+          modal_app_version: string | null;
+          modal_inference_ms: number | null;
+          output_storage_path: string | null;
+          recording_id: string | null;
+          scene_changes: number[];
+          status: string;
+          updated_at: string;
+          user_id: string;
+          video_url: string | null;
+        };
+        Insert: {
+          codec_fingerprint?: Json | null;
+          created_at?: string;
+          error_code?: string | null;
+          error_message?: string | null;
+          id?: string;
+          modal_app_version?: string | null;
+          modal_inference_ms?: number | null;
+          output_storage_path?: string | null;
+          recording_id?: string | null;
+          scene_changes?: number[];
+          status?: string;
+          updated_at?: string;
+          user_id: string;
+          video_url?: string | null;
+        };
+        Update: {
+          codec_fingerprint?: Json | null;
+          created_at?: string;
+          error_code?: string | null;
+          error_message?: string | null;
+          id?: string;
+          modal_app_version?: string | null;
+          modal_inference_ms?: number | null;
+          output_storage_path?: string | null;
+          recording_id?: string | null;
+          scene_changes?: number[];
+          status?: string;
+          updated_at?: string;
+          user_id?: string;
+          video_url?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'playhub_crop_jobs_recording_id_fkey';
+            columns: ['recording_id'];
+            isOneToOne: false;
+            referencedRelation: 'playhub_match_recordings';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      playhub_crop_keyframes: {
+        Row: {
+          confidence: number;
+          created_at: string;
+          edited_at: string | null;
+          edited_by_user: boolean;
+          id: string;
+          job_id: string;
+          source: string;
+          time_seconds: number;
+          x_pixels: number;
+        };
+        Insert: {
+          confidence?: number;
+          created_at?: string;
+          edited_at?: string | null;
+          edited_by_user?: boolean;
+          id?: string;
+          job_id: string;
+          source: string;
+          time_seconds: number;
+          x_pixels: number;
+        };
+        Update: {
+          confidence?: number;
+          created_at?: string;
+          edited_at?: string | null;
+          edited_by_user?: boolean;
+          id?: string;
+          job_id?: string;
+          source?: string;
+          time_seconds?: number;
+          x_pixels?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'playhub_crop_keyframes_job_id_fkey';
+            columns: ['job_id'];
+            isOneToOne: false;
+            referencedRelation: 'playhub_crop_jobs';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      playhub_feature_flags: {
+        Row: {
+          enabled: boolean;
+          key: string;
+          notes: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          enabled?: boolean;
+          key: string;
+          notes?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          enabled?: boolean;
+          key?: string;
+          notes?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
+      playhub_graphic_packages: {
+        Row: {
+          created_at: string | null;
+          id: string;
+          is_default: boolean | null;
+          logo_position: string | null;
+          logo_scale: number | null;
+          logo_url: string | null;
+          logo_x: number | null;
+          logo_y: number | null;
+          name: string;
+          organization_id: string;
+          spiideo_graphic_package_id: string | null;
+          sponsor_logo_url: string | null;
+          sponsor_position: string | null;
+          sponsor_scale: number | null;
+          sponsor_x: number | null;
+          sponsor_y: number | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          created_at?: string | null;
+          id?: string;
+          is_default?: boolean | null;
+          logo_position?: string | null;
+          logo_scale?: number | null;
+          logo_url?: string | null;
+          logo_x?: number | null;
+          logo_y?: number | null;
+          name: string;
+          organization_id: string;
+          spiideo_graphic_package_id?: string | null;
+          sponsor_logo_url?: string | null;
+          sponsor_position?: string | null;
+          sponsor_scale?: number | null;
+          sponsor_x?: number | null;
+          sponsor_y?: number | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          created_at?: string | null;
+          id?: string;
+          is_default?: boolean | null;
+          logo_position?: string | null;
+          logo_scale?: number | null;
+          logo_url?: string | null;
+          logo_x?: number | null;
+          logo_y?: number | null;
+          name?: string;
+          organization_id?: string;
+          spiideo_graphic_package_id?: string | null;
+          sponsor_logo_url?: string | null;
+          sponsor_position?: string | null;
+          sponsor_scale?: number | null;
+          sponsor_x?: number | null;
+          sponsor_y?: number | null;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'playhub_graphic_packages_organization_id_fkey';
+            columns: ['organization_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      playhub_invoice_line_items: {
+        Row: {
+          ambassador_fee: number;
+          billable_amount: number;
+          collected_by: string;
+          created_at: string;
+          currency: string;
+          duration_seconds: number;
+          fixed_cost_eur_per_hour: number | null;
+          fixed_cost_local: number;
+          fx_rate: number | null;
+          id: string;
+          invoice_id: string;
+          recording_id: string | null;
+          recording_match_date: string | null;
+          recording_title: string | null;
+        };
+        Insert: {
+          ambassador_fee: number;
+          billable_amount: number;
+          collected_by: string;
+          created_at?: string;
+          currency: string;
+          duration_seconds: number;
+          fixed_cost_eur_per_hour?: number | null;
+          fixed_cost_local: number;
+          fx_rate?: number | null;
+          id?: string;
+          invoice_id: string;
+          recording_id?: string | null;
+          recording_match_date?: string | null;
+          recording_title?: string | null;
+        };
+        Update: {
+          ambassador_fee?: number;
+          billable_amount?: number;
+          collected_by?: string;
+          created_at?: string;
+          currency?: string;
+          duration_seconds?: number;
+          fixed_cost_eur_per_hour?: number | null;
+          fixed_cost_local?: number;
+          fx_rate?: number | null;
+          id?: string;
+          invoice_id?: string;
+          recording_id?: string | null;
+          recording_match_date?: string | null;
+          recording_title?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'playhub_invoice_line_items_invoice_id_fkey';
+            columns: ['invoice_id'];
+            isOneToOne: false;
+            referencedRelation: 'playhub_venue_invoices';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'playhub_invoice_line_items_recording_id_fkey';
+            columns: ['recording_id'];
+            isOneToOne: false;
+            referencedRelation: 'playhub_match_recordings';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      playhub_live_streams: {
+        Row: {
+          access_type: string;
+          actual_end: string | null;
+          actual_start: string | null;
+          away_team: string | null;
+          cloudfront_distribution_id: string | null;
+          competition: string | null;
+          created_at: string | null;
+          created_by: string | null;
+          currency: string | null;
+          description: string | null;
+          enable_recording: boolean | null;
+          home_team: string | null;
+          id: string;
+          is_unlocked: boolean | null;
+          medialive_channel_id: string | null;
+          medialive_input_id: string | null;
+          mediapackage_channel_id: string | null;
+          mediapackage_endpoint_id: string | null;
+          organization_id: string | null;
+          playback_url: string | null;
+          price_amount: number | null;
+          recording_id: string | null;
+          recording_s3_bucket: string | null;
+          recording_s3_prefix: string | null;
+          rtmp_stream_key: string | null;
+          rtmp_url: string | null;
+          scheduled_end: string | null;
+          scheduled_start: string;
+          spiideo_game_id: string | null;
+          sport_id: string | null;
+          status: string | null;
+          stripe_price_id: string | null;
+          stripe_product_id: string | null;
+          thumbnail_url: string | null;
+          title: string;
+          unlocked_at: string | null;
+          unlocked_by: string | null;
+          updated_at: string | null;
+          venue: string | null;
+        };
+        Insert: {
+          access_type?: string;
+          actual_end?: string | null;
+          actual_start?: string | null;
+          away_team?: string | null;
+          cloudfront_distribution_id?: string | null;
+          competition?: string | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          currency?: string | null;
+          description?: string | null;
+          enable_recording?: boolean | null;
+          home_team?: string | null;
+          id?: string;
+          is_unlocked?: boolean | null;
+          medialive_channel_id?: string | null;
+          medialive_input_id?: string | null;
+          mediapackage_channel_id?: string | null;
+          mediapackage_endpoint_id?: string | null;
+          organization_id?: string | null;
+          playback_url?: string | null;
+          price_amount?: number | null;
+          recording_id?: string | null;
+          recording_s3_bucket?: string | null;
+          recording_s3_prefix?: string | null;
+          rtmp_stream_key?: string | null;
+          rtmp_url?: string | null;
+          scheduled_end?: string | null;
+          scheduled_start: string;
+          spiideo_game_id?: string | null;
+          sport_id?: string | null;
+          status?: string | null;
+          stripe_price_id?: string | null;
+          stripe_product_id?: string | null;
+          thumbnail_url?: string | null;
+          title: string;
+          unlocked_at?: string | null;
+          unlocked_by?: string | null;
+          updated_at?: string | null;
+          venue?: string | null;
+        };
+        Update: {
+          access_type?: string;
+          actual_end?: string | null;
+          actual_start?: string | null;
+          away_team?: string | null;
+          cloudfront_distribution_id?: string | null;
+          competition?: string | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          currency?: string | null;
+          description?: string | null;
+          enable_recording?: boolean | null;
+          home_team?: string | null;
+          id?: string;
+          is_unlocked?: boolean | null;
+          medialive_channel_id?: string | null;
+          medialive_input_id?: string | null;
+          mediapackage_channel_id?: string | null;
+          mediapackage_endpoint_id?: string | null;
+          organization_id?: string | null;
+          playback_url?: string | null;
+          price_amount?: number | null;
+          recording_id?: string | null;
+          recording_s3_bucket?: string | null;
+          recording_s3_prefix?: string | null;
+          rtmp_stream_key?: string | null;
+          rtmp_url?: string | null;
+          scheduled_end?: string | null;
+          scheduled_start?: string;
+          spiideo_game_id?: string | null;
+          sport_id?: string | null;
+          status?: string | null;
+          stripe_price_id?: string | null;
+          stripe_product_id?: string | null;
+          thumbnail_url?: string | null;
+          title?: string;
+          unlocked_at?: string | null;
+          unlocked_by?: string | null;
+          updated_at?: string | null;
+          venue?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'playhub_live_streams_organization_id_fkey';
+            columns: ['organization_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'playhub_live_streams_sport_id_fkey';
+            columns: ['sport_id'];
+            isOneToOne: false;
+            referencedRelation: 'sports';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      playhub_match_recordings: {
+        Row: {
+          access_method: string | null;
+          access_type: string | null;
+          away_team: string;
+          billable_amount: number | null;
+          billable_currency: string | null;
+          collected_by: string | null;
+          competition: string | null;
+          content_type: string | null;
+          created_at: string | null;
+          created_by: string | null;
+          currency: string | null;
+          description: string | null;
+          duration_seconds: number | null;
+          external_provider_id: string | null;
+          external_url: string | null;
+          file_size_bytes: number | null;
+          graphic_package_id: string | null;
+          home_team: string;
+          id: string;
+          is_billable: boolean | null;
+          last_sync_error: string | null;
+          marketplace_enabled: boolean | null;
+          match_date: string;
+          organization_id: string | null;
+          pitch_name: string | null;
+          preview_url: string | null;
+          price_amount: number | null;
+          published_at: string | null;
+          s3_bucket: string | null;
+          s3_key: string | null;
+          share_token: string | null;
+          spiideo_game_id: string | null;
+          spiideo_production_id: string | null;
+          sport_id: string | null;
+          status: string | null;
+          stripe_payment_intent_id: string | null;
+          stripe_price_id: string | null;
+          stripe_product_id: string | null;
+          sync_attempts: number | null;
+          thumbnail_url: string | null;
+          title: string;
+          transferred_at: string | null;
+          updated_at: string | null;
+          venue: string | null;
+          venue_organization_id: string;
+          video_url: string | null;
+        };
+        Insert: {
+          access_method?: string | null;
+          access_type?: string | null;
+          away_team: string;
+          billable_amount?: number | null;
+          billable_currency?: string | null;
+          collected_by?: string | null;
+          competition?: string | null;
+          content_type?: string | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          currency?: string | null;
+          description?: string | null;
+          duration_seconds?: number | null;
+          external_provider_id?: string | null;
+          external_url?: string | null;
+          file_size_bytes?: number | null;
+          graphic_package_id?: string | null;
+          home_team: string;
+          id?: string;
+          is_billable?: boolean | null;
+          last_sync_error?: string | null;
+          marketplace_enabled?: boolean | null;
+          match_date: string;
+          organization_id?: string | null;
+          pitch_name?: string | null;
+          preview_url?: string | null;
+          price_amount?: number | null;
+          published_at?: string | null;
+          s3_bucket?: string | null;
+          s3_key?: string | null;
+          share_token?: string | null;
+          spiideo_game_id?: string | null;
+          spiideo_production_id?: string | null;
+          sport_id?: string | null;
+          status?: string | null;
+          stripe_payment_intent_id?: string | null;
+          stripe_price_id?: string | null;
+          stripe_product_id?: string | null;
+          sync_attempts?: number | null;
+          thumbnail_url?: string | null;
+          title: string;
+          transferred_at?: string | null;
+          updated_at?: string | null;
+          venue?: string | null;
+          venue_organization_id: string;
+          video_url?: string | null;
+        };
+        Update: {
+          access_method?: string | null;
+          access_type?: string | null;
+          away_team?: string;
+          billable_amount?: number | null;
+          billable_currency?: string | null;
+          collected_by?: string | null;
+          competition?: string | null;
+          content_type?: string | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          currency?: string | null;
+          description?: string | null;
+          duration_seconds?: number | null;
+          external_provider_id?: string | null;
+          external_url?: string | null;
+          file_size_bytes?: number | null;
+          graphic_package_id?: string | null;
+          home_team?: string;
+          id?: string;
+          is_billable?: boolean | null;
+          last_sync_error?: string | null;
+          marketplace_enabled?: boolean | null;
+          match_date?: string;
+          organization_id?: string | null;
+          pitch_name?: string | null;
+          preview_url?: string | null;
+          price_amount?: number | null;
+          published_at?: string | null;
+          s3_bucket?: string | null;
+          s3_key?: string | null;
+          share_token?: string | null;
+          spiideo_game_id?: string | null;
+          spiideo_production_id?: string | null;
+          sport_id?: string | null;
+          status?: string | null;
+          stripe_payment_intent_id?: string | null;
+          stripe_price_id?: string | null;
+          stripe_product_id?: string | null;
+          sync_attempts?: number | null;
+          thumbnail_url?: string | null;
+          title?: string;
+          transferred_at?: string | null;
+          updated_at?: string | null;
+          venue?: string | null;
+          venue_organization_id?: string;
+          video_url?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'playhub_match_recordings_graphic_package_id_fkey';
+            columns: ['graphic_package_id'];
+            isOneToOne: false;
+            referencedRelation: 'playhub_graphic_packages';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'playhub_match_recordings_organization_id_fkey';
+            columns: ['organization_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'playhub_match_recordings_sport_id_fkey';
+            columns: ['sport_id'];
+            isOneToOne: false;
+            referencedRelation: 'sports';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'playhub_match_recordings_venue_organization_id_fkey';
+            columns: ['venue_organization_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      playhub_pending_admin_invites: {
+        Row: {
+          id: string;
+          invited_at: string | null;
+          invited_by: string | null;
+          invited_email: string;
+          organization_id: string;
+          role: string;
+        };
+        Insert: {
+          id?: string;
+          invited_at?: string | null;
+          invited_by?: string | null;
+          invited_email: string;
+          organization_id: string;
+          role?: string;
+        };
+        Update: {
+          id?: string;
+          invited_at?: string | null;
+          invited_by?: string | null;
+          invited_email?: string;
+          organization_id?: string;
+          role?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'playhub_pending_admin_invites_organization_id_fkey';
+            columns: ['organization_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      playhub_products: {
+        Row: {
+          access_duration_days: number | null;
+          available_from: string | null;
+          available_until: string | null;
+          created_at: string | null;
+          currency: string | null;
+          description: string | null;
+          id: string;
+          is_available: boolean | null;
+          match_recording_id: string | null;
+          name: string;
+          price_amount: number;
+          stripe_price_id: string | null;
+          stripe_product_id: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          access_duration_days?: number | null;
+          available_from?: string | null;
+          available_until?: string | null;
+          created_at?: string | null;
+          currency?: string | null;
+          description?: string | null;
+          id?: string;
+          is_available?: boolean | null;
+          match_recording_id?: string | null;
+          name: string;
+          price_amount: number;
+          stripe_price_id?: string | null;
+          stripe_product_id?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          access_duration_days?: number | null;
+          available_from?: string | null;
+          available_until?: string | null;
+          created_at?: string | null;
+          currency?: string | null;
+          description?: string | null;
+          id?: string;
+          is_available?: boolean | null;
+          match_recording_id?: string | null;
+          name?: string;
+          price_amount?: number;
+          stripe_price_id?: string | null;
+          stripe_product_id?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'playhub_products_match_recording_id_fkey';
+            columns: ['match_recording_id'];
+            isOneToOne: false;
+            referencedRelation: 'playhub_match_recordings';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      playhub_purchases: {
+        Row: {
+          amount_paid: number;
+          completed_at: string | null;
+          currency: string | null;
+          customer_email: string | null;
+          customer_name: string | null;
+          id: string;
+          match_recording_id: string | null;
+          organization_id: string | null;
+          product_id: string | null;
+          profile_id: string | null;
+          purchased_at: string | null;
+          refunded_at: string | null;
+          status: string | null;
+          stripe_checkout_session_id: string | null;
+          stripe_payment_intent_id: string | null;
+          user_id: string | null;
+        };
+        Insert: {
+          amount_paid: number;
+          completed_at?: string | null;
+          currency?: string | null;
+          customer_email?: string | null;
+          customer_name?: string | null;
+          id?: string;
+          match_recording_id?: string | null;
+          organization_id?: string | null;
+          product_id?: string | null;
+          profile_id?: string | null;
+          purchased_at?: string | null;
+          refunded_at?: string | null;
+          status?: string | null;
+          stripe_checkout_session_id?: string | null;
+          stripe_payment_intent_id?: string | null;
+          user_id?: string | null;
+        };
+        Update: {
+          amount_paid?: number;
+          completed_at?: string | null;
+          currency?: string | null;
+          customer_email?: string | null;
+          customer_name?: string | null;
+          id?: string;
+          match_recording_id?: string | null;
+          organization_id?: string | null;
+          product_id?: string | null;
+          profile_id?: string | null;
+          purchased_at?: string | null;
+          refunded_at?: string | null;
+          status?: string | null;
+          stripe_checkout_session_id?: string | null;
+          stripe_payment_intent_id?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'playhub_purchases_match_recording_id_fkey';
+            columns: ['match_recording_id'];
+            isOneToOne: false;
+            referencedRelation: 'playhub_match_recordings';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'playhub_purchases_organization_id_fkey';
+            columns: ['organization_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'playhub_purchases_product_id_fkey';
+            columns: ['product_id'];
+            isOneToOne: false;
+            referencedRelation: 'playhub_products';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'playhub_purchases_profile_id_fkey';
+            columns: ['profile_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      playhub_recording_events: {
+        Row: {
+          confidence_score: number | null;
+          created_at: string | null;
+          created_by: string;
+          event_type: string;
+          id: string;
+          label: string | null;
+          match_recording_id: string;
+          source: string;
+          team: string | null;
+          timestamp_seconds: number;
+          updated_at: string | null;
+          visibility: string;
+        };
+        Insert: {
+          confidence_score?: number | null;
+          created_at?: string | null;
+          created_by: string;
+          event_type: string;
+          id?: string;
+          label?: string | null;
+          match_recording_id: string;
+          source?: string;
+          team?: string | null;
+          timestamp_seconds: number;
+          updated_at?: string | null;
+          visibility?: string;
+        };
+        Update: {
+          confidence_score?: number | null;
+          created_at?: string | null;
+          created_by?: string;
+          event_type?: string;
+          id?: string;
+          label?: string | null;
+          match_recording_id?: string;
+          source?: string;
+          team?: string | null;
+          timestamp_seconds?: number;
+          updated_at?: string | null;
+          visibility?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'playhub_recording_events_match_recording_id_fkey';
+            columns: ['match_recording_id'];
+            isOneToOne: false;
+            referencedRelation: 'playhub_match_recordings';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      playhub_scene_venue_mapping: {
+        Row: {
+          created_at: string | null;
+          organization_id: string | null;
+          scene_id: string;
+          scene_name: string | null;
+        };
+        Insert: {
+          created_at?: string | null;
+          organization_id?: string | null;
+          scene_id: string;
+          scene_name?: string | null;
+        };
+        Update: {
+          created_at?: string | null;
+          organization_id?: string | null;
+          scene_id?: string;
+          scene_name?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'playhub_scene_venue_mapping_organization_id_fkey';
+            columns: ['organization_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      playhub_stream_access: {
+        Row: {
+          access_source: string;
+          amount_paid: number | null;
+          expires_at: string | null;
+          granted_at: string | null;
+          id: string;
+          is_active: boolean | null;
+          stream_id: string;
+          stripe_payment_intent_id: string | null;
+          user_id: string;
+        };
+        Insert: {
+          access_source: string;
+          amount_paid?: number | null;
+          expires_at?: string | null;
+          granted_at?: string | null;
+          id?: string;
+          is_active?: boolean | null;
+          stream_id: string;
+          stripe_payment_intent_id?: string | null;
+          user_id: string;
+        };
+        Update: {
+          access_source?: string;
+          amount_paid?: number | null;
+          expires_at?: string | null;
+          granted_at?: string | null;
+          id?: string;
+          is_active?: boolean | null;
+          stream_id?: string;
+          stripe_payment_intent_id?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'playhub_stream_access_stream_id_fkey';
+            columns: ['stream_id'];
+            isOneToOne: false;
+            referencedRelation: 'playhub_live_streams';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      playhub_venue_billing_config: {
+        Row: {
+          ambassador_pct: number | null;
+          billing_model: string | null;
+          booking_durations: number[] | null;
+          booking_enabled: boolean | null;
+          created_at: string | null;
+          currency: string | null;
+          daily_recording_target: number | null;
+          default_billable_amount: number | null;
+          default_price_amount: number | null;
+          default_price_currency: string | null;
+          fixed_cost_eur: number | null;
+          fixed_cost_per_recording: number | null;
+          id: string;
+          is_active: boolean | null;
+          marketplace_enabled: boolean | null;
+          marketplace_revenue_split_pct: number | null;
+          media_pack: Json | null;
+          organization_id: string;
+          stripe_customer_id: string | null;
+          updated_at: string | null;
+          venue_profit_share_pct: number | null;
+        };
+        Insert: {
+          ambassador_pct?: number | null;
+          billing_model?: string | null;
+          booking_durations?: number[] | null;
+          booking_enabled?: boolean | null;
+          created_at?: string | null;
+          currency?: string | null;
+          daily_recording_target?: number | null;
+          default_billable_amount?: number | null;
+          default_price_amount?: number | null;
+          default_price_currency?: string | null;
+          fixed_cost_eur?: number | null;
+          fixed_cost_per_recording?: number | null;
+          id?: string;
+          is_active?: boolean | null;
+          marketplace_enabled?: boolean | null;
+          marketplace_revenue_split_pct?: number | null;
+          media_pack?: Json | null;
+          organization_id: string;
+          stripe_customer_id?: string | null;
+          updated_at?: string | null;
+          venue_profit_share_pct?: number | null;
+        };
+        Update: {
+          ambassador_pct?: number | null;
+          billing_model?: string | null;
+          booking_durations?: number[] | null;
+          booking_enabled?: boolean | null;
+          created_at?: string | null;
+          currency?: string | null;
+          daily_recording_target?: number | null;
+          default_billable_amount?: number | null;
+          default_price_amount?: number | null;
+          default_price_currency?: string | null;
+          fixed_cost_eur?: number | null;
+          fixed_cost_per_recording?: number | null;
+          id?: string;
+          is_active?: boolean | null;
+          marketplace_enabled?: boolean | null;
+          marketplace_revenue_split_pct?: number | null;
+          media_pack?: Json | null;
+          organization_id?: string;
+          stripe_customer_id?: string | null;
+          updated_at?: string | null;
+          venue_profit_share_pct?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'playhub_venue_billing_config_organization_id_fkey';
+            columns: ['organization_id'];
+            isOneToOne: true;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      playhub_venue_invoices: {
+        Row: {
+          created_at: string | null;
+          currency: string | null;
+          id: string;
+          line_items_count: number | null;
+          organization_id: string;
+          period_end: string;
+          period_start: string;
+          status: string | null;
+          stripe_invoice_id: string | null;
+          total_amount: number;
+          updated_at: string | null;
+        };
+        Insert: {
+          created_at?: string | null;
+          currency?: string | null;
+          id?: string;
+          line_items_count?: number | null;
+          organization_id: string;
+          period_end: string;
+          period_start: string;
+          status?: string | null;
+          stripe_invoice_id?: string | null;
+          total_amount?: number;
+          updated_at?: string | null;
+        };
+        Update: {
+          created_at?: string | null;
+          currency?: string | null;
+          id?: string;
+          line_items_count?: number | null;
+          organization_id?: string;
+          period_end?: string;
+          period_start?: string;
+          status?: string | null;
+          stripe_invoice_id?: string | null;
+          total_amount?: number;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'playhub_venue_invoices_organization_id_fkey';
+            columns: ['organization_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      playhub_veo_auth_tokens: {
+        Row: {
+          bearer_token: string;
+          captured_at: string;
+          created_by: string | null;
+          csrf_token: string;
+          expires_at: string;
+          id: string;
+        };
+        Insert: {
+          bearer_token: string;
+          captured_at?: string;
+          created_by?: string | null;
+          csrf_token: string;
+          expires_at?: string;
+          id?: string;
+        };
+        Update: {
+          bearer_token?: string;
+          captured_at?: string;
+          created_by?: string | null;
+          csrf_token?: string;
+          expires_at?: string;
+          id?: string;
+        };
+        Relationships: [];
+      };
+      playhub_veo_clubs: {
+        Row: {
+          club_slug: string;
+          created_at: string | null;
+          id: string;
+          last_synced_at: string | null;
+          name: string;
+          sync_error: string | null;
+          sync_status: string | null;
+          team_count: number | null;
+          updated_at: string | null;
+          veo_club_id: string | null;
+          veo_club_slug: string;
+        };
+        Insert: {
+          club_slug: string;
+          created_at?: string | null;
+          id?: string;
+          last_synced_at?: string | null;
+          name: string;
+          sync_error?: string | null;
+          sync_status?: string | null;
+          team_count?: number | null;
+          updated_at?: string | null;
+          veo_club_id?: string | null;
+          veo_club_slug: string;
+        };
+        Update: {
+          club_slug?: string;
+          created_at?: string | null;
+          id?: string;
+          last_synced_at?: string | null;
+          name?: string;
+          sync_error?: string | null;
+          sync_status?: string | null;
+          team_count?: number | null;
+          updated_at?: string | null;
+          veo_club_id?: string | null;
+          veo_club_slug?: string;
+        };
+        Relationships: [];
+      };
+      playhub_veo_exceptions: {
+        Row: {
+          added_by: string | null;
+          club_slug: string;
+          created_at: string | null;
+          email: string;
+          id: string;
+          reason: string | null;
+        };
+        Insert: {
+          added_by?: string | null;
+          club_slug: string;
+          created_at?: string | null;
+          email: string;
+          id?: string;
+          reason?: string | null;
+        };
+        Update: {
+          added_by?: string | null;
+          club_slug?: string;
+          created_at?: string | null;
+          email?: string;
+          id?: string;
+          reason?: string | null;
+        };
+        Relationships: [];
+      };
+      playhub_veo_match_content_cache: {
+        Row: {
+          highlights: Json | null;
+          id: string;
+          is_processing: boolean | null;
+          last_fetched_at: string | null;
+          match_slug: string;
+          stats: Json | null;
+          videos: Json | null;
+        };
+        Insert: {
+          highlights?: Json | null;
+          id?: string;
+          is_processing?: boolean | null;
+          last_fetched_at?: string | null;
+          match_slug: string;
+          stats?: Json | null;
+          videos?: Json | null;
+        };
+        Update: {
+          highlights?: Json | null;
+          id?: string;
+          is_processing?: boolean | null;
+          last_fetched_at?: string | null;
+          match_slug?: string;
+          stats?: Json | null;
+          videos?: Json | null;
+        };
+        Relationships: [];
+      };
+      playhub_veo_members: {
+        Row: {
+          created_at: string | null;
+          email: string | null;
+          first_seen_at: string | null;
+          id: string;
+          last_seen_at: string | null;
+          name: string | null;
+          permission_role: string | null;
+          status: string | null;
+          updated_at: string | null;
+          veo_club_slug: string;
+          veo_member_id: string;
+          veo_team_slug: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          email?: string | null;
+          first_seen_at?: string | null;
+          id?: string;
+          last_seen_at?: string | null;
+          name?: string | null;
+          permission_role?: string | null;
+          status?: string | null;
+          updated_at?: string | null;
+          veo_club_slug: string;
+          veo_member_id: string;
+          veo_team_slug: string;
+        };
+        Update: {
+          created_at?: string | null;
+          email?: string | null;
+          first_seen_at?: string | null;
+          id?: string;
+          last_seen_at?: string | null;
+          name?: string | null;
+          permission_role?: string | null;
+          status?: string | null;
+          updated_at?: string | null;
+          veo_club_slug?: string;
+          veo_member_id?: string;
+          veo_team_slug?: string;
+        };
+        Relationships: [];
+      };
+      playhub_veo_recordings_cache: {
+        Row: {
+          away_score: number | null;
+          away_team: string | null;
+          club_slug: string;
+          duration: number | null;
+          home_score: number | null;
+          home_team: string | null;
+          id: string;
+          last_synced_at: string | null;
+          match_date: string | null;
+          match_slug: string;
+          privacy: string | null;
+          processing_status: string | null;
+          team: string | null;
+          thumbnail: string | null;
+          title: string | null;
+          uuid: string | null;
+          veo_club_slug: string;
+        };
+        Insert: {
+          away_score?: number | null;
+          away_team?: string | null;
+          club_slug: string;
+          duration?: number | null;
+          home_score?: number | null;
+          home_team?: string | null;
+          id?: string;
+          last_synced_at?: string | null;
+          match_date?: string | null;
+          match_slug: string;
+          privacy?: string | null;
+          processing_status?: string | null;
+          team?: string | null;
+          thumbnail?: string | null;
+          title?: string | null;
+          uuid?: string | null;
+          veo_club_slug: string;
+        };
+        Update: {
+          away_score?: number | null;
+          away_team?: string | null;
+          club_slug?: string;
+          duration?: number | null;
+          home_score?: number | null;
+          home_team?: string | null;
+          id?: string;
+          last_synced_at?: string | null;
+          match_date?: string | null;
+          match_slug?: string;
+          privacy?: string | null;
+          processing_status?: string | null;
+          team?: string | null;
+          thumbnail?: string | null;
+          title?: string | null;
+          uuid?: string | null;
+          veo_club_slug?: string;
+        };
+        Relationships: [];
+      };
+      playhub_veo_teams: {
+        Row: {
+          created_at: string | null;
+          id: string;
+          member_count: number | null;
+          name: string;
+          updated_at: string | null;
+          veo_club_slug: string;
+          veo_team_id: string | null;
+          veo_team_slug: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          id?: string;
+          member_count?: number | null;
+          name: string;
+          updated_at?: string | null;
+          veo_club_slug: string;
+          veo_team_id?: string | null;
+          veo_team_slug: string;
+        };
+        Update: {
+          created_at?: string | null;
+          id?: string;
+          member_count?: number | null;
+          name?: string;
+          updated_at?: string | null;
+          veo_club_slug?: string;
+          veo_team_id?: string | null;
+          veo_team_slug?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'playhub_veo_teams_veo_club_slug_fkey';
+            columns: ['veo_club_slug'];
+            isOneToOne: false;
+            referencedRelation: 'playhub_veo_clubs';
+            referencedColumns: ['veo_club_slug'];
+          },
+        ];
+      };
+      playhub_view_history: {
+        Row: {
+          browser: string | null;
+          completed_at: string | null;
+          completion_percentage: number | null;
+          device_type: string | null;
+          id: string;
+          last_position_at: string | null;
+          match_recording_id: string | null;
+          session_id: string | null;
+          started_at: string | null;
+          total_duration_seconds: number | null;
+          user_id: string | null;
+          watched_duration_seconds: number | null;
+        };
+        Insert: {
+          browser?: string | null;
+          completed_at?: string | null;
+          completion_percentage?: number | null;
+          device_type?: string | null;
+          id?: string;
+          last_position_at?: string | null;
+          match_recording_id?: string | null;
+          session_id?: string | null;
+          started_at?: string | null;
+          total_duration_seconds?: number | null;
+          user_id?: string | null;
+          watched_duration_seconds?: number | null;
+        };
+        Update: {
+          browser?: string | null;
+          completed_at?: string | null;
+          completion_percentage?: number | null;
+          device_type?: string | null;
+          id?: string;
+          last_position_at?: string | null;
+          match_recording_id?: string | null;
+          session_id?: string | null;
+          started_at?: string | null;
+          total_duration_seconds?: number | null;
+          user_id?: string | null;
+          watched_duration_seconds?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'playhub_view_history_match_recording_id_fkey';
+            columns: ['match_recording_id'];
+            isOneToOne: false;
+            referencedRelation: 'playhub_match_recordings';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       playscanner_collection_log: {
         Row: {
@@ -744,6 +2642,81 @@ export type Database = {
           },
         ];
       };
+      playscanner_openactive_slots: {
+        Row: {
+          booking_url: string | null;
+          court_name: string;
+          created_at: string | null;
+          currency: string | null;
+          date: string;
+          duration: number;
+          end_time: string;
+          id: string;
+          indoor: boolean | null;
+          listing_type: string | null;
+          price: number;
+          provider: string;
+          sport: string | null;
+          start_time: string;
+          surface: string | null;
+          updated_at: string | null;
+          venue_address: string | null;
+          venue_lat: number | null;
+          venue_lng: number | null;
+          venue_name: string;
+          venue_postcode: string | null;
+          venue_slug: string;
+        };
+        Insert: {
+          booking_url?: string | null;
+          court_name: string;
+          created_at?: string | null;
+          currency?: string | null;
+          date: string;
+          duration?: number;
+          end_time: string;
+          id: string;
+          indoor?: boolean | null;
+          listing_type?: string | null;
+          price?: number;
+          provider?: string;
+          sport?: string | null;
+          start_time: string;
+          surface?: string | null;
+          updated_at?: string | null;
+          venue_address?: string | null;
+          venue_lat?: number | null;
+          venue_lng?: number | null;
+          venue_name: string;
+          venue_postcode?: string | null;
+          venue_slug: string;
+        };
+        Update: {
+          booking_url?: string | null;
+          court_name?: string;
+          created_at?: string | null;
+          currency?: string | null;
+          date?: string;
+          duration?: number;
+          end_time?: string;
+          id?: string;
+          indoor?: boolean | null;
+          listing_type?: string | null;
+          price?: number;
+          provider?: string;
+          sport?: string | null;
+          start_time?: string;
+          surface?: string | null;
+          updated_at?: string | null;
+          venue_address?: string | null;
+          venue_lat?: number | null;
+          venue_lng?: number | null;
+          venue_name?: string;
+          venue_postcode?: string | null;
+          venue_slug?: string;
+        };
+        Relationships: [];
+      };
       playscanner_page_views: {
         Row: {
           id: string;
@@ -781,6 +2754,27 @@ export type Database = {
             referencedColumns: ['session_id'];
           },
         ];
+      };
+      playscanner_rpde_cursors: {
+        Row: {
+          created_at: string | null;
+          feed_url: string;
+          last_polled_at: string | null;
+          next_url: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          feed_url: string;
+          last_polled_at?: string | null;
+          next_url: string;
+        };
+        Update: {
+          created_at?: string | null;
+          feed_url?: string;
+          last_polled_at?: string | null;
+          next_url?: string;
+        };
+        Relationships: [];
       };
       playscanner_searches: {
         Row: {
@@ -827,7 +2821,7 @@ export type Database = {
           country_code: string | null;
           created_at: string | null;
           id: string;
-          ip_address: unknown | null;
+          ip_address: unknown;
           last_activity: string | null;
           page_views: number | null;
           search_queries: number | null;
@@ -843,7 +2837,7 @@ export type Database = {
           country_code?: string | null;
           created_at?: string | null;
           id?: string;
-          ip_address?: unknown | null;
+          ip_address?: unknown;
           last_activity?: string | null;
           page_views?: number | null;
           search_queries?: number | null;
@@ -859,7 +2853,7 @@ export type Database = {
           country_code?: string | null;
           created_at?: string | null;
           id?: string;
-          ip_address?: unknown | null;
+          ip_address?: unknown;
           last_activity?: string | null;
           page_views?: number | null;
           search_queries?: number | null;
@@ -870,6 +2864,128 @@ export type Database = {
           user_id?: string | null;
         };
         Relationships: [];
+      };
+      playscanner_slots: {
+        Row: {
+          available: boolean;
+          booking_url: string | null;
+          city: string;
+          collected_at: string;
+          court_id: string | null;
+          court_name: string | null;
+          court_surface: string | null;
+          created_at: string;
+          currency: string;
+          duration: number;
+          end_time: string;
+          id: string;
+          listing_type: string;
+          price: number;
+          provider: string;
+          sport: string;
+          start_time: string;
+          updated_at: string;
+          venue_address: string | null;
+          venue_id: string;
+          venue_indoor: boolean;
+          venue_lat: number | null;
+          venue_lng: number | null;
+          venue_name: string;
+          venue_postcode: string | null;
+          venue_slug: string | null;
+          venue_surface: string | null;
+        };
+        Insert: {
+          available?: boolean;
+          booking_url?: string | null;
+          city: string;
+          collected_at?: string;
+          court_id?: string | null;
+          court_name?: string | null;
+          court_surface?: string | null;
+          created_at?: string;
+          currency?: string;
+          duration: number;
+          end_time: string;
+          id: string;
+          listing_type?: string;
+          price: number;
+          provider: string;
+          sport: string;
+          start_time: string;
+          updated_at?: string;
+          venue_address?: string | null;
+          venue_id: string;
+          venue_indoor?: boolean;
+          venue_lat?: number | null;
+          venue_lng?: number | null;
+          venue_name: string;
+          venue_postcode?: string | null;
+          venue_slug?: string | null;
+          venue_surface?: string | null;
+        };
+        Update: {
+          available?: boolean;
+          booking_url?: string | null;
+          city?: string;
+          collected_at?: string;
+          court_id?: string | null;
+          court_name?: string | null;
+          court_surface?: string | null;
+          created_at?: string;
+          currency?: string;
+          duration?: number;
+          end_time?: string;
+          id?: string;
+          listing_type?: string;
+          price?: number;
+          provider?: string;
+          sport?: string;
+          start_time?: string;
+          updated_at?: string;
+          venue_address?: string | null;
+          venue_id?: string;
+          venue_indoor?: boolean;
+          venue_lat?: number | null;
+          venue_lng?: number | null;
+          venue_name?: string;
+          venue_postcode?: string | null;
+          venue_slug?: string | null;
+          venue_surface?: string | null;
+        };
+        Relationships: [];
+      };
+      profile_module_privacies: {
+        Row: {
+          created_at: string;
+          profile_variant_id: string;
+          public_to_org_ids: string[];
+          updated_at: string;
+          visibility: Database['public']['Enums']['profile_module_visibility'];
+        };
+        Insert: {
+          created_at?: string;
+          profile_variant_id: string;
+          public_to_org_ids?: string[];
+          updated_at?: string;
+          visibility?: Database['public']['Enums']['profile_module_visibility'];
+        };
+        Update: {
+          created_at?: string;
+          profile_variant_id?: string;
+          public_to_org_ids?: string[];
+          updated_at?: string;
+          visibility?: Database['public']['Enums']['profile_module_visibility'];
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'profile_module_privacies_profile_variant_id_fkey';
+            columns: ['profile_variant_id'];
+            isOneToOne: true;
+            referencedRelation: 'profile_variants';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       profile_variant_sports: {
         Row: {
@@ -931,6 +3047,7 @@ export type Database = {
           is_primary: boolean | null;
           is_searchable: boolean | null;
           is_verified: boolean | null;
+          module_slug: string;
           profile_id: string;
           sport_id: string | null;
           tags: string[] | null;
@@ -947,6 +3064,7 @@ export type Database = {
           is_primary?: boolean | null;
           is_searchable?: boolean | null;
           is_verified?: boolean | null;
+          module_slug: string;
           profile_id: string;
           sport_id?: string | null;
           tags?: string[] | null;
@@ -963,6 +3081,7 @@ export type Database = {
           is_primary?: boolean | null;
           is_searchable?: boolean | null;
           is_verified?: boolean | null;
+          module_slug?: string;
           profile_id?: string;
           sport_id?: string | null;
           tags?: string[] | null;
@@ -988,6 +3107,77 @@ export type Database = {
           },
         ];
       };
+      profile_verifications: {
+        Row: {
+          created_at: string;
+          id: string;
+          profile_id: string;
+          profile_variant_id: string | null;
+          revocation_reason: string | null;
+          revoked_at: string | null;
+          season_label: string | null;
+          updated_at: string;
+          verified_at: string;
+          verified_by_membership_id: string | null;
+          verifying_org_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          profile_id: string;
+          profile_variant_id?: string | null;
+          revocation_reason?: string | null;
+          revoked_at?: string | null;
+          season_label?: string | null;
+          updated_at?: string;
+          verified_at?: string;
+          verified_by_membership_id?: string | null;
+          verifying_org_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          profile_id?: string;
+          profile_variant_id?: string | null;
+          revocation_reason?: string | null;
+          revoked_at?: string | null;
+          season_label?: string | null;
+          updated_at?: string;
+          verified_at?: string;
+          verified_by_membership_id?: string | null;
+          verifying_org_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'profile_verifications_profile_id_fkey';
+            columns: ['profile_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'profile_verifications_profile_variant_id_fkey';
+            columns: ['profile_variant_id'];
+            isOneToOne: false;
+            referencedRelation: 'profile_variants';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'profile_verifications_verified_by_membership_id_fkey';
+            columns: ['verified_by_membership_id'];
+            isOneToOne: false;
+            referencedRelation: 'organization_members';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'profile_verifications_verifying_org_id_fkey';
+            columns: ['verifying_org_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       profiles: {
         Row: {
           avatar_url: string | null;
@@ -999,7 +3189,10 @@ export type Database = {
           full_name: string | null;
           height_cm: number | null;
           id: string;
+          is_admin: boolean;
+          is_platform_admin: boolean | null;
           is_public: boolean | null;
+          last_dashboard_view_at: string | null;
           location: string | null;
           nationality: string | null;
           phone: string | null;
@@ -1020,7 +3213,10 @@ export type Database = {
           full_name?: string | null;
           height_cm?: number | null;
           id?: string;
+          is_admin?: boolean;
+          is_platform_admin?: boolean | null;
           is_public?: boolean | null;
+          last_dashboard_view_at?: string | null;
           location?: string | null;
           nationality?: string | null;
           phone?: string | null;
@@ -1041,7 +3237,10 @@ export type Database = {
           full_name?: string | null;
           height_cm?: number | null;
           id?: string;
+          is_admin?: boolean;
+          is_platform_admin?: boolean | null;
           is_public?: boolean | null;
+          last_dashboard_view_at?: string | null;
           location?: string | null;
           nationality?: string | null;
           phone?: string | null;
@@ -1234,9 +3433,62 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      cleanup_expired_cache: { Args: never; Returns: number };
+      current_profile_is_admin: { Args: never; Returns: boolean };
+      delete_auth_user: { Args: { user_id: string }; Returns: undefined };
+      get_cache_stats: { Args: never; Returns: Json };
+      is_org_member: {
+        Args: {
+          allowed_roles?: Database['public']['Enums']['profile_variant_type'][];
+          org_id: string;
+        };
+        Returns: boolean;
+      };
+      playscanner_search_slots_json: {
+        Args: {
+          p_city: string;
+          p_date: string;
+          p_end_time?: string;
+          p_indoor?: boolean;
+          p_max_price?: number;
+          p_sport: string;
+          p_start_time?: string;
+        };
+        Returns: Json;
+      };
+      playscanner_write_slots: {
+        Args: {
+          p_attempted_cities: string[];
+          p_attempted_sports: string[];
+          p_attempted_start_max: string;
+          p_attempted_start_min: string;
+          p_provider: string;
+          p_rows: Json;
+        };
+        Returns: {
+          tombstoned: number;
+          written: number;
+        }[];
+      };
+      save_crop_job: {
+        Args: {
+          p_codec_fingerprint: Json;
+          p_feedback: Json;
+          p_job_id: string;
+          p_keyframes: Json;
+          p_modal_app_version: string;
+          p_modal_inference_ms: number;
+          p_recording_id: string;
+          p_scene_changes: number[];
+          p_status: string;
+          p_video_url: string;
+        };
+        Returns: Json;
+      };
     };
     Enums: {
+      attribution_revoker: 'player' | 'club' | 'admin';
+      attribution_source: 'jersey_map' | 'manual';
       basketball_experience_level:
         | 'recreational'
         | 'amateur_club'
@@ -1246,6 +3498,7 @@ export type Database = {
         | 'professional_domestic'
         | 'professional_elite'
         | 'former_professional';
+      clip_type: 'goal' | 'assist' | 'save' | 'tackle' | 'skill' | 'custom';
       football_experience_level:
         | 'recreational'
         | 'school_team'
@@ -1266,6 +3519,11 @@ export type Database = {
         | 'communication'
         | 'discovery'
         | 'analytics';
+      profile_module_visibility:
+        | 'public'
+        | 'authenticated'
+        | 'club_only'
+        | 'private';
       profile_variant_type:
         | 'player'
         | 'coach'
@@ -1277,7 +3535,9 @@ export type Database = {
         | 'trainer'
         | 'physio'
         | 'club_admin'
-        | 'league_admin';
+        | 'league_admin'
+        | 'admin'
+        | 'manager';
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -1411,6 +3671,8 @@ export const Constants = {
   },
   public: {
     Enums: {
+      attribution_revoker: ['player', 'club', 'admin'],
+      attribution_source: ['jersey_map', 'manual'],
       basketball_experience_level: [
         'recreational',
         'amateur_club',
@@ -1421,6 +3683,7 @@ export const Constants = {
         'professional_elite',
         'former_professional',
       ],
+      clip_type: ['goal', 'assist', 'save', 'tackle', 'skill', 'custom'],
       football_experience_level: [
         'recreational',
         'school_team',
@@ -1443,6 +3706,12 @@ export const Constants = {
         'discovery',
         'analytics',
       ],
+      profile_module_visibility: [
+        'public',
+        'authenticated',
+        'club_only',
+        'private',
+      ],
       profile_variant_type: [
         'player',
         'coach',
@@ -1455,6 +3724,8 @@ export const Constants = {
         'physio',
         'club_admin',
         'league_admin',
+        'admin',
+        'manager',
       ],
     },
   },

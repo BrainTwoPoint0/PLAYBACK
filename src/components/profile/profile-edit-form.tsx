@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@braintwopoint0/playback-commons/ui';
+import { Button, DatePicker } from '@braintwopoint0/playback-commons/ui';
 import { Label } from '@/components/ui/label';
 import {
   Dialog,
@@ -479,12 +479,13 @@ function PhysicalEditor({
         </div>
       </div>
       <div className="space-y-2">
-        <Label>Date of Birth</Label>
-        <input
-          type="date"
+        <Label htmlFor="profile-dob">Date of Birth</Label>
+        <DatePicker
+          id="profile-dob"
           value={dob}
-          onChange={(e) => setDob(e.target.value)}
-          className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] focus:outline-none focus:ring-1 focus:ring-zinc-300"
+          onChange={setDob}
+          placeholder="Select your date of birth"
+          max={new Date().toISOString().slice(0, 10)}
         />
       </div>
       <EditorFooter saving={saving} onCancel={onCancel} onSave={handleSave} />
