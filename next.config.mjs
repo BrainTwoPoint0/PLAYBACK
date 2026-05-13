@@ -7,7 +7,21 @@ const __dirname = path.dirname(__filename);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['cdn.sanity.io'],
+    // Use remotePatterns (over the deprecated `domains`) to pin allowed
+    // hosts strictly. Anything not matched here is rejected by next/image at
+    // render time — safer than a wildcard, prevents operator-controlled URLs
+    // from being used as third-party tracking pixels.
+    remotePatterns: [
+      // Sanity CMS — existing PLAYBACK content.
+      { protocol: 'https', hostname: 'cdn.sanity.io' },
+      // Supabase Storage public buckets — academy team / club logos plus the
+      // `graphic-packages` bucket pattern used elsewhere in PLAYHUB.
+      {
+        protocol: 'https',
+        hostname: 'zfaadonrmgfxnwzyudxi.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
   },
   async redirects() {
     return [
