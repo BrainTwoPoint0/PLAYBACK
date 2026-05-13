@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   useAuth,
@@ -15,6 +15,24 @@ import { Button, Input, Label } from '@braintwopoint0/playback-commons/ui';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { AlertCircle, Mail, Lock, Check, X, Loader2 } from 'lucide-react';
 import posthog from 'posthog-js';
+import {
+  lookupAcademySession,
+  type AcademySessionLookup,
+} from './lookup-academy-session';
+
+// Discriminator for the academy-claim mode. When the parent arrives via
+// Stripe success_url the form pre-fills email/name from the resolved
+// session and shows club-aware copy. When the lookup hasn't resolved yet
+// (or never will — e.g. they shared the link), we fall back to the
+// generic register flow.
+type AcademyClaim =
+  | { state: 'idle' }
+  | { state: 'loading' }
+  | {
+      state: 'ready';
+      data: Extract<AcademySessionLookup, { ok: true }>['data'];
+    }
+  | { state: 'error'; message: string };
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -27,9 +45,15 @@ export default function RegisterPage() {
   const [usernameStatus, setUsernameStatus] = useState<
     'idle' | 'checking' | 'available' | 'taken' | 'invalid'
   >('idle');
+  const [academyClaim, setAcademyClaim] = useState<AcademyClaim>({
+    state: 'idle',
+  });
 
   const { signUp, user } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const intent = searchParams?.get('intent') ?? null;
+  const sessionId = searchParams?.get('session_id') ?? null;
 
   // Check username availability function
   const checkUsernameAvailability = async (
@@ -67,6 +91,48 @@ export default function RegisterPage() {
       router.push('/dashboard');
     }
   }, [user, router]);
+
+  // Academy claim flow: parent arrived from Stripe success_url. Resolve the
+  // session via PLAYHUB and pre-fill the form. Lookup runs once per
+  // sessionId; the email field becomes read-only once resolved (it's bound
+  // to the Stripe customer, the parent shouldn't be free to retype it).
+  useEffect(() => {
+    if (intent !== 'academy' || !sessionId) return;
+    let cancelled = false;
+    setAcademyClaim({ state: 'loading' });
+    lookupAcademySession(sessionId)
+      .then((result) => {
+        if (cancelled) return;
+        if (result.ok) {
+          setAcademyClaim({ state: 'ready', data: result.data });
+          setEmail(result.data.customerEmail);
+          if (result.data.customerName && !fullName) {
+            setFullName(result.data.customerName);
+          }
+        } else if (result.reason === 'transient') {
+          setAcademyClaim({
+            state: 'error',
+            message:
+              "We're having trouble loading your subscription details — please refresh in a moment.",
+          });
+        } else {
+          // not_found / config_error: fall back to the generic register
+          // flow. The parent can still create an account; the trigger will
+          // claim their pending sub when they confirm their email.
+          setAcademyClaim({ state: 'idle' });
+        }
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setAcademyClaim({ state: 'idle' });
+      });
+    return () => {
+      cancelled = true;
+    };
+    // Only re-run if the URL changes; fullName is intentionally omitted to
+    // avoid clobbering edits the user has already made.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [intent, sessionId]);
 
   // Username availability checking with debounce
   useEffect(() => {
@@ -204,12 +270,35 @@ export default function RegisterPage() {
               className="text-3xl font-bold mb-2"
               style={{ color: 'var(--timberwolf)' }}
             >
-              Create account
+              {academyClaim.state === 'ready'
+                ? 'Claim your account'
+                : 'Create account'}
             </h1>
             <p style={{ color: 'var(--ash-grey)' }}>
-              Join PLAYBACK and unlock your athletic journey
+              {academyClaim.state === 'ready' ? (
+                <>
+                  Thanks for subscribing to{' '}
+                  <span style={{ color: 'var(--timberwolf)' }}>
+                    {academyClaim.data.clubName}
+                  </span>
+                  . Set a password to access your team&apos;s recordings.
+                </>
+              ) : academyClaim.state === 'loading' ? (
+                'Loading your subscription details…'
+              ) : (
+                'Join PLAYBACK and unlock your athletic journey'
+              )}
             </p>
           </div>
+
+          {academyClaim.state === 'error' && (
+            <div className="bg-yellow-900/20 backdrop-blur border border-yellow-700/30 rounded-xl p-4">
+              <div className="flex items-center gap-3 text-yellow-300">
+                <AlertCircle className="h-5 w-5" />
+                <span className="text-sm">{academyClaim.message}</span>
+              </div>
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -325,7 +414,12 @@ export default function RegisterPage() {
                     setEmail(e.target.value)
                   }
                   className="h-12 pl-12"
-                  disabled={loading}
+                  // Lock the email field in academy-claim mode — it's bound to
+                  // the Stripe customer the parent paid as. Letting them
+                  // retype it would create a mismatch with the pending sub
+                  // and the salted-account gate would block provisioning.
+                  disabled={loading || academyClaim.state === 'ready'}
+                  readOnly={academyClaim.state === 'ready'}
                   autoComplete="email"
                 />
                 <Mail
@@ -333,6 +427,12 @@ export default function RegisterPage() {
                   style={{ color: 'var(--ash-grey)' }}
                 />
               </div>
+              {academyClaim.state === 'ready' && (
+                <p className="text-xs" style={{ color: 'var(--ash-grey)' }}>
+                  Locked to the email you used at checkout. To use a different
+                  email, contact support.
+                </p>
+              )}
             </div>
 
             {/* Password */}
