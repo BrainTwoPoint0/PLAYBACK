@@ -12,9 +12,20 @@ interface TeamCard {
 
 interface Props {
   clubSlug: string;
+  /** Always the league-level name (e.g. "London Youth League") — keep this
+   *  free of subclub composition so aria-labels read cleanly. */
   clubName: string;
   displayPrice: string | null;
   teams: TeamCard[];
+  /** Hierarchical-academy middle layer (LYL → 'barnes-eagles'). The flat
+   *  page (CFA, SEFA) omits it and the picker subscribes against
+   *  (club, team) only. */
+  subclubSlug?: string | null;
+  /** Display name of the subclub the parent navigated through (e.g.
+   *  "Barnes Eagles"). Lets aria-labels read "Subscribe to U12 Tigers
+   *  in Barnes Eagles at London Youth League" instead of overloading
+   *  clubName with the composition. */
+  subclubName?: string | null;
 }
 
 export function AcademyTeamPicker({
@@ -22,6 +33,8 @@ export function AcademyTeamPicker({
   clubName,
   displayPrice,
   teams,
+  subclubSlug = null,
+  subclubName = null,
 }: Props) {
   const [pending, startTransition] = useTransition();
   const [pendingTeamSlug, setPendingTeamSlug] = useState<string | null>(null);
@@ -49,7 +62,8 @@ export function AcademyTeamPicker({
       const result = await startAcademyCheckout(
         clubSlug,
         teamSlug,
-        idempotencyKey
+        idempotencyKey,
+        subclubSlug
       );
       // On success the action calls redirect() and never returns. On failure
       // it returns {ok: false, message} — show inline so the parent can retry
@@ -73,7 +87,11 @@ export function AcademyTeamPicker({
       )}
 
       <ul
-        aria-label={`Teams at ${clubName}`}
+        aria-label={
+          subclubName
+            ? `Age groups at ${subclubName} (${clubName})`
+            : `Teams at ${clubName}`
+        }
         className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3"
       >
         {teams.map((team) => {
@@ -88,7 +106,11 @@ export function AcademyTeamPicker({
                 type="button"
                 onClick={() => handlePick(team.teamSlug)}
                 aria-disabled={pending}
-                aria-label={`Subscribe to ${team.displayName} on ${clubName}`}
+                aria-label={
+                  subclubName
+                    ? `Subscribe to ${team.displayName} in ${subclubName} at ${clubName}`
+                    : `Subscribe to ${team.displayName} on ${clubName}`
+                }
                 className={[
                   'group relative w-full overflow-hidden rounded-xl border bg-[#d6d5c9]/[0.015] p-6 text-left',
                   'motion-safe:transition-all motion-safe:duration-300',

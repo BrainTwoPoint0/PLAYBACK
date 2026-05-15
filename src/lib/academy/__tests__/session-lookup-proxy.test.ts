@@ -93,7 +93,62 @@ describe('lookupAcademySessionProxy', () => {
       club_slug: 'lyl',
       club_name: 'London Youth League',
       team_slug: 'lyl-u12-tigers',
+      // E.2: PLAYHUB pre-E.2 builds omit these — proxy coerces missing
+      // values to null. Default fixture has no subclub_* in body so the
+      // expected output is null.
+      subclub_slug: null,
+      subclub_name: null,
     });
+  });
+
+  it('hierarchical: surfaces subclub_slug + subclub_name when PLAYHUB returns them', async () => {
+    const deps = makeDeps({
+      fetchImpl: makeFetchImpl(() => ({
+        status: 200,
+        body: {
+          customer_email: 'parent@example.com',
+          customer_name: 'Test Parent',
+          club_slug: 'lyl',
+          club_name: 'London Youth League',
+          team_slug: 'u12-tigers',
+          subclub_slug: 'barnes-eagles',
+          subclub_name: 'Barnes Eagles',
+        },
+      })),
+    });
+    const o = await lookupAcademySessionProxy(
+      { sessionId: 'cs_live_aaaaaaaaaaaaaaaaaaaa' },
+      deps
+    );
+    const ok = expectFound(o);
+    expect(ok.data.subclub_slug).toBe('barnes-eagles');
+    expect(ok.data.subclub_name).toBe('Barnes Eagles');
+  });
+
+  it('coerces non-string subclub_* fields from PLAYHUB to null (defence in depth)', async () => {
+    const deps = makeDeps({
+      fetchImpl: makeFetchImpl(() => ({
+        status: 200,
+        body: {
+          customer_email: 'parent@example.com',
+          customer_name: null,
+          club_slug: 'lyl',
+          club_name: 'London Youth League',
+          team_slug: 'u12-tigers',
+          // PLAYHUB shouldn't ever emit these shapes, but if it did we
+          // must NOT crash the register page — coerce to null.
+          subclub_slug: 42,
+          subclub_name: { evil: 'object' },
+        },
+      })),
+    });
+    const o = await lookupAcademySessionProxy(
+      { sessionId: 'cs_live_aaaaaaaaaaaaaaaaaaaa' },
+      deps
+    );
+    const ok = expectFound(o);
+    expect(ok.data.subclub_slug).toBeNull();
+    expect(ok.data.subclub_name).toBeNull();
   });
 
   it('sends GET with x-api-key header', async () => {

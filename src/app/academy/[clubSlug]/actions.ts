@@ -9,6 +9,9 @@ import { startAcademyCheckoutProxy } from '@/lib/academy/checkout-proxy';
 // poison logs or smuggle anything into Supabase queries.
 const CLUB_SLUG_RE = /^[a-z0-9_][a-z0-9_-]{0,63}$/;
 const TEAM_SLUG_RE = /^[a-z0-9][a-z0-9-]{0,63}$/;
+// subclub_slug shares the team_slug shape — both are user-facing slugs
+// surfaced in URLs and Stripe metadata.
+const SUBCLUB_SLUG_RE = TEAM_SLUG_RE;
 // Stripe Idempotency-Key is documented as ≤255 chars opaque ASCII. We
 // re-validate browser-supplied keys to bound the surface; if the value is
 // malformed (or the picker forgot to send one), regenerate server-side.
@@ -33,9 +36,22 @@ const IDEMPOTENCY_KEY_RE = /^[\x20-\x7E]{8,255}$/;
 export async function startAcademyCheckout(
   clubSlug: string,
   teamSlug: string,
-  idempotencyKey: string
+  idempotencyKey: string,
+  /** Hierarchical-academy middle layer (LYL → 'barnes-eagles'). Optional:
+   *  the flat-config picker (CFA/SEFA) calls without it. The hierarchical
+   *  picker passes the subclub the parent navigated through. */
+  subclubSlug: string | null = null
 ): Promise<{ ok: false; message: string }> {
   if (!CLUB_SLUG_RE.test(clubSlug) || !TEAM_SLUG_RE.test(teamSlug)) {
+    return {
+      ok: false,
+      message:
+        'Something looked wrong with that team selection — please refresh and try again.',
+    };
+  }
+  // Defence-in-depth: even though subclubSlug arrives from a server-rendered
+  // page (not URL-supplied), revalidate to bound the value before forwarding.
+  if (subclubSlug !== null && !SUBCLUB_SLUG_RE.test(subclubSlug)) {
     return {
       ok: false,
       message:
@@ -50,6 +66,7 @@ export async function startAcademyCheckout(
   const outcome = await startAcademyCheckoutProxy({
     clubSlug,
     teamSlug,
+    subclubSlug,
     idempotencyKey: safeKey,
   });
 
@@ -66,6 +83,9 @@ export async function startAcademyCheckout(
     JSON.stringify({
       event: 'playback_academy_checkout_proxy_failed',
       club_slug: String(clubSlug).slice(0, 64),
+      ...(subclubSlug
+        ? { subclub_slug: String(subclubSlug).slice(0, 64) }
+        : {}),
       team_slug: String(teamSlug).slice(0, 64),
       reason: outcome.reason,
       status: outcome.status,

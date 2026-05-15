@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Instrument_Serif } from 'next/font/google';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
@@ -35,6 +36,17 @@ interface TeamRow {
   sort_order: number;
 }
 
+/** Hierarchical-academy middle layer (LYL → 16 clubs). When the lookup
+ *  returns rows the page renders the subclub picker; when empty the page
+ *  falls through to the flat (CFA, SEFA) team picker — no behaviour change
+ *  for legacy clubs. */
+interface SubclubRow {
+  subclub_slug: string;
+  display_name: string;
+  logo_url: string | null;
+  sort_order: number;
+}
+
 /**
  * Drops a remote URL that isn't `https:`. Operator-set logo URLs come from
  * playhub_academy_config / playhub_academy_teams — bypassing RLS via the
@@ -54,10 +66,24 @@ function safeImageUrl(url: string | null | undefined): string | null {
 // `cache()` dedupes the lookup across the page's two callsites (metadata +
 // default export) per request. Without it we'd pay for two Supabase round
 // trips on every render.
+//
+// E.2: lookup now returns subclubs alongside the flat-team list. The
+// renderer picks one or the other:
+//   - subclubs.length > 0 → render the subclub grid (LYL-shape; teams list
+//     intentionally ignored at this layer — picked on the subclub page)
+//   - subclubs.length === 0 → render the flat team grid (CFA/SEFA-shape).
+// We deliberately fetch BOTH in one cache() call rather than branching at
+// load time, because (a) at the row counts in play (~50 subclubs lifetime,
+// ~500 teams lifetime) two queries per page are cheap, and (b) it avoids a
+// second cache() helper that subtly drifts from this one.
 const loadClubAndTeams = cache(
   async (
     clubSlug: string
-  ): Promise<{ club: ClubRow; teams: TeamRow[] } | null> => {
+  ): Promise<{
+    club: ClubRow;
+    teams: TeamRow[];
+    subclubs: SubclubRow[];
+  } | null> => {
     if (!CLUB_SLUG_RE.test(clubSlug)) return null;
 
     // PLAYBACK's generated `Database` type doesn't yet include the
@@ -85,20 +111,47 @@ const loadClubAndTeams = cache(
       display_price: clubRow.display_price ?? null,
     };
 
-    const { data: teamRows, error: teamsErr } = await supabase
-      .from('playhub_academy_teams')
-      .select('team_slug, display_name, logo_url, sort_order')
-      .eq('club_slug', clubSlug)
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true })
-      .order('display_name', { ascending: true });
+    // Fan out the two listing queries in parallel — they're independent
+    // and at this row count the round-trip latency dominates total page
+    // time. Promise.all keeps the cache() entry consistent.
+    const [teamsResult, subclubsResult] = await Promise.all([
+      supabase
+        .from('playhub_academy_teams')
+        .select('team_slug, display_name, logo_url, sort_order')
+        .eq('club_slug', clubSlug)
+        .eq('is_active', true)
+        // Flat-config rows have subclub_slug NULL — restrict the legacy
+        // listing to those so a hierarchical config doesn't accidentally
+        // surface its child teams here.
+        .is('subclub_slug', null)
+        .order('sort_order', { ascending: true })
+        .order('display_name', { ascending: true }),
+      supabase
+        .from('playhub_academy_subclubs')
+        .select('subclub_slug, display_name, logo_url, sort_order')
+        .eq('club_slug', clubSlug)
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true })
+        .order('display_name', { ascending: true }),
+    ]);
 
-    if (teamsErr) {
-      console.error('academy page: teams lookup failed', teamsErr);
+    if (teamsResult.error) {
+      console.error('academy page: teams lookup failed', teamsResult.error);
+      return null;
+    }
+    if (subclubsResult.error) {
+      // Subclub-table reads are RLS-allowed for anon; failure here is a
+      // schema/migration drift rather than RLS. Log + fail-closed so the
+      // page either renders correctly or 404s — never as a half-rendered
+      // hierarchical config that would confuse parents.
+      console.error(
+        'academy page: subclubs lookup failed',
+        subclubsResult.error
+      );
       return null;
     }
 
-    const teams: TeamRow[] = (teamRows ?? []).map(
+    const teams: TeamRow[] = (teamsResult.data ?? []).map(
       (t: any): TeamRow => ({
         team_slug: t.team_slug,
         display_name: t.display_name,
@@ -107,7 +160,16 @@ const loadClubAndTeams = cache(
       })
     );
 
-    return { club, teams };
+    const subclubs: SubclubRow[] = (subclubsResult.data ?? []).map(
+      (s: any): SubclubRow => ({
+        subclub_slug: s.subclub_slug,
+        display_name: s.display_name,
+        logo_url: safeImageUrl(s.logo_url),
+        sort_order: s.sort_order ?? 0,
+      })
+    );
+
+    return { club, teams, subclubs };
   }
 );
 
@@ -146,7 +208,12 @@ export default async function AcademyClubPage({
   const data = await loadClubAndTeams(clubSlug);
   if (!data) notFound();
 
-  const { club, teams } = data;
+  const { club, teams, subclubs } = data;
+  // The presence of any active subclub row promotes this league into
+  // hierarchical mode (LYL-shape). Otherwise it's flat (CFA, SEFA) and
+  // the renderer falls through to the legacy team picker. Per the E.2
+  // checkpoint plan: zero changes to flat-config behaviour.
+  const isHierarchical = subclubs.length > 0;
 
   return (
     <main
@@ -187,20 +254,23 @@ export default async function AcademyClubPage({
             </div>
 
             <p className="mt-10 max-w-xl text-base leading-relaxed text-[#b9baa3] md:text-lg">
-              Subscribe to your team and unlock match recordings, training
-              clips, and analysis from every fixture this season — delivered to
-              your PLAYBACK account, accessible from any device.
+              {isHierarchical
+                ? 'Pick your club to see the age groups available for subscription. Each subscription unlocks match recordings, training clips, and analysis from every fixture this season.'
+                : 'Subscribe to your team and unlock match recordings, training clips, and analysis from every fixture this season — delivered to your PLAYBACK account, accessible from any device.'}
             </p>
 
             {canceled === '1' && (
               <div className="mt-8 inline-flex items-center gap-2 rounded-md border border-[#d6d5c9]/20 bg-[#d6d5c9]/[0.04] px-3 py-2 text-xs text-[#b9baa3]">
-                Checkout cancelled. Pick a team below to try again.
+                Checkout cancelled.{' '}
+                {isHierarchical
+                  ? 'Pick a club below to try again.'
+                  : 'Pick a team below to try again.'}
               </div>
             )}
           </div>
         </section>
 
-        {/* Teams */}
+        {/* Hierarchical: subclub picker. Flat: team picker. */}
         <section className="px-6 pb-32">
           <div className="mx-auto max-w-5xl">
             <div className="mb-8 flex items-baseline justify-between border-b border-[#d6d5c9]/10 pb-4">
@@ -208,14 +278,73 @@ export default async function AcademyClubPage({
                 style={{ fontFamily: 'var(--font-display)' }}
                 className="text-2xl font-normal tracking-tight text-[#d6d5c9]"
               >
-                Teams
+                {isHierarchical ? 'Clubs' : 'Teams'}
               </h2>
               <p className="text-[10px] uppercase tracking-[0.28em] text-[#b9baa3] md:text-xs">
-                {teams.length} {teams.length === 1 ? 'team' : 'teams'}
+                {isHierarchical
+                  ? `${subclubs.length} ${subclubs.length === 1 ? 'club' : 'clubs'}`
+                  : `${teams.length} ${teams.length === 1 ? 'team' : 'teams'}`}
               </p>
             </div>
 
-            {teams.length === 0 ? (
+            {isHierarchical ? (
+              <ul
+                aria-label={`Clubs in ${club.name}`}
+                className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3"
+              >
+                {subclubs.map((sc) => (
+                  <li key={sc.subclub_slug}>
+                    {/* Plain anchor — subclub navigation has no server-side
+                        side-effects (no Stripe call) so a regular Link gives
+                        us prefetching, browser back/forward, and middle-click
+                        for free. */}
+                    <Link
+                      href={`/academy/${encodeURIComponent(club.club_slug)}/${encodeURIComponent(sc.subclub_slug)}`}
+                      aria-label={`Choose ${sc.display_name}`}
+                      className={[
+                        'group relative block w-full overflow-hidden rounded-xl border bg-[#d6d5c9]/[0.015] p-6',
+                        'border-[#d6d5c9]/20 hover:border-[#d6d5c9]/50 hover:bg-[#d6d5c9]/[0.03]',
+                        'motion-safe:transition-all motion-safe:duration-300',
+                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6d5c9]/50',
+                      ].join(' ')}
+                    >
+                      <div className="mb-6 flex items-start gap-4">
+                        {sc.logo_url ? (
+                          <Image
+                            src={sc.logo_url}
+                            alt=""
+                            aria-hidden="true"
+                            width={48}
+                            height={48}
+                            className="h-12 w-12 rounded-md object-contain motion-safe:grayscale motion-safe:transition motion-safe:duration-500 motion-safe:group-hover:grayscale-0"
+                          />
+                        ) : (
+                          <div
+                            aria-hidden="true"
+                            className="h-12 w-12 shrink-0 rounded-md border border-[#d6d5c9]/20 bg-[#d6d5c9]/[0.03]"
+                          />
+                        )}
+                        <h3
+                          style={{ fontFamily: 'var(--font-display)' }}
+                          className="text-2xl font-normal leading-tight tracking-tight text-[#d6d5c9]"
+                        >
+                          {sc.display_name}
+                        </h3>
+                      </div>
+                      <div className="flex items-center justify-between border-t border-[#d6d5c9]/10 pt-4">
+                        <span className="text-sm text-[#b9baa3]">
+                          See age groups
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-sm text-[#d6d5c9] motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:translate-x-1">
+                          Choose
+                          <span aria-hidden>→</span>
+                        </span>
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : teams.length === 0 ? (
               <div className="rounded-xl border border-dashed border-[#d6d5c9]/20 px-6 py-16 text-center text-sm text-[#b9baa3]">
                 <p className="text-[#d6d5c9]">
                   {club.name} hasn&apos;t opened any teams for subscription yet.

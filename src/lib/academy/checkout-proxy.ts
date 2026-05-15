@@ -21,6 +21,10 @@
 export interface ProxyInput {
   clubSlug: string;
   teamSlug: string;
+  /** Hierarchical-academy middle layer (LYL). Optional — flat configs
+   *  (CFA, SEFA) omit it. PLAYHUB validates the slug shape and verifies
+   *  the (club, subclub) pair before creating the Stripe session. */
+  subclubSlug?: string | null;
   /** Per-submission UUID, surfaced as `Idempotency-Key`. */
   idempotencyKey: string;
 }
@@ -86,7 +90,13 @@ export async function startAcademyCheckoutProxy(
         'x-api-key': deps.apiKey,
         'Idempotency-Key': input.idempotencyKey,
       },
-      body: JSON.stringify({ team_slug: input.teamSlug }),
+      // Only emit subclub_slug when set — keeps the body shape backwards-
+      // compatible with legacy CFA/SEFA flows on the PLAYHUB side.
+      body: JSON.stringify(
+        input.subclubSlug
+          ? { team_slug: input.teamSlug, subclub_slug: input.subclubSlug }
+          : { team_slug: input.teamSlug }
+      ),
       // Server actions can sit on warm-pool connections; no client-side cache.
       cache: 'no-store',
     });

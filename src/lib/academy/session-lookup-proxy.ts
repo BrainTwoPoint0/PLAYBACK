@@ -17,6 +17,13 @@ export interface SessionData {
   club_slug: string;
   club_name: string;
   team_slug: string;
+  /** Hierarchical-academy middle layer (LYL → 'barnes-eagles'). NULL for
+   *  flat configs. Defaults to null when PLAYHUB is on a pre-E.2 build. */
+  subclub_slug: string | null;
+  /** Display name from playhub_academy_subclubs.display_name. NULL when
+   *  subclub_slug is NULL OR the subclub row was deactivated between
+   *  checkout and register (parent should still be able to register). */
+  subclub_name: string | null;
 }
 
 export type LookupOutcome =
@@ -119,6 +126,13 @@ export async function lookupAcademySessionProxy(
         message: 'PLAYHUB returned 200 with missing fields',
       };
     }
+    // subclub_* are NEW in E.2. PLAYHUB pre-E.2 builds will omit them
+    // entirely — coerce missing/non-string to null so a deploy window where
+    // PLAYBACK has E.2 and PLAYHUB doesn't yet still resolves cleanly.
+    const subclubSlug =
+      typeof b.subclub_slug === 'string' ? b.subclub_slug : null;
+    const subclubName =
+      typeof b.subclub_name === 'string' ? b.subclub_name : null;
     return {
       kind: 'found',
       data: {
@@ -128,6 +142,8 @@ export async function lookupAcademySessionProxy(
         club_slug: b.club_slug,
         club_name: b.club_name,
         team_slug: b.team_slug,
+        subclub_slug: subclubSlug,
+        subclub_name: subclubName,
       },
     };
   }

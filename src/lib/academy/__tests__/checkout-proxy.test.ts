@@ -119,6 +119,84 @@ describe('startAcademyCheckoutProxy', () => {
     });
   });
 
+  it('hierarchical: includes subclub_slug in the body when set', async () => {
+    const calls: { url: string; init: RequestInit }[] = [];
+    const deps = makeDeps({
+      fetchImpl: ((url: string, init: RequestInit) => {
+        calls.push({ url, init });
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              url: 'https://checkout.stripe.com/c/pay/cs_test_1',
+              session_id: 'cs_test_1',
+            }),
+            { status: 200, headers: { 'content-type': 'application/json' } }
+          )
+        );
+      }) as unknown as ProxyDeps['fetchImpl'],
+    });
+    await startAcademyCheckoutProxy(
+      {
+        clubSlug: 'lyl',
+        teamSlug: 'u12-tigers',
+        subclubSlug: 'barnes-eagles',
+        idempotencyKey: 'idem-abc-123',
+      },
+      deps
+    );
+    expect(JSON.parse(calls[0].init.body as string)).toEqual({
+      team_slug: 'u12-tigers',
+      subclub_slug: 'barnes-eagles',
+    });
+  });
+
+  it('flat: omits subclub_slug from body when null/undefined (CFA/SEFA shape unchanged)', async () => {
+    const calls: { url: string; init: RequestInit }[] = [];
+    const deps = makeDeps({
+      fetchImpl: ((url: string, init: RequestInit) => {
+        calls.push({ url, init });
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              url: 'https://checkout.stripe.com/c/pay/cs_test_1',
+              session_id: 'cs_test_1',
+            }),
+            { status: 200, headers: { 'content-type': 'application/json' } }
+          )
+        );
+      }) as unknown as ProxyDeps['fetchImpl'],
+    });
+    // Both null and undefined must produce the same flat body shape — the
+    // PLAYHUB route's checkout/webhook idempotency tests already pin the
+    // null path; the proxy contract is "send no key when there's nothing
+    // to send" so the wire format is byte-identical to the pre-E.2 one.
+    await startAcademyCheckoutProxy(
+      {
+        clubSlug: 'cfa',
+        teamSlug: 'u11',
+        subclubSlug: null,
+        idempotencyKey: 'idem-flat-null',
+      },
+      deps
+    );
+    await startAcademyCheckoutProxy(
+      {
+        clubSlug: 'cfa',
+        teamSlug: 'u11',
+        idempotencyKey: 'idem-flat-omitted',
+      },
+      deps
+    );
+    expect(JSON.parse(calls[0].init.body as string)).toEqual({
+      team_slug: 'u11',
+    });
+    expect(JSON.parse(calls[1].init.body as string)).toEqual({
+      team_slug: 'u11',
+    });
+    expect(calls[0].init.body).not.toContain('subclub_slug');
+    expect(calls[1].init.body).not.toContain('subclub_slug');
+  });
+
   it('encodes club_slug into the path so weird slugs cannot break out', async () => {
     const calls: string[] = [];
     const deps = makeDeps({
