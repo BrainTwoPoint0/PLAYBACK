@@ -137,10 +137,7 @@ export function AcademyTeamPicker({
                       className="h-12 w-12 shrink-0 rounded-md border border-[#d6d5c9]/20 bg-[#d6d5c9]/[0.03]"
                     />
                   )}
-                  <h3
-                    style={{ fontFamily: 'var(--font-display)' }}
-                    className="text-2xl font-normal leading-tight tracking-tight text-[#d6d5c9]"
-                  >
+                  <h3 className="text-xl font-semibold leading-tight tracking-tight text-[#d6d5c9]">
                     {team.displayName}
                   </h3>
                 </div>

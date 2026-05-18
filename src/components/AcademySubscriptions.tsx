@@ -19,6 +19,17 @@ export function AcademySubscriptions() {
 }
 export const teams = [
   {
+    // Unlike the other partners (which link out to Stripe Payment Links),
+    // LYL uses the unified PLAYBACK academy flow — link is internal so
+    // parents land on /academy/lyl and pick their club + age group, then
+    // checkout + claim-account happens via the integrated D1/D2 flow.
+    title: 'London Youth League',
+    description:
+      'Pick your club from across the London Youth League and subscribe to your age group — match recordings, training clips, and analysis from every fixture.',
+    link: '/academy/lyl',
+    logoUrl: '/partners/lyl.png',
+  },
+  {
     title: 'Soccer Elite FA',
     description:
       'With venue coverage at Star Meadow Sports Complex, SEFA players now have access to the PLAYBACK services.',

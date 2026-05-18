@@ -1,22 +1,10 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import Link from 'next/link';
-import { Instrument_Serif } from 'next/font/google';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
 import { createServiceClient } from '@/lib/supabase/server';
 import { AcademyTeamPicker } from './AcademyTeamPicker';
-
-// Page-scoped display face. Inter (root layout) handles body type; this
-// editorial serif is reserved for the club name + section labels — gives the
-// landing page a tight, magazine-cover treatment without disrupting the rest
-// of PLAYBACK's visual language.
-const instrumentSerif = Instrument_Serif({
-  subsets: ['latin'],
-  weight: '400',
-  display: 'swap',
-  variable: '--font-display',
-});
+import { AcademyHierarchicalPicker } from './AcademyHierarchicalPicker';
 
 // Slug shape mirrors the validation in the action + PLAYHUB. Cheap guard
 // before hitting Supabase, also bounds what lands in error logs.
@@ -34,6 +22,9 @@ interface TeamRow {
   display_name: string;
   logo_url: string | null;
   sort_order: number;
+  /** NULL for flat configs (CFA, SEFA). Set for LYL-shaped hierarchical
+   *  configs — the hierarchical picker groups teams by this client-side. */
+  subclub_slug: string | null;
 }
 
 /** Hierarchical-academy middle layer (LYL → 16 clubs). When the lookup
@@ -111,19 +102,18 @@ const loadClubAndTeams = cache(
       display_price: clubRow.display_price ?? null,
     };
 
-    // Fan out the two listing queries in parallel — they're independent
-    // and at this row count the round-trip latency dominates total page
-    // time. Promise.all keeps the cache() entry consistent.
+    // Fan out the two listing queries in parallel. Teams query is now
+    // UNFILTERED on subclub_slug — the renderer splits flat vs hierarchical
+    // client-side (since the new hierarchical picker is single-page and
+    // needs every subclub's teams pre-loaded for instant tab switching).
+    // At LYL pilot scale (~16 subclubs × ~10 age groups ≈ 160 rows max)
+    // the payload is trivial; revisit if a single league passes ~2K teams.
     const [teamsResult, subclubsResult] = await Promise.all([
       supabase
         .from('playhub_academy_teams')
-        .select('team_slug, display_name, logo_url, sort_order')
+        .select('team_slug, display_name, logo_url, sort_order, subclub_slug')
         .eq('club_slug', clubSlug)
         .eq('is_active', true)
-        // Flat-config rows have subclub_slug NULL — restrict the legacy
-        // listing to those so a hierarchical config doesn't accidentally
-        // surface its child teams here.
-        .is('subclub_slug', null)
         .order('sort_order', { ascending: true })
         .order('display_name', { ascending: true }),
       supabase
@@ -157,6 +147,7 @@ const loadClubAndTeams = cache(
         display_name: t.display_name,
         logo_url: safeImageUrl(t.logo_url),
         sort_order: t.sort_order ?? 0,
+        subclub_slug: t.subclub_slug ?? null,
       })
     );
 
@@ -216,9 +207,7 @@ export default async function AcademyClubPage({
   const isHierarchical = subclubs.length > 0;
 
   return (
-    <main
-      className={`${instrumentSerif.variable} relative min-h-screen bg-[#0a100d] text-[#d6d5c9]`}
-    >
+    <main className="relative min-h-screen bg-[#0a100d] text-[#d6d5c9]">
       {/* Ambient wash — a single low-intensity radial at the top. No purple. */}
       <div
         aria-hidden
@@ -240,15 +229,12 @@ export default async function AcademyClubPage({
                 <Image
                   src={club.logo_url}
                   alt={`${club.name} crest`}
-                  width={80}
-                  height={80}
-                  className="h-16 w-16 shrink-0 rounded-md object-contain md:h-20 md:w-20"
+                  width={128}
+                  height={128}
+                  className="h-20 w-20 shrink-0 object-contain md:h-24 md:w-24"
                 />
               )}
-              <h1
-                style={{ fontFamily: 'var(--font-display)' }}
-                className="text-5xl font-normal leading-[0.95] tracking-[-0.03em] text-[#d6d5c9] md:text-7xl lg:text-[5.5rem]"
-              >
+              <h1 className="text-3xl font-semibold leading-[1.1] tracking-[-0.02em] text-[#d6d5c9] md:text-4xl lg:text-5xl">
                 {club.name}
               </h1>
             </div>
@@ -270,14 +256,12 @@ export default async function AcademyClubPage({
           </div>
         </section>
 
-        {/* Hierarchical: subclub picker. Flat: team picker. */}
+        {/* Hierarchical: one-page club carousel + age groups reveal below.
+            Flat (CFA/SEFA): unchanged team picker grid. */}
         <section className="px-6 pb-32">
           <div className="mx-auto max-w-5xl">
             <div className="mb-8 flex items-baseline justify-between border-b border-[#d6d5c9]/10 pb-4">
-              <h2
-                style={{ fontFamily: 'var(--font-display)' }}
-                className="text-2xl font-normal tracking-tight text-[#d6d5c9]"
-              >
+              <h2 className="text-xl font-semibold tracking-tight text-[#d6d5c9]">
                 {isHierarchical ? 'Clubs' : 'Teams'}
               </h2>
               <p className="text-[10px] uppercase tracking-[0.28em] text-[#b9baa3] md:text-xs">
@@ -288,62 +272,27 @@ export default async function AcademyClubPage({
             </div>
 
             {isHierarchical ? (
-              <ul
-                aria-label={`Clubs in ${club.name}`}
-                className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3"
-              >
-                {subclubs.map((sc) => (
-                  <li key={sc.subclub_slug}>
-                    {/* Plain anchor — subclub navigation has no server-side
-                        side-effects (no Stripe call) so a regular Link gives
-                        us prefetching, browser back/forward, and middle-click
-                        for free. */}
-                    <Link
-                      href={`/academy/${encodeURIComponent(club.club_slug)}/${encodeURIComponent(sc.subclub_slug)}`}
-                      aria-label={`Choose ${sc.display_name}`}
-                      className={[
-                        'group relative block w-full overflow-hidden rounded-xl border bg-[#d6d5c9]/[0.015] p-6',
-                        'border-[#d6d5c9]/20 hover:border-[#d6d5c9]/50 hover:bg-[#d6d5c9]/[0.03]',
-                        'motion-safe:transition-all motion-safe:duration-300',
-                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6d5c9]/50',
-                      ].join(' ')}
-                    >
-                      <div className="mb-6 flex items-start gap-4">
-                        {sc.logo_url ? (
-                          <Image
-                            src={sc.logo_url}
-                            alt=""
-                            aria-hidden="true"
-                            width={48}
-                            height={48}
-                            className="h-12 w-12 rounded-md object-contain motion-safe:grayscale motion-safe:transition motion-safe:duration-500 motion-safe:group-hover:grayscale-0"
-                          />
-                        ) : (
-                          <div
-                            aria-hidden="true"
-                            className="h-12 w-12 shrink-0 rounded-md border border-[#d6d5c9]/20 bg-[#d6d5c9]/[0.03]"
-                          />
-                        )}
-                        <h3
-                          style={{ fontFamily: 'var(--font-display)' }}
-                          className="text-2xl font-normal leading-tight tracking-tight text-[#d6d5c9]"
-                        >
-                          {sc.display_name}
-                        </h3>
-                      </div>
-                      <div className="flex items-center justify-between border-t border-[#d6d5c9]/10 pt-4">
-                        <span className="text-sm text-[#b9baa3]">
-                          See age groups
-                        </span>
-                        <span className="inline-flex items-center gap-1 text-sm text-[#d6d5c9] motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:translate-x-1">
-                          Choose
-                          <span aria-hidden>→</span>
-                        </span>
-                      </div>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+              <AcademyHierarchicalPicker
+                clubSlug={club.club_slug}
+                clubName={club.name}
+                displayPrice={club.display_price}
+                subclubs={subclubs.map((sc) => ({
+                  subclubSlug: sc.subclub_slug,
+                  displayName: sc.display_name,
+                  logoUrl: sc.logo_url,
+                }))}
+                // Filter out flat-only rows (subclub_slug=null) — those are
+                // a defensive safety net for legacy data that doesn't exist
+                // in the LYL config but would noise up the picker if it did.
+                teams={teams
+                  .filter((t) => t.subclub_slug !== null)
+                  .map((t) => ({
+                    subclubSlug: t.subclub_slug as string,
+                    teamSlug: t.team_slug,
+                    displayName: t.display_name,
+                    logoUrl: t.logo_url,
+                  }))}
+              />
             ) : teams.length === 0 ? (
               <div className="rounded-xl border border-dashed border-[#d6d5c9]/20 px-6 py-16 text-center text-sm text-[#b9baa3]">
                 <p className="text-[#d6d5c9]">
