@@ -30,6 +30,17 @@ const nextConfig = {
         destination: '/p/:username',
         permanent: true,
       },
+      {
+        // Stripe's subscription cancellation / receipt emails embed
+        // https://www.playbacksports.ai/contact as the canned "Support
+        // URL" for our account. The homepage's #contact anchor is where
+        // that content actually lives, so redirect rather than create a
+        // dedicated page. Use 308 (permanent) since the Stripe template
+        // doesn't change between emails.
+        source: '/contact',
+        destination: '/#contact',
+        permanent: true,
+      },
     ];
   },
   webpack: (config, { isServer }) => {
