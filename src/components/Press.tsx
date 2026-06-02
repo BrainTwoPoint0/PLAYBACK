@@ -28,6 +28,13 @@ const pressLogos = [
   { name: 'UmmaHub', src: '/media/ummahub.png', className: 'w-40 h-40' },
   { name: 'Santander', src: '/media/santander.png', className: 'w-44 h-44' },
   { name: 'QMUL', src: '/media/QMUL.png', className: 'w-44 h-44' },
+  {
+    name: 'The Pitch by Deel',
+    src: '/media/the-pitch.png',
+    className: 'w-44 h-20',
+  },
+  { name: 'MESIF', src: '/media/mesif.png', className: 'w-32 h-20' },
+  { name: 'SPORT[GEN]', src: '/media/sgn.svg', className: 'w-44 h-12' },
 ];
 
 function InfiniteLogoSlider({
