@@ -1,1 +1,1130 @@
-{}
+{
+  "notFound": {
+    "metaTitle": "Página no encontrada",
+    "title": "Página no encontrada",
+    "description": "La página que buscas no existe o se ha movido.",
+    "backToDashboard": "Volver al panel",
+    "home": "Inicio",
+    "dashboard": "Panel",
+    "findACourt": "Encuentra una pista"
+  },
+  "academy": {
+    "meta": {
+      "title": "PLAYBACK Academy — Gestión de suscripciones y miembros para clubes",
+      "description": "Gestiona tu academia con PLAYBACK. Facturación de suscripciones, acceso de miembros, entrega de grabaciones y herramientas de desarrollo de jugadores para clubes y academias de fútbol. Con la confianza de más de 25 clubes en más de 10 países.",
+      "ogTitle": "PLAYBACK Academy — Gestión de suscripciones y miembros para clubes",
+      "ogDescription": "Facturación de suscripciones, acceso de miembros y entrega de grabaciones para clubes y academias de fútbol."
+    },
+    "clubPage": {
+      "metaFallbackTitle": "Suscripción de academia",
+      "metaTitle": "{name} — Suscripción de academia",
+      "metaDescription": "Suscríbete a {name} en PLAYBACK para desbloquear grabaciones de partidos, clips de entrenamiento y análisis de cada encuentro.",
+      "ogDescription": "Suscríbete a {name} en PLAYBACK.",
+      "eyebrow": "PLAYBACK Academy · Suscríbete",
+      "crestAlt": "Escudo de {name}",
+      "introHierarchical": "Elige tu club para ver las categorías disponibles para suscripción. Cada suscripción desbloquea grabaciones de partidos, clips de entrenamiento y análisis de cada encuentro de esta temporada.",
+      "introFlat": "Suscríbete a tu equipo y desbloquea grabaciones de partidos, clips de entrenamiento y análisis de cada encuentro de esta temporada — entregados en tu cuenta de PLAYBACK, accesibles desde cualquier dispositivo.",
+      "cancelledHierarchical": "Pago cancelado. Elige un club abajo para intentarlo de nuevo.",
+      "cancelledFlat": "Pago cancelado. Elige un equipo abajo para intentarlo de nuevo.",
+      "clubsHeading": "Clubes",
+      "teamsHeading": "Equipos",
+      "clubCount": "{count, plural, one {# club} other {# clubes}}",
+      "teamCount": "{count, plural, one {# equipo} other {# equipos}}",
+      "noTeamsTitle": "{name} aún no ha abierto ningún equipo para suscripción.",
+      "noTeamsHint": "Los nuevos equipos suelen publicarse antes del inicio de la temporada. Vuelve pronto.",
+      "paymentsNote": "Los pagos se procesan a través de Stripe. Tras completar el pago, te invitaremos a reclamar tu cuenta de PLAYBACK — tu suscripción queda vinculada al correo electrónico que proporciones."
+    },
+    "picker": {
+      "scrollLeft": "Desplazar clubes a la izquierda",
+      "scrollRight": "Desplazar clubes a la derecha",
+      "railLabel": "Clubes en {club}",
+      "chooseClub": "Elegir {name}",
+      "ageGroupsEyebrow": "{name} · Categorías",
+      "chooseAgeGroup": "Elige una categoría",
+      "clear": "Limpiar",
+      "pickPrompt": "Elige un club arriba para ver las categorías disponibles para suscripción.",
+      "noAgeGroupsTitle": "{name} aún no ha abierto ninguna categoría para suscripción.",
+      "noAgeGroupsHint": "Las nuevas categorías suelen publicarse antes del inicio de la temporada. Vuelve pronto.",
+      "ageGroupsListLabel": "Categorías de {name}",
+      "ageGroupsListLabelWithClub": "Categorías de {subclub} ({club})",
+      "teamsListLabel": "Equipos de {club}",
+      "subscribeAriaNested": "Suscribirse a {team} en {subclub} de {club}",
+      "subscribeAria": "Suscribirse a {team} en {club}",
+      "redirecting": "Redirigiendo a Stripe…",
+      "subscribe": "Suscribirse"
+    },
+    "checkout": {
+      "invalidSelection": "Algo salió mal con esa selección de equipo — actualiza la página e inténtalo de nuevo.",
+      "teamNotFound": "No pudimos encontrar ese equipo — actualiza la página e inténtalo de nuevo.",
+      "busy": "El proceso de pago está ocupado en este momento — inténtalo de nuevo en un momento.",
+      "unavailable": "El proceso de pago no está disponible en este momento — inténtalo de nuevo en unos minutos."
+    },
+    "onboarding": {
+      "title": "Incorporación a la Academia",
+      "description": "Jugadores, padres y staff ahora pueden tener un ecosistema compartido donde se impulsa el desarrollo, se analizan los momentos y se conservan los recuerdos. IMPULSADO por PLAYBACK.",
+      "signUpTitle": "Regístrate",
+      "signUpBody": "Selecciona tu academia en la lista de Servicios de PLAYBACK Academy a continuación y suscríbete. Tras completar el registro, recibirás por correo una invitación al ClubHouse para acceder a la plataforma.",
+      "signUpAltOptions": "Opciones de suscripción",
+      "signUpAltForm": "Formulario de suscripción",
+      "accessTitle": "Acceso",
+      "accessBody": "Tras incorporarte con éxito al ClubHouse de PLAYBACK, podrás acceder a los datos, el contenido y las analíticas de tu equipo iniciando sesión en <link>app.veo.co</link> con las credenciales que hayas elegido.",
+      "accessAlt": "Ejemplo de la plataforma",
+      "profileTitle": "Perfil",
+      "profileBody": "Los jugadores podrán crear su Perfil de Jugador, que servirá como repositorio de sus datos, estadísticas y mejores jugadas — todo en un formato fácil de compartir.",
+      "profileAltAbout": "Perfil de jugador - Sobre mí",
+      "profileAltHighlights": "Perfil de jugador - Mejores jugadas",
+      "profileAltInformation": "Perfil de jugador - Información",
+      "profileAltPositions": "Perfil de jugador - Posiciones",
+      "contentTitle": "Contenido",
+      "contentBody": "Los jugadores y padres incorporados pueden acceder a las imágenes de su equipo, crear clips, agregar mejores jugadas al Perfil de Jugador, compartir contenido e interactuar con el cuerpo técnico mediante menciones @ para comentar jugadas y celebrar los logros.",
+      "contentAlt": "Ejemplo de la plataforma de contenido"
+    },
+    "subscriptions": {
+      "sectionTitle": "Servicios de PLAYBACK Academy",
+      "billing": "Gestión de facturación",
+      "clubs": {
+        "lyl": "Elige tu club de la London Youth League y suscríbete a tu categoría — grabaciones de partidos, clips de entrenamiento y análisis de cada encuentro.",
+        "sefa": "Con cobertura en Star Meadow Sports Complex, los jugadores de SEFA ya tienen acceso a los servicios de PLAYBACK.",
+        "cfa": "Los equipos juveniles de JPL y Mezzie ya pueden acceder a los servicios de PLAYBACK en sus sedes.",
+        "maestros": "Equipos seleccionados de Maestros Academy ya pueden acceder a los servicios de PLAYBACK en sus dos sedes.",
+        "hb": "Equipos seleccionados de Hollands & Blair pueden utilizar la infraestructura de PLAYBACK para acceder a las imágenes de sus partidos en Star Meadow Sports Complex.",
+        "maidstone": "Nos hemos asociado con Maidstone United para ofrecer a sus jugadores el servicio PLAYBACK Academy.",
+        "sefaWomen": "Con cobertura en Star Meadow Sports Complex, las jugadoras de SEFA Women ya tienen acceso a los servicios de PLAYBACK."
+      }
+    }
+  },
+  "tournament": {
+    "meta": {
+      "title": "PLAYBACK Tournament — Transmisión y gestión de competiciones",
+      "description": "Organiza torneos con PLAYBACK. Transmite cada partido, gestiona encuentros e inscripciones, y entrega las grabaciones a cada jugador y padre. Con la confianza de competiciones juveniles y de base en todo el mundo.",
+      "ogTitle": "PLAYBACK Tournament — Transmisión y gestión de competiciones",
+      "ogDescription": "Transmite cada partido, gestiona los encuentros y entrega las grabaciones a cada jugador y padre."
+    },
+    "onboarding": {
+      "title": "Incorporación al torneo",
+      "description": "Jugadores, padres y staff ahora pueden tener una plataforma compartida donde se comparten los momentos y se conservan los recuerdos. IMPULSADO por PLAYBACK.",
+      "signUpTitle": "Regístrate",
+      "signUpBody": "Selecciona tu torneo en la lista de Servicios de PLAYBACK Tournament a continuación y suscríbete. Tras completar el registro, recibirás un correo con un enlace a la carpeta del torneo con todos los partidos en un plazo de 24 horas.",
+      "signUpAltOptions": "Opciones de suscripción del torneo",
+      "signUpAltForm": "Formulario de suscripción del torneo",
+      "contentTitle": "Contenido",
+      "contentBody": "Los jugadores y padres incorporados pueden acceder a las imágenes de su equipo, crear clips, exportar mejores jugadas, compartir contenido y celebrar los logros.",
+      "contentAlt": "Ejemplo de la plataforma de contenido"
+    },
+    "subscriptions": {
+      "sectionTitle": "Servicios de PLAYBACK Tournament",
+      "billing": "Gestión de facturación",
+      "items": {
+        "ramadan": "Accede a las imágenes y los datos de tu torneo con mejores jugadas detectadas por IA y tecnología AutoFollow.",
+        "atomics": "Recibe una carpeta personalizada con las imágenes y los datos de tu torneo, con mejores jugadas detectadas por IA y tecnología AutoFollow.",
+        "comingSoonTitle": "Próximamente",
+        "comingSoon": "El equipo de PLAYBACK trabaja continuamente para IMPULSAR nuevos torneos. Si quieres formar parte del ecosistema PLAYBACK, ¡ESCRÍBENOS!"
+      }
+    }
+  },
+  "stats": {
+    "form": {
+      "title": "Agregar estadística",
+      "subtitle": "Registra tu rendimiento deportivo y tus logros",
+      "sportLabel": "Deporte",
+      "sportPlaceholder": "Selecciona el deporte",
+      "seasonLabel": "Temporada",
+      "seasonPlaceholder": "2024",
+      "categoryLabel": "Categoría",
+      "statsAvailable": "{count, plural, one {# estadística disponible} other {# estadísticas disponibles}}",
+      "statisticLabel": "Estadística",
+      "valueLabel": "Valor *",
+      "dateLabel": "Fecha de registro",
+      "descriptionLabel": "Descripción",
+      "descriptionPlaceholder": "Contexto adicional sobre esta estadística...",
+      "personalBest": "Es una mejor marca personal",
+      "errorSelectStat": "Selecciona un tipo de estadística",
+      "errorInvalidValue": "Ingresa un valor numérico válido",
+      "errorSaveFailed": "No se pudo guardar la estadística",
+      "success": "¡Estadística guardada correctamente!",
+      "cancel": "Cancelar",
+      "saving": "Guardando...",
+      "save": "Guardar estadística"
+    },
+    "dashboard": {
+      "title": "Panel de estadísticas",
+      "subtitle": "Registra tu rendimiento y progreso deportivo",
+      "addStatistic": "Agregar estadística",
+      "totalStatistics": "Estadísticas totales",
+      "personalBests": "Mejores marcas personales",
+      "sportsTracked": "Deportes registrados",
+      "recentStats": "Estadísticas recientes",
+      "allSports": "Todos los deportes",
+      "allCategories": "Todas las categorías",
+      "seasonPlaceholder": "Temporada (p. ej. 2024)",
+      "categoryStatistics": "Estadísticas de {type}",
+      "confirmDelete": "¿Seguro que quieres eliminar esta estadística?",
+      "deleteFailed": "No se pudo eliminar la estadística",
+      "noStatsTitle": "Aún no hay estadísticas",
+      "noStatsHint": "Empieza a registrar tu rendimiento deportivo agregando tu primera estadística",
+      "addFirstStatistic": "Agrega tu primera estadística"
+    }
+  },
+  "auth": {
+    "common": {
+      "emailPlaceholder": "tu@ejemplo.com"
+    },
+    "login": {
+      "title": "Hola de nuevo",
+      "subtitle": "Inicia sesión en tu cuenta de PLAYBACK para continuar tu camino",
+      "form": {
+        "emailLabel": "Correo electrónico",
+        "passwordLabel": "Contraseña",
+        "passwordPlaceholder": "Ingresa tu contraseña",
+        "submit": "Iniciar sesión",
+        "submitting": "Iniciando sesión...",
+        "forgotPassword": "¿Olvidaste tu contraseña?",
+        "noAccount": "¿No tienes una cuenta?",
+        "signUp": "Regístrate",
+        "showPassword": "Mostrar contraseña",
+        "hidePassword": "Ocultar contraseña",
+        "errors": {
+          "fillAllFields": "Completa todos los campos",
+          "invalidEmail": "Ingresa un correo electrónico válido",
+          "tooManyAttempts": "Demasiados intentos. Espera {seconds} segundos.",
+          "unexpected": "Ocurrió un error inesperado. Inténtalo de nuevo."
+        }
+      }
+    },
+    "forgotPassword": {
+      "title": "¿Olvidaste tu contraseña?",
+      "subtitle": "Ingresa tu correo y te enviaremos un enlace para restablecerla.",
+      "form": {
+        "emailLabel": "Correo electrónico",
+        "emailPlaceholder": "tu@ejemplo.com",
+        "submit": "Enviar enlace de restablecimiento",
+        "submitting": "Enviando correo...",
+        "cooldownSubmit": "Inténtalo de nuevo en {seconds}s",
+        "successTitle": "Revisa tu correo",
+        "successMessage": "Enviamos un enlace de restablecimiento a {email}. Si no está en tu bandeja de entrada, revisa el spam.",
+        "resend": "Enviar otro correo",
+        "resendCooldown": "Envía otro correo en {seconds}s",
+        "backToSignIn": "Volver a iniciar sesión",
+        "errors": {
+          "emailRequired": "Ingresa tu correo electrónico",
+          "invalidEmail": "Ingresa un correo electrónico válido",
+          "cooldown": "Espera {seconds} segundos antes de volver a enviar.",
+          "unexpected": "Ocurrió un error inesperado. Inténtalo de nuevo."
+        }
+      }
+    },
+    "resetPassword": {
+      "title": "Restablecer contraseña",
+      "subtitle": "Ingresa una nueva contraseña para tu cuenta.",
+      "form": {
+        "passwordLabel": "Nueva contraseña",
+        "passwordPlaceholder": "Ingresa una nueva contraseña",
+        "confirmPasswordLabel": "Confirmar nueva contraseña",
+        "confirmPasswordPlaceholder": "Vuelve a ingresar tu nueva contraseña",
+        "passwordHint": "Al menos 8 caracteres, con una mayúscula, una minúscula y un número.",
+        "submit": "Actualizar contraseña",
+        "submitting": "Actualizando contraseña...",
+        "successTitle": "Contraseña actualizada",
+        "successMessage": "Redirigiéndote al inicio de sesión…",
+        "continue": "Continuar a iniciar sesión",
+        "backToSignIn": "Volver a iniciar sesión",
+        "showPassword": "Mostrar contraseña",
+        "hidePassword": "Ocultar contraseña",
+        "errors": {
+          "fillBothFields": "Completa ambos campos",
+          "passwordsMismatch": "Las contraseñas no coinciden",
+          "unexpected": "Ocurrió un error inesperado. Inténtalo de nuevo."
+        }
+      }
+    },
+    "register": {
+      "title": "Crear cuenta",
+      "subtitle": "Únete a PLAYBACK y desbloquea tu camino deportivo",
+      "academyTitle": "Reclama tu cuenta",
+      "academySubtitle": "Gracias por suscribirte a <club>{clubName}</club>. Crea una contraseña para acceder a las grabaciones de tu equipo.",
+      "academyLoading": "Cargando los datos de tu suscripción…",
+      "fullNameLabel": "Nombre completo",
+      "fullNamePlaceholder": "Tu nombre completo",
+      "usernameLabel": "Nombre de usuario",
+      "usernamePlaceholder": "Elige un nombre de usuario",
+      "usernameTaken": "El nombre de usuario ya está en uso",
+      "usernameInvalid": "El nombre de usuario debe tener de 3 a 30 caracteres; solo letras, números, guion bajo y guion",
+      "usernameAvailable": "El nombre de usuario está disponible",
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "atleta@ejemplo.com",
+      "emailLocked": "Vinculado al correo que usaste al pagar. Para usar un correo diferente, contacta con soporte.",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "Crea una contraseña",
+      "confirmPasswordLabel": "Confirmar contraseña",
+      "confirmPasswordPlaceholder": "Vuelve a ingresar la contraseña",
+      "signUp": "Registrarse",
+      "creatingAccount": "Creando cuenta…",
+      "haveAccount": "¿Ya tienes una cuenta?",
+      "signIn": "Inicia sesión",
+      "errors": {
+        "fillAllFields": "Completa todos los campos",
+        "invalidEmail": "Ingresa un correo electrónico válido",
+        "usernameUnavailable": "Elige un nombre de usuario disponible",
+        "fullNameTooShort": "El nombre completo debe tener al menos 2 caracteres",
+        "passwordsMismatch": "Las contraseñas no coinciden",
+        "emailExists": "Ya existe una cuenta con este correo. Inicia sesión en su lugar.",
+        "createFailed": "No se pudo crear la cuenta. Inténtalo de nuevo.",
+        "unexpected": "Ocurrió un error inesperado. Inténtalo de nuevo.",
+        "academyTransient": "Estamos teniendo problemas para cargar los datos de tu suscripción — actualiza la página en un momento."
+      }
+    },
+    "verifyEmail": {
+      "title": "Verifica tu correo",
+      "sentTo": "Te enviamos un enlace de verificación a <highlight>{email}</highlight>.",
+      "instructions": "Revisa tu bandeja de entrada (y la carpeta de spam) y haz clic en el enlace para activar tu cuenta.",
+      "closeHint": "Puedes cerrar esta ventana después de verificar. Una vez hecho, inicia sesión con tus credenciales.",
+      "backToLogin": "Volver a iniciar sesión"
+    },
+    "serverErrors": {
+      "invalid_credentials": "Correo o contraseña incorrectos. Verifica tus credenciales e inténtalo de nuevo.",
+      "email_not_confirmed": "Revisa tu correo y haz clic en el enlace de confirmación antes de iniciar sesión.",
+      "user_exists": "Ya existe una cuenta con este correo electrónico. Inicia sesión en su lugar.",
+      "password_too_short": "La contraseña debe tener al menos 6 caracteres.",
+      "invalid_password": "Ingresa una contraseña válida.",
+      "invalid_email": "Ingresa un correo electrónico válido.",
+      "email_rate_limit": "Se han enviado demasiados correos. Espera antes de solicitar otro.",
+      "username_taken": "Este nombre de usuario ya está en uso. Elige uno diferente."
+    }
+  },
+  "dashboard": {
+    "common": {
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "saving": "Guardando...",
+      "saveFailed": "No se pudo guardar",
+      "signOut": "Cerrar sesión",
+      "settings": "Configuración",
+      "comingSoon": "Próximamente",
+      "selectDate": "Selecciona una fecha"
+    },
+    "page": {
+      "matchClips": "Clips de partidos",
+      "playerModuleLabel": "Jugador",
+      "playerProfileLabel": "Perfil de jugador",
+      "createPlayerTitle": "Crear perfil de jugador",
+      "createPlayerDescription": "Configura tu perfil de jugador de fútbol para mostrar tus habilidades.",
+      "editProfileTitle": "Editar perfil",
+      "editProfileDescription": "Actualiza los datos de tu perfil en todos los módulos.",
+      "uploadHighlightTitle": "Subir mejor jugada",
+      "uploadHighlightDescription": "Agrega una mejor jugada en video a tu perfil.",
+      "uploadFieldTitle": "Título *",
+      "uploadTitlePlaceholder": "p. ej. Mejores jugadas del partido vs FC United",
+      "uploadFieldDescription": "Descripción",
+      "uploadDescriptionPlaceholder": "Descripción opcional...",
+      "saveHighlight": "Guardar mejor jugada",
+      "careerDialogTitleAdd": "Agregar entrada de trayectoria",
+      "careerDialogTitleEdit": "Editar entrada de trayectoria",
+      "careerDialogDescription": "Agrega tus clubes, academias o historial de equipos.",
+      "educationDialogTitleAdd": "Agregar entrada de formación",
+      "educationDialogTitleEdit": "Editar entrada de formación",
+      "educationDialogDescription": "Agrega tus escuelas, universidades o cursos.",
+      "importPlayhubTitle": "Importar desde PLAYHUB",
+      "importPlayhubDescription": "Agrega grabaciones de partidos a las que tienes acceso como mejores jugadas de tu perfil.",
+      "noRecordings": "No hay grabaciones disponibles",
+      "noRecordingsHint": "Compra grabaciones de partidos en PLAYHUB para importarlas aquí.",
+      "teamsVs": "{homeTeam} vs {awayTeam}",
+      "teamsVsWithDate": "{homeTeam} vs {awayTeam} · {date}",
+      "added": "Agregada"
+    },
+    "careerForm": {
+      "errorOrgRequired": "El nombre de la organización es obligatorio",
+      "organization": "Organización",
+      "organizationPlaceholder": "p. ej. Chelsea FC Academy",
+      "role": "Rol",
+      "rolePlaceholder": "p. ej. Centrocampista, capitán sub-18",
+      "startDate": "Fecha de inicio",
+      "endDate": "Fecha de fin",
+      "currentlyHere": "Actualmente aquí",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Breve descripción…"
+    },
+    "educationForm": {
+      "errorInstitutionRequired": "El nombre de la institución es obligatorio",
+      "institution": "Institución",
+      "institutionPlaceholder": "p. ej. University of Manchester",
+      "type": "Tipo",
+      "selectType": "Selecciona el tipo",
+      "typeSchool": "Escuela",
+      "typeCollege": "Instituto",
+      "typeUniversity": "Universidad",
+      "typeAcademy": "Academia",
+      "typeOther": "Otro",
+      "degree": "Título/Programa",
+      "degreePlaceholder": "p. ej. BSc",
+      "fieldOfStudy": "Área de estudio",
+      "fieldOfStudyPlaceholder": "p. ej. Ciencias del deporte",
+      "startDate": "Fecha de inicio",
+      "endDate": "Fecha de fin",
+      "currentlyAttending": "Actualmente cursando"
+    },
+    "topBar": {
+      "welcome": "Hola de nuevo, {name}",
+      "welcomeNoName": "Hola de nuevo",
+      "verifiedBy": "Verificado por {orgs}",
+      "verifiedByCount": "{count, plural, one {Verificado por # club} other {Verificado por # clubes}}",
+      "viewPublicProfile": "Ver perfil público",
+      "viewPublic": "Ver público",
+      "shareProfile": "Compartir perfil",
+      "share": "Compartir",
+      "editProfile": "Editar perfil",
+      "edit": "Editar",
+      "moreActions": "Más acciones"
+    },
+    "feed": {
+      "buckets": {
+        "today": "Hoy",
+        "yesterday": "Ayer",
+        "thisWeek": "Esta semana",
+        "thisMonth": "Este mes",
+        "earlier": "Anteriores"
+      }
+    },
+    "matchCard": {
+      "types": {
+        "goal": "Gol",
+        "assist": "Asistencia",
+        "save": "Parada",
+        "tackle": "Entrada",
+        "skill": "Habilidad",
+        "custom": "Clip"
+      },
+      "clipCount": "{count, plural, one {# clip} other {# clips}}",
+      "watchAria": "Ver el partido completo: {homeTeam} vs {awayTeam}",
+      "watchAriaNew": "Ver el partido completo: {homeTeam} vs {awayTeam}, {count, plural, one {# clip nuevo} other {# clips nuevos}}",
+      "teamsVs": "{homeTeam} vs {awayTeam}",
+      "teamsVsStyled": "{homeTeam} <muted>vs</muted> {awayTeam}",
+      "clipLabelWithTitle": "{type}: {title}",
+      "chipTitle": "{label} — abre el partido completo (el enlace directo al clip llegará pronto)",
+      "chipAria": "{label}, abre el partido completo",
+      "chipAriaNew": "{label}, nuevo, abre el partido completo",
+      "shareClipAria": "Compartir {label}",
+      "shareClip": "Compartir clip",
+      "watchFullMatch": "Ver partido completo",
+      "matchRecording": "Grabación del partido"
+    },
+    "modules": {
+      "title": "Tus módulos",
+      "empty": "Aún no hay perfiles. Configura un perfil de jugador o entrenador para empezar a recibir clips atribuidos por los clubes.",
+      "setUpFirst": "Configura tu primer perfil",
+      "visibility": {
+        "public": "Público",
+        "authenticated": "Solo con sesión iniciada",
+        "clubOnly": "Solo el club",
+        "private": "Privado"
+      },
+      "viewPublicAria": "Ver la página pública de {label}",
+      "viewPublicPage": "Ver página pública",
+      "editAria": "Editar {label}",
+      "editTitle": "Editar {label} — abre el editor global (la edición por módulo llegará pronto)"
+    },
+    "access": {
+      "title": "Suscripciones y accesos",
+      "openPlayhub": "Abrir PLAYHUB",
+      "empty": "Aún no hay suscripciones ni grabaciones compradas. Las grabaciones de partidos que compres o a las que te concedan acceso aparecerán aquí.",
+      "browsePlayhub": "Explorar en PLAYHUB →",
+      "recordingsLabel": "Grabaciones que puedes ver",
+      "purchasesLabel": "Compras completadas",
+      "lastAccess": "último acceso {when}",
+      "lastPurchase": "última {when}",
+      "lastPurchaseWithAmount": "última {when} · {amount}",
+      "relative": {
+        "today": "hoy",
+        "yesterday": "ayer",
+        "daysAgo": "{count, plural, one {hace # día} other {hace # días}}",
+        "weeksAgo": "{count, plural, one {hace # semana} other {hace # semanas}}"
+      }
+    },
+    "verifications": {
+      "title": "Verificaciones",
+      "empty": "Aún no hay verificaciones. Un administrador del club puede verificarte desde su página de plantilla — cuando lo haga, la insignia aparecerá en tu perfil público y aquí.",
+      "new": "Nueva",
+      "newAria": "Nueva verificación",
+      "seasonAndDate": "{season} · {date}"
+    },
+    "emptyState": {
+      "titleHasVariant": "Esperando tus primeros clips de partido",
+      "titleNoVariant": "Configura tu perfil para empezar a recibir clips",
+      "bodyHasVariant": "Tus clips llegan automáticamente. Después de tu próximo partido, cada momento con tu dorsal aparecerá aquí — sin necesidad de subir nada.",
+      "bodyNoVariant": "Crea primero tu perfil de jugador. En cuanto tu club grabe un partido y etiquete tu dorsal, tus clips aparecerán aquí automáticamente.",
+      "tip": "Si no aparece nada después de un partido, pide a tu entrenador que confirme tu dorsal para el siguiente. Las imágenes suelen aparecer a las pocas horas del pitido final."
+    },
+    "settings": {
+      "backToDashboard": "Volver al panel",
+      "title": "Configuración",
+      "subtitle": "Controla quién ve tu perfil y cómo se comunica PLAYBACK contigo.",
+      "moduleVisibilityTitle": "Visibilidad de los módulos",
+      "moduleVisibilityDescription": "Cada módulo de tu perfil tiene su propia visibilidad. Los módulos públicos aparecen en <path>/p/{username}</path> para cualquiera que tenga el enlace.",
+      "noModules": "Aún no tienes módulos. Crea un módulo de jugador o entrenador desde el panel.",
+      "playerWithSport": "Jugador de {sport}",
+      "variantPlayer": "Jugador",
+      "variantCoach": "Entrenador",
+      "visibilityPublic": "Cualquiera con el enlace puede verlo",
+      "visibilityAuthenticated": "Solo usuarios de PLAYBACK con sesión iniciada",
+      "visibilityClubOnly": "Solo miembros de los clubes seleccionados",
+      "visibilityPrivate": "Oculto para todos excepto para ti",
+      "notificationsTitle": "Notificaciones",
+      "notificationsBody": "Alertas por correo y push cuando un entrenador te atribuye un clip, emite una verificación o te invita a una plantilla.",
+      "parentalTitle": "Control parental",
+      "parentalBody": "Si gestionas el perfil de un menor, podrás exigir consentimiento para nuevas atribuciones, establecer la visibilidad predeterminada y aprobar verificaciones desde esta sección."
+    }
+  },
+  "nav": {
+    "skipToContent": "Saltar al contenido",
+    "logoAriaLabel": "Inicio de PLAYBACK",
+    "primaryNavLabel": "Principal",
+    "primaryMobileNavLabel": "Principal móvil",
+    "mainMenuLabel": "Menú principal",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "accountMenu": "Menú de la cuenta",
+    "liveNow": "En vivo ahora",
+    "signIn": "Iniciar sesión",
+    "getStarted": "Comenzar",
+    "dashboard": "Panel",
+    "signOut": "Cerrar sesión",
+    "items": {
+      "forClubs": {
+        "label": "Para clubes",
+        "description": "Cómo tu academia se une a la Red."
+      },
+      "academy": {
+        "label": "Academia",
+        "description": "Imágenes de partidos, mejores jugadas con IA, perfiles de jugador."
+      },
+      "tournaments": {
+        "label": "Torneos",
+        "description": "Captura con IA y transmisión para cada encuentro."
+      },
+      "bookToPlay": {
+        "label": "Book to PLAY",
+        "description": "Pistas, campos y estudios — reserva en minutos."
+      },
+      "playhub": {
+        "label": "PLAYHUB",
+        "description": "Mercado de grabaciones de partidos — transmite, suscríbete, hazlo tuyo."
+      },
+      "news": {
+        "label": "Noticias",
+        "description": "Alianzas, logros y anuncios de la empresa."
+      }
+    },
+    "groups": {
+      "solutions": "Soluciones",
+      "platform": "Plataforma"
+    },
+    "stats": {
+      "players": {
+        "value": "75k+",
+        "label": "Jugadores"
+      },
+      "clubs": {
+        "value": "25+",
+        "label": "Clubes"
+      },
+      "countries": {
+        "value": "10+",
+        "label": "Países"
+      }
+    },
+    "trustedBy": "Con la confianza de la Red PLAYBACK.",
+    "tagline": "You PLAY. We BACK.",
+    "announcement": {
+      "regionLabel": "Anuncio del sitio",
+      "eyebrow": "Nueva alianza",
+      "title": "PLAYBACK × PlayerData",
+      "description": "Seguimiento GPS de élite, ahora estándar para todos los jugadores de la Academia.",
+      "readCta": "Leer",
+      "dismiss": "Descartar anuncio"
+    }
+  },
+  "footer": {
+    "product": {
+      "title": "Producto",
+      "academy": "Academia",
+      "tournament": "Torneos",
+      "playscanner": "PLAYSCANNER",
+      "playhub": "PLAYHUB"
+    },
+    "audiences": {
+      "title": "Audiencias",
+      "forClubs": "Para clubes",
+      "forPlayers": "Para jugadores",
+      "forCoaches": "Para entrenadores"
+    },
+    "company": {
+      "title": "Empresa",
+      "network": "Red",
+      "press": "Prensa",
+      "contact": "Contacto"
+    },
+    "legal": {
+      "title": "Legal",
+      "terms": "Términos",
+      "privacy": "Privacidad",
+      "cookies": "Cookies"
+    }
+  },
+  "landing": {
+    "header": {
+      "metaDescription": "PLAYBACK es el sistema operativo del deporte. Grabaciones de partidos con IA, mejores jugadas, analíticas, gestión de academias y perfiles de jugador para más de 75,000 jugadores en más de 25 clubes de más de 10 países.",
+      "ogDescription": "El sistema operativo del deporte. Grabaciones de partidos con IA, mejores jugadas, analíticas, gestión de academias y perfiles de jugador.",
+      "eyebrow": "You PLAY. We BACK.",
+      "titleLine1": "El top 1%<br></br> de las herramientas.",
+      "titleLine2": "Para el 99%<br></br> que juega.",
+      "tagline": "Cada partido grabado. Cada estadística registrada. Cada jugador visto.",
+      "subtitle": "PLAYBACK da a todos los jugadores acceso a la misma tecnología que usan los profesionales — en más de 25 clubes de más de 10 países.",
+      "ctaPrimary": "Crea tu perfil",
+      "ctaSecondary": "Para clubes — hablemos",
+      "stats": {
+        "players": {
+          "value": "75,000+",
+          "label": "Jugadores impulsados en todo el mundo"
+        },
+        "partners": {
+          "value": "25+",
+          "label": "Socios en más de 10 países"
+        },
+        "saved": {
+          "value": "£750k+",
+          "label": "Ahorrados para nuestros socios"
+        },
+        "contracts": {
+          "value": "12",
+          "label": "Contratos profesionales firmados"
+        }
+      },
+      "trustLabel": "Impulsando la Red PLAYBACK"
+    },
+    "about": {
+      "eyebrow": "Creado para",
+      "title": "Una Red. Cada lado del juego.",
+      "audiences": {
+        "clubs": {
+          "eyebrow": "Para clubes y academias",
+          "headline": "El último socio que vas a necesitar.",
+          "body": "IA, software, medios y nube — todo desarrollado internamente. Sobre el mejor hardware del mercado, de la mano de Veo, Spiideo y Clutch. Un solo sistema operativo para cada equipo, temporada y sede.",
+          "bullet1": "IA, software y arquitectura en la nube desarrollados internamente",
+          "bullet2": "Automatizaciones de medios — clips, gráficos, distribución",
+          "bullet3": "Hardware de élite incluido — Veo, Spiideo, Clutch, GameCam, Hudl, FairVision, PlayerData",
+          "bullet4": "Modelo basado en rendimiento — crecemos juntos",
+          "cta": "Únete a la Red"
+        },
+        "players": {
+          "eyebrow": "Para jugadores y padres",
+          "headline": "Accede al momento.",
+          "body": "Nuestra IA graba cada partido, recorta cada gol y construye el perfil que los ojeadores realmente pueden encontrar. La misma tecnología en la que confían los profesionales, al servicio del 99% que juega.",
+          "bullet1": "Mejores jugadas generadas por IA, entregadas en minutos",
+          "bullet2": "Perfil PLAYBACK — el LinkedIn del deporte",
+          "bullet3": "GPS, analíticas y gráficos de partido integrados",
+          "bullet4": "25 pruebas conseguidas a través de perfiles de PLAYBACK",
+          "cta": "Únete a la Academia"
+        },
+        "coaches": {
+          "eyebrow": "Para entrenadores y staff",
+          "headline": "Video, GPS, operaciones — un solo sistema.",
+          "body": "Nuestro software reemplaza las seis herramientas que la mayoría de los entrenadores tienen que combinar. Etiquetado, analíticas, distribución de clips, datos de jugadores — una sola interfaz, creada por nosotros para funcionar en conjunto.",
+          "bullet1": "Etiquetado de partidos con IA y desgloses de video al instante",
+          "bullet2": "GPS, eventos y comparativas por jugador",
+          "bullet3": "Procesos nativos de IA para automatizar operaciones",
+          "bullet4": "Entrega automática de clips a jugadores y padres",
+          "cta": "Conoce la plataforma"
+        }
+      }
+    },
+    "services": {
+      "eyebrow": "Qué hacemos",
+      "title": "Herramientas de élite, a tu alcance.",
+      "academy": {
+        "eyebrow": "PLAYBACK Academy",
+        "title": "Cada partido, cada momento, cada jugador.",
+        "body": "La suscripción que convierte una temporada de academia en un escaparate de nivel profesional. Grabaciones de partidos, mejores jugadas con IA, datos GPS y un perfil de jugador que los ojeadores pueden encontrar.",
+        "feature1": "Mejores jugadas del partido generadas por IA",
+        "feature2": "Perfil de jugador — el LinkedIn del deporte",
+        "feature3": "GPS de PlayerData: distancia, velocidad, aceleraciones",
+        "feature4": "Grabaciones de partidos con Veo, Spiideo y Clutch",
+        "feature5": "Fácil de compartir con las familias y visibilidad ante ojeadores",
+        "cta": "Únete a la Academia",
+        "imageAlt": "Perfil de jugador de PLAYBACK — la interfaz del LinkedIn del deporte"
+      },
+      "tournament": {
+        "eyebrow": "PLAYBACK Tournament",
+        "title": "Organiza el torneo que todos recuerdan.",
+        "body": "Cámaras con IA, captura automática de partidos y clips fáciles de compartir para cada encuentro — la misma tecnología en la que confían el Inter de Milán, la Roma y el Brentford. De copas benéficas a ligas de fútbol 11, todo cubierto.",
+        "feature1": "Captura automática de cada encuentro",
+        "feature2": "Detección de mejores jugadas con IA y exportación de clips",
+        "feature3": "Transmisión en vivo con calidad de retransmisión profesional",
+        "feature4": "Analíticas de equipos y jugadores",
+        "feature5": "Imagen de marca del torneo y centro de medios",
+        "cta": "Organiza un torneo",
+        "imageAlt": "Transmisión de un partido de torneo con tecnología PLAYBACK"
+      }
+    },
+    "network": {
+      "eyebrow": "La Red PLAYBACK",
+      "title": "Impulsado por PLAYBACK."
+    },
+    "press": {
+      "eyebrow": "Premios y reconocimientos",
+      "title": "Redefiniendo la industria."
+    },
+    "latestNews": {
+      "eyebrow": "Prensa",
+      "title": "De Londres al mundo.",
+      "viewAll": "Ver todo"
+    },
+    "sports": {
+      "eyebrow": "Deportes cubiertos",
+      "title": "Para cada deporte, cada campo.",
+      "items": {
+        "basketball": "Baloncesto",
+        "football": "Fútbol",
+        "volleyball": "Voleibol",
+        "rugby": "Rugby",
+        "tennis": "Tenis",
+        "lacrosse": "Lacrosse",
+        "padel": "Pádel",
+        "more": "y más"
+      }
+    },
+    "contact": {
+      "eyebrow": "Ponte en contacto",
+      "title": "Únete a la Red.",
+      "honeypotLabel": "No completes este campo",
+      "nameLabel": "Nombre completo",
+      "namePlaceholder": "Tyler Adams",
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "projectmayhem@fc.com",
+      "companyLabel": "Club o empresa (opcional)",
+      "companyPlaceholder": "Tu club, academia u organización",
+      "whoLabel": "Soy...",
+      "whoPlaceholder": "- Selecciona -",
+      "whoOptions": {
+        "player": "Jugador",
+        "venue": "Sede deportiva",
+        "equipmentProvider": "Proveedor de equipamiento",
+        "leagueOrganiser": "Organizador de liga",
+        "ambassador": "Posible embajador"
+      },
+      "messageLabel": "Mensaje (opcional)",
+      "messagePlaceholder": "Hola...",
+      "send": "Enviar",
+      "sending": "Cargando...",
+      "submitting": "Enviando…",
+      "errorRateLimited": "Estás enviando demasiado rápido. Inténtalo de nuevo en un minuto.",
+      "errorGeneric": "Algo salió mal — escríbenos directamente por correo.",
+      "errorNetwork": "No se pudo conectar con el servidor. Inténtalo de nuevo.",
+      "errorFallback": "Algo salió mal.",
+      "success": "Gracias — estaremos en contacto pronto."
+    }
+  },
+  "media": {
+    "checkingAuth": "Comprobando autenticación…",
+    "couldNotLoadVideo": "No se pudo cargar el video",
+    "failedToLoadVideo": "Falló la carga del video",
+    "uploadFailed": "Falló la subida",
+    "processingFailed": "Falló el procesamiento",
+    "startingUpload": "Iniciando la subida…",
+    "processingVideo": "Procesando el video…",
+    "uploading": "Subiendo…",
+    "videoThumbnail": "Miniatura del video",
+    "failedToUpdateProfile": "No se pudo actualizar el perfil",
+    "dropValidImage": "Suelta un archivo de imagen válido",
+    "failedToDeleteAvatar": "No se pudo eliminar el avatar",
+    "changePhoto": "Cambiar foto",
+    "uploadPhoto": "Subir foto"
+  },
+  "playscanner": {
+    "meta": {
+      "title": "PLAYSCANNER — Reserva pistas y campos deportivos",
+      "description": "Encuentra y reserva campos de fútbol, pistas de pádel, canchas de baloncesto y pistas de tenis en todo Londres. Compara precios en tiempo real entre proveedores como Playtomic, MATCHi y Padel Mates.",
+      "ogTitle": "PLAYSCANNER — Reserva pistas y campos deportivos",
+      "ogDescription": "Reserva de pistas y campos agregada entre proveedores. Compara precios en tiempo real."
+    },
+    "search": {
+      "brandLine": "PLAYSCANNER - {city}",
+      "title": "Una búsqueda. Todos los horarios.",
+      "subtitle": "Agregamos más de 10 proveedores — Playtomic, MATCHi, PowerLeague, Goals, Footy Addicts y más. Los datos se actualizan cada 15 minutos.",
+      "dates": {
+        "today": "Hoy",
+        "tomorrow": "Mañana",
+        "tomorrowShort": "Mañ."
+      },
+      "sports": {
+        "football": "Fútbol",
+        "padel": "Pádel",
+        "basketball": "Baloncesto",
+        "tennis": "Tenis"
+      },
+      "location": {
+        "london": "Londres",
+        "comingSoon": "Solo Londres — más ciudades próximamente"
+      },
+      "errors": {
+        "searchFailed": "Falló la búsqueda"
+      }
+    },
+    "results": {
+      "tryAgain": "Intentar de nuevo",
+      "empty": {
+        "title": "{sport, select, football {No hay campos de fútbol para este día} tennis {No hay pistas de tenis para este día} padel {No hay pistas de pádel para este día} basketball {No hay canchas de baloncesto para este día} other {No hay pistas para este día}}",
+        "subtitle": "Prueba otra fecha, cambia de deporte o dinos qué proveedor te gustaría ver incluido."
+      },
+      "stats": {
+        "venues": "{count, plural, one {# sede} other {# sedes}}",
+        "venuesShort": "{count}v",
+        "from": "desde {price}",
+        "live": "en vivo",
+        "minutesShort": "{minutes}m"
+      },
+      "showMore": "Mostrar más ({count, plural, one {# restante} other {# restantes}})",
+      "providerRequest": {
+        "prompt": "¿Falta algún proveedor de reservas?",
+        "placeholder": "¿Qué proveedor te gustaría que agreguemos? (p. ej. Playtomic, MATCHi, LTA Clubspark)"
+      }
+    },
+    "filters": {
+      "title": "Filtros",
+      "clearAll": "Limpiar todo",
+      "clear": "Limpiar",
+      "sheetDescription": "Filtra los resultados por precio, proveedor y sede",
+      "time": {
+        "morning": "Mañana",
+        "afternoon": "Tarde",
+        "evening": "Noche"
+      },
+      "indoor": "Cubierta",
+      "dropIn": "Drop-in",
+      "priceRange": "Rango de precios",
+      "resetPrice": "Restablecer precio",
+      "timeRange": "Rango horario",
+      "resetTime": "Restablecer hora",
+      "providers": "Proveedores",
+      "clearProviders": "Limpiar proveedores",
+      "venues": "Sedes",
+      "venuesWithCount": "Sedes ({count})",
+      "searchVenues": "Buscar sedes...",
+      "clearVenues": "Limpiar sedes",
+      "showResults": "{count, plural, one {Mostrar # resultado} other {Mostrar # resultados}}",
+      "filterOptions": "Opciones de filtrado",
+      "activeFilters": "Filtros activos:",
+      "providersCount": "{count, plural, one {# proveedor} other {# proveedores}}",
+      "venuesCount": "{count, plural, one {# sede} other {# sedes}}",
+      "from": "Desde",
+      "to": "Hasta",
+      "earliestHint": "(primera: {time})",
+      "latestHint": "(última: {time})",
+      "selectStartTime": "Selecciona la hora de inicio",
+      "selectEndTime": "Selecciona la hora de fin",
+      "allVenues": "Todas las sedes",
+      "venuesSelectedCount": "{count} sedes seleccionadas",
+      "selectedVenues": "Seleccionadas: {count, plural, one {# sede} other {# sedes}}"
+    },
+    "venue": {
+      "justNow": "hace un momento",
+      "minutesAgo": "hace {minutes} min",
+      "hoursAgo": "hace {hours} h",
+      "perPerson": "/persona",
+      "perHour": "/h",
+      "perDuration": "/{minutes}min",
+      "priceOnSite": "Precio en el sitio",
+      "courtsCount": "{count, plural, one {# pista} other {# pistas}}",
+      "spotsLeft": "{count, plural, one {# lugar disponible} other {# lugares disponibles}}",
+      "tags": {
+        "dropIn": "DROP-IN",
+        "aSide": "Fútbol {count}",
+        "panoramic": "Panorámica",
+        "indoor": "Cubierta",
+        "outdoor": "Exterior",
+        "surface": "{surface, select, hard {Dura} clay {Tierra batida} grass {Césped} other {{surface}}}",
+        "durations": "{durations} min"
+      },
+      "showLess": "Menos",
+      "showMoreCount": "+{count}"
+    },
+    "booking": {
+      "dialogLabel": "Reservar {venue}",
+      "close": "Cerrar el diálogo de reserva",
+      "time": "Hora",
+      "durationMin": "{minutes} min",
+      "perPerson": "Por persona",
+      "price": "Precio",
+      "priceOnSite": "Precio en el sitio",
+      "slotUnavailable": "Puede que este horario ya no esté disponible. Prueba con otra hora.",
+      "priceChanged": "El precio ha cambiado desde la última vez que lo comprobamos",
+      "checking": "Comprobando disponibilidad...",
+      "unavailable": "No disponible",
+      "bookOn": "Reservar en {provider}",
+      "joinOn": "Unirse en {provider}",
+      "redirectNotice": "Serás redirigido a {provider} para completar tu reserva"
+    },
+    "map": {
+      "loading": "Cargando el mapa",
+      "slotsCount": "{count, plural, one {# horario} other {# horarios}}",
+      "from": "Desde",
+      "next": "Siguiente",
+      "book": "Reservar",
+      "emptyTitle": "No hay sedes que mostrar en el mapa",
+      "emptySubtitle": "Prueba otra búsqueda o vuelve más tarde"
+    }
+  },
+  "profile": {
+    "meta": {
+      "notFound": "Perfil no encontrado",
+      "profileDescription": "Perfil de {name} en PLAYBACK Sports",
+      "moduleDescription": "Perfil de {module} de {name} en PLAYBACK Sports"
+    },
+    "hero": {
+      "featuredHighlight": "Jugada destacada"
+    },
+    "about": {
+      "title": "Sobre mí"
+    },
+    "keyInfo": {
+      "title": "Datos clave",
+      "position": "Posición",
+      "foot": "Pie",
+      "height": "Estatura",
+      "weight": "Peso",
+      "age": "Edad",
+      "jersey": "Dorsal"
+    },
+    "positions": {
+      "title": "Posiciones"
+    },
+    "coaching": {
+      "title": "Entrenamiento",
+      "ageGroups": "Categorías",
+      "philosophy": "Filosofía"
+    },
+    "career": {
+      "title": "Trayectoria",
+      "present": "Actualidad",
+      "range": "{start} - {end}",
+      "rangeOngoing": "{start} - Actualidad"
+    },
+    "education": {
+      "title": "Formación"
+    },
+    "stats": {
+      "title": "Estadísticas",
+      "empty": "Aún no hay estadísticas",
+      "emptyHint": "Las estadísticas de PlayerData y las entradas manuales aparecerán aquí.",
+      "vsOpponent": "vs {opponent}"
+    },
+    "highlights": {
+      "title": "Mejores jugadas",
+      "empty": "Aún no hay mejores jugadas",
+      "views": "{count, plural, one {# visualización} other {# visualizaciones}}"
+    },
+    "clips": {
+      "title": "Clips de partidos",
+      "taggedByClubs": "Etiquetados por clubes",
+      "matchup": "{home} vs {away}"
+    },
+    "moduleSwitcher": {
+      "ariaLabel": "Módulos del perfil"
+    },
+    "verified": {
+      "byOne": "Verificado por {name}",
+      "byList": "Verificado por {names}",
+      "byCount": "Verificado por {count, plural, one {# club} other {# clubes}}"
+    },
+    "share": {
+      "trigger": "Compartir",
+      "title": "Compartir perfil",
+      "description": "Elige qué compartir. El enlace es público — cualquiera que lo tenga puede verlo.",
+      "fullProfile": "Perfil completo",
+      "fullProfileDescription": "Todos los módulos públicos — el destinatario ve todo lo que hayas hecho público.",
+      "noPublicModules": "Aún no hay módulos públicos — activa uno para compartir un solo módulo.",
+      "moduleOption": "Módulo de {label}",
+      "moduleOptionDescription": "Solo tu perfil de {label} — nada más visible en esta URL.",
+      "generatedLink": "Enlace generado",
+      "copyLink": "Copiar enlace",
+      "shareSheet": "Compartir mediante el menú del sistema",
+      "shareTitle": "{username} en PLAYBACK"
+    },
+    "shareClip": {
+      "title": "Compartir {type}",
+      "description": "{match}. El enlace es público — cualquiera que lo tenga puede verlo en PLAYHUB.",
+      "descriptionWithTitle": "{clipTitle} — {match}. El enlace es público — cualquiera que lo tenga puede verlo en PLAYHUB.",
+      "shareTitleWithClip": "{type}: {clipTitle} — {match}",
+      "shareTitleFromMatch": "{type} de {match}",
+      "matchup": "{home} vs {away}"
+    },
+    "privacy": {
+      "visibilityAriaLabel": "Visibilidad del módulo",
+      "visibilityAriaLabelFor": "Visibilidad del módulo de {label}",
+      "saved": "Guardado",
+      "failed": "Error",
+      "options": {
+        "public": {
+          "label": "Público",
+          "description": "Cualquiera puede ver este módulo"
+        },
+        "authenticated": {
+          "label": "Solo con sesión iniciada",
+          "description": "Cualquiera con una cuenta de PLAYBACK"
+        },
+        "clubOnly": {
+          "label": "Solo el club",
+          "description": "Próximamente — elige qué clubes pueden ver este módulo"
+        },
+        "private": {
+          "label": "Privado",
+          "description": "Solo tú"
+        }
+      }
+    },
+    "edit": {
+      "sections": {
+        "personal": "Datos personales",
+        "personalEmpty": "Agrega nombre y nacionalidad",
+        "about": "Sobre mí",
+        "aboutEmpty": "Agrega una biografía",
+        "physical": "Datos físicos",
+        "physicalEmpty": "Agrega estatura, peso y fecha de nacimiento",
+        "football": "Datos futbolísticos",
+        "footballEmpty": "Edita los datos futbolísticos"
+      },
+      "dialogs": {
+        "personal": "Editar datos personales",
+        "about": "Editar sobre mí",
+        "physical": "Editar datos físicos",
+        "football": "Editar datos futbolísticos"
+      },
+      "fields": {
+        "fullName": "Nombre completo",
+        "fullNamePlaceholder": "Tu nombre completo",
+        "nationality": "Nacionalidad",
+        "bio": "Biografía",
+        "bioPlaceholder": "Cuéntale a la gente sobre ti...",
+        "location": "Ubicación",
+        "locationPlaceholder": "p. ej. Londres, Reino Unido",
+        "socialLinks": "Redes sociales",
+        "instagramPlaceholder": "Usuario de Instagram",
+        "twitterPlaceholder": "Usuario de Twitter/X",
+        "linkedinPlaceholder": "Usuario de LinkedIn",
+        "height": "Estatura (cm)",
+        "weight": "Peso (kg)",
+        "dateOfBirth": "Fecha de nacimiento",
+        "dateOfBirthPlaceholder": "Selecciona tu fecha de nacimiento",
+        "experienceLevel": "Nivel de experiencia",
+        "experiencePlaceholder": "Selecciona el nivel",
+        "preferredFoot": "Pie dominante",
+        "primaryPosition": "Posición principal",
+        "positionPlaceholder": "Selecciona la posición",
+        "secondaryPositions": "Posiciones secundarias",
+        "jerseyNumber": "Dorsal",
+        "jerseyPlaceholder": "p. ej. 10"
+      },
+      "nationality": {
+        "select": "Selecciona la nacionalidad",
+        "search": "Buscar país...",
+        "empty": "No se encontró el país."
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "save": "Guardar"
+      },
+      "errors": {
+        "saveFailed": "No se pudo guardar"
+      }
+    },
+    "form": {
+      "steps": {
+        "basicTitle": "Información básica",
+        "basicDescription": "Cuéntanos sobre tu trayectoria como jugador.",
+        "positionsTitle": "Posiciones de juego",
+        "positionsDescription": "Selecciona tu posición principal y las secundarias que quieras.",
+        "reviewTitle": "Revisar y crear",
+        "reviewDescription": "Comprueba tus datos antes de crear tu perfil de jugador."
+      },
+      "fields": {
+        "experienceLevel": "Nivel de experiencia",
+        "experiencePlaceholder": "Selecciona tu nivel",
+        "preferredFoot": "Pie dominante",
+        "jerseyNumber": "Dorsal",
+        "jerseyPlaceholder": "p. ej. 10",
+        "primaryPosition": "Posición principal",
+        "positionPlaceholder": "Selecciona la posición",
+        "secondaryPositions": "Posiciones secundarias",
+        "optional": "(opcional)"
+      },
+      "summary": {
+        "experience": "Experiencia",
+        "preferredFoot": "Pie dominante",
+        "primaryPosition": "Posición principal",
+        "secondary": "Secundarias",
+        "jerseyNumber": "Dorsal"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "back": "Atrás",
+        "next": "Siguiente",
+        "create": "Crear perfil"
+      },
+      "errors": {
+        "generic": "Algo salió mal"
+      }
+    }
+  },
+  "profileLabels": {
+    "positions": {
+      "goalkeeper": "Portero",
+      "centreBack": "Defensa central",
+      "leftBack": "Lateral izquierdo",
+      "rightBack": "Lateral derecho",
+      "leftWingBack": "Carrilero izquierdo",
+      "rightWingBack": "Carrilero derecho",
+      "defensiveMidfielder": "Mediocentro defensivo",
+      "centralMidfielder": "Centrocampista",
+      "attackingMidfielder": "Mediapunta",
+      "leftMidfielder": "Interior izquierdo",
+      "rightMidfielder": "Interior derecho",
+      "leftWinger": "Extremo izquierdo",
+      "rightWinger": "Extremo derecho",
+      "striker": "Delantero",
+      "centreForward": "Delantero centro"
+    },
+    "experience": {
+      "recreational": "Recreativo",
+      "schoolTeam": "Equipo escolar",
+      "sundayLeague": "Fútbol amateur",
+      "clubYouth": "Fútbol base de club",
+      "academy": "Academia",
+      "amateurClub": "Club amateur",
+      "nonLeague": "Non-League",
+      "collegeUniversity": "Universitario",
+      "semiProfessional": "Semiprofesional",
+      "professional": "Profesional",
+      "formerProfessional": "Exprofesional"
+    },
+    "foot": {
+      "left": "Izquierdo",
+      "right": "Derecho",
+      "both": "Ambos"
+    },
+    "variants": {
+      "player": "Jugador",
+      "coach": "Entrenador",
+      "scout": "Ojeador",
+      "agent": "Agente",
+      "referee": "Árbitro",
+      "trainer": "Preparador físico",
+      "physio": "Fisioterapeuta"
+    },
+    "clipTypes": {
+      "goal": "Gol",
+      "assist": "Asistencia",
+      "save": "Parada",
+      "tackle": "Entrada",
+      "skill": "Habilidad",
+      "custom": "Clip"
+    }
+  }
+}

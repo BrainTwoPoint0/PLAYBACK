@@ -1,1 +1,1130 @@
-{}
+{
+  "notFound": {
+    "metaTitle": "الصفحة غير موجودة",
+    "title": "الصفحة غير موجودة",
+    "description": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
+    "backToDashboard": "العودة إلى لوحة التحكم",
+    "home": "الرئيسية",
+    "dashboard": "لوحة التحكم",
+    "findACourt": "ابحث عن ملعب"
+  },
+  "academy": {
+    "meta": {
+      "title": "أكاديمية PLAYBACK — إدارة الاشتراكات والأعضاء للأندية",
+      "description": "أدر أكاديميتك على PLAYBACK. فوترة الاشتراكات، ووصول الأعضاء، وتسليم التسجيلات، وأدوات تطوير اللاعبين لأندية وأكاديميات كرة القدم. يستخدمها أكثر من 25 نادياً في أكثر من 10 دول.",
+      "ogTitle": "أكاديمية PLAYBACK — إدارة الاشتراكات والأعضاء للأندية",
+      "ogDescription": "فوترة الاشتراكات، ووصول الأعضاء، وتسليم التسجيلات لأندية وأكاديميات كرة القدم."
+    },
+    "clubPage": {
+      "metaFallbackTitle": "اشتراك الأكاديمية",
+      "metaTitle": "{name} — اشتراك الأكاديمية",
+      "metaDescription": "اشترك في {name} على PLAYBACK للوصول إلى تسجيلات المباريات ومقاطع التدريب والتحليلات من كل مباراة.",
+      "ogDescription": "اشترك في {name} على PLAYBACK.",
+      "eyebrow": "أكاديمية PLAYBACK · اشترك",
+      "crestAlt": "شعار {name}",
+      "introHierarchical": "اختر ناديك لعرض الفئات العمرية المتاحة للاشتراك. كل اشتراك يمنحك تسجيلات المباريات ومقاطع التدريب والتحليلات من كل مباراة هذا الموسم.",
+      "introFlat": "اشترك في فريقك واحصل على تسجيلات المباريات ومقاطع التدريب والتحليلات من كل مباراة هذا الموسم — تصل إلى حسابك في PLAYBACK ويمكنك مشاهدتها من أي جهاز.",
+      "cancelledHierarchical": "تم إلغاء عملية الدفع. اختر نادياً أدناه للمحاولة مرة أخرى.",
+      "cancelledFlat": "تم إلغاء عملية الدفع. اختر فريقاً أدناه للمحاولة مرة أخرى.",
+      "clubsHeading": "الأندية",
+      "teamsHeading": "الفرق",
+      "clubCount": "{count, plural, one {نادٍ واحد} two {ناديان} few {{count, number, latn} أندية} many {{count, number, latn} نادياً} other {{count, number, latn} نادٍ}}",
+      "teamCount": "{count, plural, one {فريق واحد} two {فريقان} few {{count, number, latn} فرق} many {{count, number, latn} فريقاً} other {{count, number, latn} فريق}}",
+      "noTeamsTitle": "لم يفتح {name} أي فرق للاشتراك بعد.",
+      "noTeamsHint": "عادةً ما تُفتح الفرق الجديدة قبل بداية الموسم. عُد قريباً.",
+      "paymentsNote": "تُعالج المدفوعات عبر Stripe. بعد إتمام الدفع بنجاح ستتلقى دعوة لتفعيل حسابك في PLAYBACK — ويُربط اشتراكك بالبريد الإلكتروني الذي أدخلته."
+    },
+    "picker": {
+      "scrollLeft": "تمرير الأندية إلى اليسار",
+      "scrollRight": "تمرير الأندية إلى اليمين",
+      "railLabel": "الأندية في {club}",
+      "chooseClub": "اختيار {name}",
+      "ageGroupsEyebrow": "{name} · الفئات العمرية",
+      "chooseAgeGroup": "اختر فئة عمرية",
+      "clear": "مسح",
+      "pickPrompt": "اختر نادياً أعلاه لعرض الفئات العمرية المتاحة للاشتراك.",
+      "noAgeGroupsTitle": "لم يفتح {name} أي فئات عمرية للاشتراك بعد.",
+      "noAgeGroupsHint": "عادةً ما تُفتح الفئات العمرية الجديدة قبل بداية الموسم. عُد قريباً.",
+      "ageGroupsListLabel": "الفئات العمرية في {name}",
+      "ageGroupsListLabelWithClub": "الفئات العمرية في {subclub} ({club})",
+      "teamsListLabel": "الفرق في {club}",
+      "subscribeAriaNested": "الاشتراك في {team} ضمن {subclub} في {club}",
+      "subscribeAria": "الاشتراك في {team} لدى {club}",
+      "redirecting": "جارٍ التحويل إلى Stripe…",
+      "subscribe": "اشترك"
+    },
+    "checkout": {
+      "invalidSelection": "حدث خلل في اختيار الفريق — يرجى تحديث الصفحة والمحاولة مرة أخرى.",
+      "teamNotFound": "لم نعثر على هذا الفريق — يرجى تحديث الصفحة والمحاولة مرة أخرى.",
+      "busy": "خدمة الدفع مشغولة حالياً — يرجى المحاولة بعد قليل.",
+      "unavailable": "خدمة الدفع غير متاحة حالياً — يرجى المحاولة بعد بضع دقائق."
+    },
+    "onboarding": {
+      "title": "الانضمام إلى الأكاديمية",
+      "description": "أصبح بإمكان اللاعبين وأولياء الأمور والجهاز الفني الانتماء إلى منظومة مشتركة يُدعَم فيها التطور، وتُحلَّل اللحظات، وتُحفَظ الذكريات. مقدَّمة من PLAYBACK.",
+      "signUpTitle": "التسجيل",
+      "signUpBody": "اختر أكاديميتك من قائمة خدمات أكاديمية PLAYBACK أدناه واشترك. بعد إتمام التسجيل بنجاح، ستتلقى دعوة عبر البريد الإلكتروني للانضمام إلى ClubHouse والوصول إلى المنصة.",
+      "signUpAltOptions": "خيارات الاشتراك",
+      "signUpAltForm": "نموذج الاشتراك",
+      "accessTitle": "الوصول",
+      "accessBody": "بعد إتمام انضمامك إلى PLAYBACK ClubHouse، ستتمكن من الوصول إلى بيانات فريقك ومحتواه وتحليلاته عبر تسجيل الدخول من خلال <link>⁦app.veo.co⁩</link> باستخدام بيانات الدخول التي اخترتها.",
+      "accessAlt": "مثال على المنصة",
+      "profileTitle": "الملف الشخصي",
+      "profileBody": "سيتمكن اللاعبون من إنشاء ملف اللاعب الخاص بهم ليكون سجلاً لبيانات اللاعب وإحصائياته ولقطاته — في صيغة قابلة للمشاركة.",
+      "profileAltAbout": "ملف اللاعب - نبذة",
+      "profileAltHighlights": "ملف اللاعب - اللقطات",
+      "profileAltInformation": "ملف اللاعب - المعلومات",
+      "profileAltPositions": "ملف اللاعب - المراكز",
+      "contentTitle": "المحتوى",
+      "contentBody": "يمكن للاعبين وأولياء الأمور المنضمين الوصول إلى تسجيلات فريقهم، وإنشاء المقاطع، وإضافة اللقطات إلى ملف اللاعب، ومشاركة المحتوى، والتفاعل مع الجهاز الفني عبر الإشارات @ لمناقشة اللعبات والاحتفال بالإنجازات.",
+      "contentAlt": "مثال على منصة المحتوى"
+    },
+    "subscriptions": {
+      "sectionTitle": "خدمات أكاديمية PLAYBACK",
+      "billing": "إدارة الفوترة",
+      "clubs": {
+        "lyl": "اختر ناديك من أندية London Youth League واشترك في فئتك العمرية — تسجيلات المباريات ومقاطع التدريب والتحليلات من كل مباراة.",
+        "sefa": "مع تغطية ملاعب Star Meadow Sports Complex، أصبحت خدمات PLAYBACK متاحة الآن للاعبي SEFA.",
+        "cfa": "يمكن لفرق ناشئي JPL وMezzie الآن الوصول إلى خدمات PLAYBACK في ملاعبها.",
+        "maestros": "يمكن لفرق مختارة من أكاديمية Maestros الآن الوصول إلى خدمات PLAYBACK في كلا ملعبيها.",
+        "hb": "تستفيد فرق مختارة من Hollands & Blair من بنية PLAYBACK للوصول إلى تسجيلات مبارياتها في Star Meadow Sports Complex.",
+        "maidstone": "عقدنا شراكة مع Maidstone United لتزويد لاعبيهم بخدمة أكاديمية PLAYBACK.",
+        "sefaWomen": "مع تغطية ملاعب Star Meadow Sports Complex، أصبحت خدمات PLAYBACK متاحة الآن للاعبات SEFA للسيدات."
+      }
+    }
+  },
+  "tournament": {
+    "meta": {
+      "title": "بطولات PLAYBACK — البث وإدارة المنافسات",
+      "description": "نظّم بطولاتك على PLAYBACK. بث لكل مباراة، وإدارة الجداول والتسجيل، وتسليم تسجيلات المباريات لكل لاعب وولي أمر. تثق بها بطولات الناشئين والمستويات الشعبية حول العالم.",
+      "ogTitle": "بطولات PLAYBACK — البث وإدارة المنافسات",
+      "ogDescription": "بث كل مباراة، وإدارة الجداول، وتسليم التسجيلات لكل لاعب وولي أمر."
+    },
+    "onboarding": {
+      "title": "الانضمام إلى البطولة",
+      "description": "أصبح بإمكان اللاعبين وأولياء الأمور والجهاز الفني الانتماء إلى منصة مشتركة تُشارَك فيها اللحظات وتُحفَظ الذكريات. مقدَّمة من PLAYBACK.",
+      "signUpTitle": "التسجيل",
+      "signUpBody": "اختر بطولتك من قائمة خدمات بطولات PLAYBACK أدناه واشترك. بعد إتمام التسجيل بنجاح، ستصلك رسالة بريد إلكتروني تحتوي على رابط مجلد البطولة/جميع المباريات خلال 24 ساعة.",
+      "signUpAltOptions": "خيارات اشتراك البطولة",
+      "signUpAltForm": "نموذج اشتراك البطولة",
+      "contentTitle": "المحتوى",
+      "contentBody": "يمكن للاعبين وأولياء الأمور المنضمين الوصول إلى تسجيلات فريقهم، وإنشاء المقاطع، وتصدير اللقطات، ومشاركة المحتوى، والاحتفال بالإنجازات.",
+      "contentAlt": "مثال على منصة المحتوى"
+    },
+    "subscriptions": {
+      "sectionTitle": "خدمات بطولات PLAYBACK",
+      "billing": "إدارة الفوترة",
+      "items": {
+        "ramadan": "اطّلع على تسجيلات بطولتك وبياناتها مع لقطات مكتشفة بالذكاء الاصطناعي وتقنية التتبع التلقائي AutoFollow.",
+        "atomics": "احصل على مجلد مخصص يضم تسجيلات بطولتك وبياناتها مع لقطات مكتشفة بالذكاء الاصطناعي وتقنية التتبع التلقائي AutoFollow.",
+        "comingSoonTitle": "قريباً",
+        "comingSoon": "يعمل فريق PLAYBACK باستمرار على دعم بطولات جديدة. إذا رغبت في الانضمام إلى منظومة PLAYBACK، تواصل معنا!"
+      }
+    }
+  },
+  "stats": {
+    "form": {
+      "title": "إضافة إحصائية",
+      "subtitle": "تتبّع أداءك الرياضي وإنجازاتك",
+      "sportLabel": "الرياضة",
+      "sportPlaceholder": "اختر الرياضة",
+      "seasonLabel": "الموسم",
+      "seasonPlaceholder": "2024",
+      "categoryLabel": "الفئة",
+      "statsAvailable": "{count, plural, one {إحصائية واحدة متاحة} two {إحصائيتان متاحتان} few {{count, number, latn} إحصائيات متاحة} many {{count, number, latn} إحصائية متاحة} other {{count, number, latn} إحصائية متاحة}}",
+      "statisticLabel": "الإحصائية",
+      "valueLabel": "القيمة *",
+      "dateLabel": "تاريخ التسجيل",
+      "descriptionLabel": "الوصف",
+      "descriptionPlaceholder": "سياق إضافي حول هذه الإحصائية...",
+      "personalBest": "هذا رقم قياسي شخصي",
+      "errorSelectStat": "يرجى اختيار نوع الإحصائية",
+      "errorInvalidValue": "يرجى إدخال قيمة رقمية صحيحة",
+      "errorSaveFailed": "تعذّر حفظ الإحصائية",
+      "success": "تم حفظ الإحصائية بنجاح!",
+      "cancel": "إلغاء",
+      "saving": "جارٍ الحفظ...",
+      "save": "حفظ الإحصائية"
+    },
+    "dashboard": {
+      "title": "لوحة الإحصائيات",
+      "subtitle": "تتبّع أداءك الرياضي وتطورك",
+      "addStatistic": "إضافة إحصائية",
+      "totalStatistics": "إجمالي الإحصائيات",
+      "personalBests": "الأرقام القياسية الشخصية",
+      "sportsTracked": "الرياضات المتتبَّعة",
+      "recentStats": "أحدث الإحصائيات",
+      "allSports": "كل الرياضات",
+      "allCategories": "كل الفئات",
+      "seasonPlaceholder": "الموسم (مثال: 2024)",
+      "categoryStatistics": "إحصائيات {type}",
+      "confirmDelete": "هل أنت متأكد من حذف هذه الإحصائية؟",
+      "deleteFailed": "تعذّر حذف الإحصائية",
+      "noStatsTitle": "لا توجد إحصائيات بعد",
+      "noStatsHint": "ابدأ بتتبّع أدائك الرياضي بإضافة إحصائيتك الأولى",
+      "addFirstStatistic": "أضف إحصائيتك الأولى"
+    }
+  },
+  "auth": {
+    "common": {
+      "emailPlaceholder": "you@example.com"
+    },
+    "login": {
+      "title": "أهلاً بعودتك",
+      "subtitle": "سجّل الدخول إلى حسابك في PLAYBACK لمواصلة مسيرتك",
+      "form": {
+        "emailLabel": "البريد الإلكتروني",
+        "passwordLabel": "كلمة المرور",
+        "passwordPlaceholder": "أدخل كلمة المرور",
+        "submit": "تسجيل الدخول",
+        "submitting": "جارٍ تسجيل الدخول...",
+        "forgotPassword": "نسيت كلمة المرور؟",
+        "noAccount": "ليس لديك حساب؟",
+        "signUp": "إنشاء حساب",
+        "showPassword": "إظهار كلمة المرور",
+        "hidePassword": "إخفاء كلمة المرور",
+        "errors": {
+          "fillAllFields": "يرجى تعبئة جميع الحقول",
+          "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
+          "tooManyAttempts": "محاولات كثيرة. يرجى الانتظار {seconds} ثانية.",
+          "unexpected": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
+        }
+      }
+    },
+    "forgotPassword": {
+      "title": "نسيت كلمة المرور؟",
+      "subtitle": "أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين.",
+      "form": {
+        "emailLabel": "البريد الإلكتروني",
+        "emailPlaceholder": "you@example.com",
+        "submit": "إرسال رابط إعادة التعيين",
+        "submitting": "جارٍ الإرسال...",
+        "cooldownSubmit": "حاول مرة أخرى بعد {seconds}ث",
+        "successTitle": "تحقق من بريدك الإلكتروني",
+        "successMessage": "أرسلنا رابط إعادة التعيين إلى ⁦{email}⁩. إن لم تجده في بريدك الوارد، تحقق من مجلد الرسائل غير المرغوب فيها.",
+        "resend": "إرسال رسالة أخرى",
+        "resendCooldown": "إرسال رسالة أخرى بعد {seconds}ث",
+        "backToSignIn": "العودة إلى تسجيل الدخول",
+        "errors": {
+          "emailRequired": "يرجى إدخال بريدك الإلكتروني",
+          "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
+          "cooldown": "يرجى الانتظار {seconds} ثانية قبل إعادة الإرسال.",
+          "unexpected": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
+        }
+      }
+    },
+    "resetPassword": {
+      "title": "إعادة تعيين كلمة المرور",
+      "subtitle": "أدخل كلمة مرور جديدة لحسابك.",
+      "form": {
+        "passwordLabel": "كلمة المرور الجديدة",
+        "passwordPlaceholder": "أدخل كلمة مرور جديدة",
+        "confirmPasswordLabel": "تأكيد كلمة المرور الجديدة",
+        "confirmPasswordPlaceholder": "أعد إدخال كلمة المرور الجديدة",
+        "passwordHint": "8 أحرف على الأقل مع حرف كبير وحرف صغير ورقم.",
+        "submit": "تحديث كلمة المرور",
+        "submitting": "جارٍ التحديث...",
+        "successTitle": "تم تحديث كلمة المرور",
+        "successMessage": "جارٍ تحويلك إلى تسجيل الدخول…",
+        "continue": "المتابعة إلى تسجيل الدخول",
+        "backToSignIn": "العودة إلى تسجيل الدخول",
+        "showPassword": "إظهار كلمة المرور",
+        "hidePassword": "إخفاء كلمة المرور",
+        "errors": {
+          "fillBothFields": "يرجى تعبئة كلا الحقلين",
+          "passwordsMismatch": "كلمتا المرور غير متطابقتين",
+          "unexpected": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
+        }
+      }
+    },
+    "register": {
+      "title": "إنشاء حساب",
+      "subtitle": "انضم إلى PLAYBACK وانطلق في مسيرتك الرياضية",
+      "academyTitle": "فعّل حسابك",
+      "academySubtitle": "شكراً لاشتراكك في <club>{clubName}</club>. عيّن كلمة مرور للوصول إلى تسجيلات فريقك.",
+      "academyLoading": "جارٍ تحميل تفاصيل اشتراكك…",
+      "fullNameLabel": "الاسم الكامل",
+      "fullNamePlaceholder": "اسمك الكامل",
+      "usernameLabel": "اسم المستخدم",
+      "usernamePlaceholder": "اختر اسم مستخدم",
+      "usernameTaken": "اسم المستخدم محجوز بالفعل",
+      "usernameInvalid": "من 3 إلى 30 حرفاً: أحرف لاتينية وأرقام وشرطة سفلية وشرطة فقط",
+      "usernameAvailable": "اسم المستخدم متاح",
+      "emailLabel": "البريد الإلكتروني",
+      "emailPlaceholder": "athlete@example.com",
+      "emailLocked": "مرتبط بالبريد الإلكتروني الذي استخدمته عند الدفع. لاستخدام بريد آخر، تواصل مع الدعم.",
+      "passwordLabel": "كلمة المرور",
+      "passwordPlaceholder": "أنشئ كلمة مرور",
+      "confirmPasswordLabel": "تأكيد كلمة المرور",
+      "confirmPasswordPlaceholder": "أعد إدخال كلمة المرور",
+      "signUp": "إنشاء حساب",
+      "creatingAccount": "جارٍ إنشاء الحساب…",
+      "haveAccount": "لديك حساب بالفعل؟",
+      "signIn": "تسجيل الدخول",
+      "errors": {
+        "fillAllFields": "يرجى تعبئة جميع الحقول",
+        "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
+        "usernameUnavailable": "يرجى اختيار اسم مستخدم متاح",
+        "fullNameTooShort": "يجب أن يتكون الاسم الكامل من حرفين على الأقل",
+        "passwordsMismatch": "كلمتا المرور غير متطابقتين",
+        "emailExists": "يوجد حساب بهذا البريد الإلكتروني بالفعل. سجّل الدخول بدلاً من ذلك.",
+        "createFailed": "تعذّر إنشاء الحساب. يرجى المحاولة مرة أخرى.",
+        "unexpected": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
+        "academyTransient": "نواجه صعوبة في تحميل تفاصيل اشتراكك — يرجى تحديث الصفحة بعد قليل."
+      }
+    },
+    "verifyEmail": {
+      "title": "تحقق من بريدك الإلكتروني",
+      "sentTo": "أرسلنا رابط تحقق إلى <highlight>⁦{email}⁩</highlight>.",
+      "instructions": "يرجى التحقق من بريدك الوارد (ومجلد الرسائل غير المرغوب فيها) والنقر على الرابط لتفعيل حسابك.",
+      "closeHint": "يمكنك إغلاق هذه النافذة بعد التحقق. بعد ذلك، سجّل الدخول ببياناتك.",
+      "backToLogin": "العودة إلى تسجيل الدخول"
+    },
+    "serverErrors": {
+      "invalid_credentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة. تحقق من بياناتك وحاول مرة أخرى.",
+      "email_not_confirmed": "يرجى فتح بريدك الإلكتروني والنقر على رابط التأكيد قبل تسجيل الدخول.",
+      "user_exists": "يوجد حساب بهذا البريد الإلكتروني بالفعل. سجّل الدخول بدلاً من ذلك.",
+      "password_too_short": "يجب أن تكون كلمة المرور 6 أحرف على الأقل.",
+      "invalid_password": "يرجى إدخال كلمة مرور صحيحة.",
+      "invalid_email": "يرجى إدخال بريد إلكتروني صحيح.",
+      "email_rate_limit": "تم إرسال رسائل كثيرة. يرجى الانتظار قبل طلب رسالة أخرى.",
+      "username_taken": "اسم المستخدم محجوز بالفعل. اختر اسماً آخر."
+    }
+  },
+  "dashboard": {
+    "common": {
+      "cancel": "إلغاء",
+      "save": "حفظ",
+      "saving": "جارٍ الحفظ...",
+      "saveFailed": "تعذّر الحفظ",
+      "signOut": "تسجيل الخروج",
+      "settings": "الإعدادات",
+      "comingSoon": "قريباً",
+      "selectDate": "اختر التاريخ"
+    },
+    "page": {
+      "matchClips": "مقاطع المباريات",
+      "playerModuleLabel": "لاعب",
+      "playerProfileLabel": "ملف اللاعب",
+      "createPlayerTitle": "إنشاء ملف لاعب",
+      "createPlayerDescription": "أنشئ ملفك كلاعب كرة قدم لعرض مهاراتك.",
+      "editProfileTitle": "تعديل الملف الشخصي",
+      "editProfileDescription": "حدّث بيانات ملفك الشخصي عبر الوحدات.",
+      "uploadHighlightTitle": "رفع لقطة",
+      "uploadHighlightDescription": "أضف مقطع فيديو مميزاً إلى ملفك الشخصي.",
+      "uploadFieldTitle": "العنوان *",
+      "uploadTitlePlaceholder": "مثال: لقطات المباراة ضد FC United",
+      "uploadFieldDescription": "الوصف",
+      "uploadDescriptionPlaceholder": "وصف اختياري...",
+      "saveHighlight": "حفظ اللقطة",
+      "careerDialogTitleAdd": "إضافة محطة مسيرة",
+      "careerDialogTitleEdit": "تعديل محطة المسيرة",
+      "careerDialogDescription": "أضف أنديتك أو أكاديمياتك أو تاريخك مع الفرق.",
+      "educationDialogTitleAdd": "إضافة مرحلة تعليمية",
+      "educationDialogTitleEdit": "تعديل المرحلة التعليمية",
+      "educationDialogDescription": "أضف مدارسك أو كلياتك أو دوراتك.",
+      "importPlayhubTitle": "استيراد من PLAYHUB",
+      "importPlayhubDescription": "أضف تسجيلات المباريات المتاحة لك كلقطات في ملفك الشخصي.",
+      "noRecordings": "لا توجد تسجيلات متاحة",
+      "noRecordingsHint": "اشترِ تسجيلات المباريات من PLAYHUB لاستيرادها هنا.",
+      "teamsVs": "{homeTeam} ضد {awayTeam}",
+      "teamsVsWithDate": "{homeTeam} ضد {awayTeam} · {date}",
+      "added": "تمت الإضافة"
+    },
+    "careerForm": {
+      "errorOrgRequired": "اسم المؤسسة مطلوب",
+      "organization": "المؤسسة",
+      "organizationPlaceholder": "مثال: أكاديمية Chelsea FC",
+      "role": "الدور",
+      "rolePlaceholder": "مثال: لاعب وسط، قائد فريق تحت 18",
+      "startDate": "تاريخ البداية",
+      "endDate": "تاريخ النهاية",
+      "currentlyHere": "ما زلت هنا حالياً",
+      "description": "الوصف",
+      "descriptionPlaceholder": "وصف موجز…"
+    },
+    "educationForm": {
+      "errorInstitutionRequired": "اسم المؤسسة التعليمية مطلوب",
+      "institution": "المؤسسة التعليمية",
+      "institutionPlaceholder": "مثال: جامعة مانشستر",
+      "type": "النوع",
+      "selectType": "اختر النوع",
+      "typeSchool": "مدرسة",
+      "typeCollege": "كلية",
+      "typeUniversity": "جامعة",
+      "typeAcademy": "أكاديمية",
+      "typeOther": "أخرى",
+      "degree": "الشهادة/البرنامج",
+      "degreePlaceholder": "مثال: بكالوريوس",
+      "fieldOfStudy": "مجال الدراسة",
+      "fieldOfStudyPlaceholder": "مثال: علوم الرياضة",
+      "startDate": "تاريخ البداية",
+      "endDate": "تاريخ النهاية",
+      "currentlyAttending": "أدرس هنا حالياً"
+    },
+    "topBar": {
+      "welcome": "أهلاً بعودتك، {name}",
+      "welcomeNoName": "أهلاً بعودتك",
+      "verifiedBy": "موثّق من {orgs}",
+      "verifiedByCount": "{count, plural, one {موثّق من نادٍ واحد} two {موثّق من ناديين} few {موثّق من {count, number, latn} أندية} many {موثّق من {count, number, latn} نادياً} other {موثّق من {count, number, latn} نادٍ}}",
+      "viewPublicProfile": "عرض الملف العام",
+      "viewPublic": "الملف العام",
+      "shareProfile": "مشاركة الملف الشخصي",
+      "share": "مشاركة",
+      "editProfile": "تعديل الملف الشخصي",
+      "edit": "تعديل",
+      "moreActions": "المزيد من الإجراءات"
+    },
+    "feed": {
+      "buckets": {
+        "today": "اليوم",
+        "yesterday": "أمس",
+        "thisWeek": "هذا الأسبوع",
+        "thisMonth": "هذا الشهر",
+        "earlier": "أقدم"
+      }
+    },
+    "matchCard": {
+      "types": {
+        "goal": "هدف",
+        "assist": "تمريرة حاسمة",
+        "save": "تصدٍ",
+        "tackle": "تدخل",
+        "skill": "مهارة",
+        "custom": "مقطع"
+      },
+      "clipCount": "{count, plural, one {مقطع واحد} two {مقطعان} few {{count, number, latn} مقاطع} many {{count, number, latn} مقطعاً} other {{count, number, latn} مقطع}}",
+      "watchAria": "مشاهدة المباراة كاملة: {homeTeam} ضد {awayTeam}",
+      "watchAriaNew": "مشاهدة المباراة كاملة: {homeTeam} ضد {awayTeam}، {count, plural, one {مقطع جديد واحد} two {مقطعان جديدان} few {{count, number, latn} مقاطع جديدة} many {{count, number, latn} مقطعاً جديداً} other {{count, number, latn} مقطع جديد}}",
+      "teamsVs": "{homeTeam} ضد {awayTeam}",
+      "teamsVsStyled": "{homeTeam} <muted>ضد</muted> {awayTeam}",
+      "clipLabelWithTitle": "{type}: {title}",
+      "chipTitle": "{label} — يفتح المباراة كاملة (الانتقال المباشر إلى المقطع قريباً)",
+      "chipAria": "{label}، يفتح المباراة كاملة",
+      "chipAriaNew": "{label}، جديد، يفتح المباراة كاملة",
+      "shareClipAria": "مشاركة {label}",
+      "shareClip": "مشاركة المقطع",
+      "watchFullMatch": "مشاهدة المباراة كاملة",
+      "matchRecording": "تسجيل المباراة"
+    },
+    "modules": {
+      "title": "وحداتك",
+      "empty": "لا ملفات بعد. أنشئ ملف لاعب أو مدرب لتبدأ باستقبال المقاطع المنسوبة إليك من الأندية.",
+      "setUpFirst": "أنشئ ملفك الأول",
+      "visibility": {
+        "public": "عام",
+        "authenticated": "للمسجّلين فقط",
+        "clubOnly": "للنادي فقط",
+        "private": "خاص"
+      },
+      "viewPublicAria": "عرض صفحة {label} العامة",
+      "viewPublicPage": "عرض الصفحة العامة",
+      "editAria": "تعديل {label}",
+      "editTitle": "تعديل {label} — يفتح المحرر العام (التعديل لكل وحدة على حدة قريباً)"
+    },
+    "access": {
+      "title": "الاشتراكات والصلاحيات",
+      "openPlayhub": "فتح PLAYHUB",
+      "empty": "لا اشتراكات أو تسجيلات مشتراة بعد. ستظهر هنا تسجيلات المباريات التي تشتريها أو تُمنح صلاحية الوصول إليها.",
+      "browsePlayhub": "تصفح على PLAYHUB ←",
+      "recordingsLabel": "التسجيلات المتاحة لك",
+      "purchasesLabel": "المشتريات المكتملة",
+      "lastAccess": "آخر وصول {when}",
+      "lastPurchase": "آخر شراء {when}",
+      "lastPurchaseWithAmount": "آخر شراء {when} · {amount}",
+      "relative": {
+        "today": "اليوم",
+        "yesterday": "أمس",
+        "daysAgo": "{count, plural, one {قبل يوم} two {قبل يومين} few {قبل {count, number, latn} أيام} many {قبل {count, number, latn} يوماً} other {قبل {count, number, latn} يوم}}",
+        "weeksAgo": "{count, plural, one {قبل أسبوع} two {قبل أسبوعين} few {قبل {count, number, latn} أسابيع} many {قبل {count, number, latn} أسبوعاً} other {قبل {count, number, latn} أسبوع}}"
+      }
+    },
+    "verifications": {
+      "title": "التوثيقات",
+      "empty": "لا توثيقات بعد. يمكن لمشرف النادي توثيقك من صفحة قائمة اللاعبين — وبعدها تظهر الشارة على ملفك العام وهنا.",
+      "new": "جديد",
+      "newAria": "توثيق جديد",
+      "seasonAndDate": "{season} · {date}"
+    },
+    "emptyState": {
+      "titleHasVariant": "بانتظار أول مقاطع مبارياتك",
+      "titleNoVariant": "أنشئ ملفك الشخصي لتبدأ باستقبال المقاطع",
+      "bodyHasVariant": "تصلك مقاطعك تلقائياً. بعد مباراتك القادمة، ستجد هنا كل لحظة يظهر فيها رقم قميصك — دون الحاجة إلى أي رفع.",
+      "bodyNoVariant": "أنشئ ملف اللاعب أولاً. فور أن يسجّل ناديك مباراة ويوسم رقمك، ستصل مقاطعك إلى هنا تلقائياً.",
+      "tip": "إذا لم يظهر شيء بعد المباراة، اطلب من مدربك تأكيد رقم قميصك للمباراة القادمة. عادةً ما تظهر التسجيلات خلال ساعات قليلة من صافرة النهاية."
+    },
+    "settings": {
+      "backToDashboard": "العودة إلى لوحة التحكم",
+      "title": "الإعدادات",
+      "subtitle": "تحكّم في من يرى ملفك الشخصي وكيف يتواصل معك PLAYBACK.",
+      "moduleVisibilityTitle": "ظهور الوحدات",
+      "moduleVisibilityDescription": "لكل وحدة في ملفك إعداد ظهور خاص بها. تظهر الوحدات العامة على <path>⁦/p/{username}⁩</path> لأي شخص يملك الرابط.",
+      "noModules": "ليس لديك أي وحدات بعد. أنشئ وحدة لاعب أو مدرب من لوحة التحكم.",
+      "playerWithSport": "لاعب {sport}",
+      "variantPlayer": "لاعب",
+      "variantCoach": "مدرب",
+      "visibilityPublic": "يمكن لأي شخص يملك الرابط المشاهدة",
+      "visibilityAuthenticated": "مستخدمو PLAYBACK المسجّلون فقط",
+      "visibilityClubOnly": "أعضاء الأندية المحددة فقط",
+      "visibilityPrivate": "مخفي عن الجميع باستثنائك",
+      "notificationsTitle": "الإشعارات",
+      "notificationsBody": "تنبيهات بريدية وفورية عندما ينسب إليك مدرب مقطعاً، أو يصدر توثيقاً، أو يدعوك إلى قائمة لاعبين.",
+      "parentalTitle": "الرقابة الأبوية",
+      "parentalBody": "إذا كنت تدير ملف قاصر، ستتمكن من هذا القسم من اشتراط الموافقة على النسب الجديدة، وتعيين الظهور الافتراضي، واعتماد التوثيقات."
+    }
+  },
+  "nav": {
+    "skipToContent": "تخطٍ إلى المحتوى",
+    "logoAriaLabel": "الصفحة الرئيسية لـ PLAYBACK",
+    "primaryNavLabel": "رئيسي",
+    "primaryMobileNavLabel": "رئيسي للجوال",
+    "mainMenuLabel": "القائمة الرئيسية",
+    "openMenu": "فتح القائمة",
+    "closeMenu": "إغلاق القائمة",
+    "accountMenu": "قائمة الحساب",
+    "liveNow": "مباشر الآن",
+    "signIn": "تسجيل الدخول",
+    "getStarted": "ابدأ الآن",
+    "dashboard": "لوحة التحكم",
+    "signOut": "تسجيل الخروج",
+    "items": {
+      "forClubs": {
+        "label": "للأندية",
+        "description": "كيف تنضم أكاديميتك إلى الشبكة."
+      },
+      "academy": {
+        "label": "الأكاديمية",
+        "description": "تسجيلات المباريات، ولقطات بالذكاء الاصطناعي، وملفات اللاعبين."
+      },
+      "tournaments": {
+        "label": "البطولات",
+        "description": "تصوير وبث بالذكاء الاصطناعي لكل مباراة."
+      },
+      "bookToPlay": {
+        "label": "احجز والعب",
+        "description": "ملاعب وصالات واستوديوهات — تُحجز في دقائق."
+      },
+      "playhub": {
+        "label": "PLAYHUB",
+        "description": "متجر تسجيلات المباريات — شاهد واشترك وامتلك."
+      },
+      "news": {
+        "label": "الأخبار",
+        "description": "شراكات وإنجازات وإعلانات الشركة."
+      }
+    },
+    "groups": {
+      "solutions": "الحلول",
+      "platform": "المنصة"
+    },
+    "stats": {
+      "players": {
+        "value": "75k+",
+        "label": "لاعب"
+      },
+      "clubs": {
+        "value": "25+",
+        "label": "نادياً"
+      },
+      "countries": {
+        "value": "10+",
+        "label": "دول"
+      }
+    },
+    "trustedBy": "موثوق من شبكة PLAYBACK.",
+    "tagline": "You PLAY. We BACK.",
+    "announcement": {
+      "regionLabel": "إعلان الموقع",
+      "eyebrow": "شراكة جديدة",
+      "title": "PLAYBACK × PlayerData",
+      "description": "تتبع GPS احترافي، أصبح الآن أساسياً لكل لاعب في الأكاديمية.",
+      "readCta": "اقرأ",
+      "dismiss": "إخفاء الإعلان"
+    }
+  },
+  "footer": {
+    "product": {
+      "title": "المنتج",
+      "academy": "الأكاديمية",
+      "tournament": "البطولات",
+      "playscanner": "PLAYSCANNER",
+      "playhub": "PLAYHUB"
+    },
+    "audiences": {
+      "title": "الجمهور",
+      "forClubs": "للأندية",
+      "forPlayers": "للاعبين",
+      "forCoaches": "للمدربين"
+    },
+    "company": {
+      "title": "الشركة",
+      "network": "الشبكة",
+      "press": "الأخبار",
+      "contact": "تواصل معنا"
+    },
+    "legal": {
+      "title": "قانوني",
+      "terms": "الشروط والأحكام",
+      "privacy": "الخصوصية",
+      "cookies": "ملفات تعريف الارتباط"
+    }
+  },
+  "landing": {
+    "header": {
+      "metaDescription": "PLAYBACK هو نظام التشغيل للرياضة. تسجيلات مباريات بالذكاء الاصطناعي، ولقطات، وتحليلات، وإدارة أكاديميات، وملفات لاعبين لأكثر من 75,000 لاعب عبر أكثر من 25 نادياً في أكثر من 10 دول.",
+      "ogDescription": "نظام التشغيل للرياضة. تسجيلات مباريات بالذكاء الاصطناعي، ولقطات، وتحليلات، وإدارة أكاديميات، وملفات لاعبين.",
+      "eyebrow": "You PLAY. We BACK.",
+      "titleLine1": "أفضل 1%<br></br> من الأدوات.",
+      "titleLine2": "للـ99%<br></br> الذين يلعبون.",
+      "tagline": "كل مباراة مصوَّرة. كل إحصائية متتبَّعة. كل لاعب مرئي.",
+      "subtitle": "يمنح PLAYBACK جميع اللاعبين الوصول إلى التقنية نفسها التي يستخدمها المحترفون — عبر أكثر من 25 نادياً في أكثر من 10 دول.",
+      "ctaPrimary": "أنشئ ملفك الشخصي",
+      "ctaSecondary": "للأندية — تحدث إلينا",
+      "stats": {
+        "players": {
+          "value": "75,000+",
+          "label": "لاعب مدعوم حول العالم"
+        },
+        "partners": {
+          "value": "25+",
+          "label": "شريكاً في أكثر من 10 دول"
+        },
+        "saved": {
+          "value": "£750k+",
+          "label": "وفّرناها لشركائنا"
+        },
+        "contracts": {
+          "value": "12",
+          "label": "عقداً احترافياً موقَّعاً"
+        }
+      },
+      "trustLabel": "نُشغِّل شبكة PLAYBACK"
+    },
+    "about": {
+      "eyebrow": "صُمم من أجل",
+      "title": "شبكة واحدة. لكل الأطراف.",
+      "audiences": {
+        "clubs": {
+          "eyebrow": "للأندية والأكاديميات",
+          "headline": "آخر شريك ستحتاج إليه.",
+          "body": "ذكاء اصطناعي وبرمجيات وإعلام وخدمات سحابية — كلها مبنية داخلياً. فوق أفضل أجهزة التصوير من Veo وSpiideo وClutch. نظام تشغيل واحد لكل فريق وموسم وملعب.",
+          "bullet1": "ذكاء اصطناعي وبرمجيات وبنية سحابية داخلية",
+          "bullet2": "أتمتة إعلامية — مقاطع وتصاميم وتوزيع",
+          "bullet3": "أجهزة احترافية مشمولة — Veo وSpiideo وClutch وGameCam وHudl وFairVision وPlayerData",
+          "bullet4": "نموذج مبني على الأداء — ننمو معاً",
+          "cta": "انضم إلى الشبكة"
+        },
+        "players": {
+          "eyebrow": "للاعبين وأولياء الأمور",
+          "headline": "عِش اللحظة.",
+          "body": "يلتقط ذكاؤنا الاصطناعي كل مباراة، ويقتطع كل هدف، ويبني الملف الذي يمكن للكشافين العثور عليه فعلاً. التقنية نفسها التي يعتمد عليها المحترفون، في خدمة الـ99% الذين يلعبون.",
+          "bullet1": "لقطات مولّدة بالذكاء الاصطناعي، تصلك خلال دقائق",
+          "bullet2": "ملف PLAYBACK — بمثابة LinkedIn للرياضة",
+          "bullet3": "GPS وتحليلات وتصاميم مباريات مدمجة",
+          "bullet4": "25 اختباراً مع أندية تحققت عبر ملفات PLAYBACK",
+          "cta": "انضم إلى الأكاديمية"
+        },
+        "coaches": {
+          "eyebrow": "للمدربين والجهاز الفني",
+          "headline": "الفيديو وGPS والعمليات — منظومة واحدة.",
+          "body": "برمجياتنا تغنيك عن الأدوات الست التي يجمعها معظم المدربين. الوسم والتحليلات وتوزيع المقاطع وبيانات اللاعبين — واجهة واحدة، بنيناها لتعمل معاً.",
+          "bullet1": "وسم المباريات بالذكاء الاصطناعي وتحليلات فيديو فورية",
+          "bullet2": "GPS وأحداث ومؤشرات مقارنة لكل لاعب",
+          "bullet3": "عمليات مؤتمتة مبنية على الذكاء الاصطناعي",
+          "bullet4": "تسليم تلقائي للمقاطع إلى اللاعبين وأولياء الأمور",
+          "cta": "شاهد المنصة"
+        }
+      }
+    },
+    "services": {
+      "eyebrow": "ماذا نقدّم",
+      "title": "أدوات النخبة، في متناولك.",
+      "academy": {
+        "eyebrow": "أكاديمية PLAYBACK",
+        "title": "كل مباراة، كل لحظة، كل لاعب.",
+        "body": "الاشتراك الذي يحوّل موسم الأكاديمية إلى معرض احترافي. تسجيلات مباريات، ولقطات بالذكاء الاصطناعي، وبيانات GPS، وملف لاعب يمكن للكشافين العثور عليه.",
+        "feature1": "لقطات مباريات مولّدة بالذكاء الاصطناعي",
+        "feature2": "ملف اللاعب — بمثابة LinkedIn للرياضة",
+        "feature3": "بيانات PlayerData GPS: المسافة والسرعة والتسارع",
+        "feature4": "تسجيلات المباريات عبر Veo وSpiideo وClutch",
+        "feature5": "مشاركة سهلة لأولياء الأمور وظهور أمام الكشافين",
+        "cta": "انضم إلى الأكاديمية",
+        "imageAlt": "ملف لاعب PLAYBACK — واجهة بمثابة LinkedIn للرياضة"
+      },
+      "tournament": {
+        "eyebrow": "بطولات PLAYBACK",
+        "title": "نظّم يوم البطولة الذي لا يُنسى.",
+        "body": "كاميرات ذكاء اصطناعي، وتصوير تلقائي للمباريات، ومقاطع قابلة للمشاركة لكل مباراة — التقنية نفسها التي تثق بها Inter Milan وRoma وBrentford. من الكؤوس الخيرية إلى دوريات 11 لاعباً، كلها مغطاة.",
+        "feature1": "تصوير تلقائي لكل مباراة",
+        "feature2": "اكتشاف اللقطات بالذكاء الاصطناعي وتصدير المقاطع",
+        "feature3": "بث مباشر وإخراج بجودة البث التلفزيوني",
+        "feature4": "تحليلات للفرق واللاعبين",
+        "feature5": "هوية بصرية للبطولة ومركز إعلامي",
+        "cta": "استضف بطولة",
+        "imageAlt": "بث مباراة مدعوم من PLAYBACK في إحدى مباريات البطولة"
+      }
+    },
+    "network": {
+      "eyebrow": "شبكة PLAYBACK",
+      "title": "مقدَّم من PLAYBACK."
+    },
+    "press": {
+      "eyebrow": "الجوائز والتقدير",
+      "title": "نعيد تعريف الصناعة."
+    },
+    "latestNews": {
+      "eyebrow": "الأخبار",
+      "title": "من لندن إلى العالم.",
+      "viewAll": "عرض الكل"
+    },
+    "sports": {
+      "eyebrow": "رياضات مدعومة",
+      "title": "لكل رياضة، ولكل ملعب.",
+      "items": {
+        "basketball": "كرة السلة",
+        "football": "كرة القدم",
+        "volleyball": "الكرة الطائرة",
+        "rugby": "الرغبي",
+        "tennis": "التنس",
+        "lacrosse": "اللاكروس",
+        "padel": "البادل",
+        "more": "والمزيد"
+      }
+    },
+    "contact": {
+      "eyebrow": "تواصل معنا",
+      "title": "انضم إلى الشبكة.",
+      "honeypotLabel": "لا تملأ هذا الحقل",
+      "nameLabel": "الاسم الكامل",
+      "namePlaceholder": "Tyler Adams",
+      "emailLabel": "البريد الإلكتروني",
+      "emailPlaceholder": "projectmayhem@fc.com",
+      "companyLabel": "النادي أو الشركة (اختياري)",
+      "companyPlaceholder": "ناديك أو أكاديميتك أو مؤسستك",
+      "whoLabel": "أنا...",
+      "whoPlaceholder": "- اختر -",
+      "whoOptions": {
+        "player": "لاعب",
+        "venue": "نادٍ",
+        "equipmentProvider": "مزوّد معدات",
+        "leagueOrganiser": "منظّم دوري",
+        "ambassador": "سفير محتمل"
+      },
+      "messageLabel": "الرسالة (اختياري)",
+      "messagePlaceholder": "مرحباً...",
+      "send": "إرسال",
+      "sending": "جارٍ التحميل...",
+      "submitting": "جارٍ الإرسال…",
+      "errorRateLimited": "أنت ترسل بسرعة كبيرة. حاول مرة أخرى بعد دقيقة.",
+      "errorGeneric": "حدث خطأ ما — يرجى مراسلتنا مباشرة عبر البريد الإلكتروني.",
+      "errorNetwork": "تعذّر الوصول إلى الخادم. يرجى المحاولة مرة أخرى.",
+      "errorFallback": "حدث خطأ ما.",
+      "success": "شكراً — سنتواصل معك قريباً."
+    }
+  },
+  "media": {
+    "checkingAuth": "جارٍ التحقق من تسجيل الدخول…",
+    "couldNotLoadVideo": "تعذّر تحميل الفيديو",
+    "failedToLoadVideo": "فشل تحميل الفيديو",
+    "uploadFailed": "فشل الرفع",
+    "processingFailed": "فشلت المعالجة",
+    "startingUpload": "جارٍ بدء الرفع…",
+    "processingVideo": "جارٍ معالجة الفيديو…",
+    "uploading": "جارٍ الرفع…",
+    "videoThumbnail": "صورة مصغرة للفيديو",
+    "failedToUpdateProfile": "تعذّر تحديث الملف الشخصي",
+    "dropValidImage": "يرجى إسقاط ملف صورة صالح",
+    "failedToDeleteAvatar": "تعذّر حذف الصورة الشخصية",
+    "changePhoto": "تغيير الصورة",
+    "uploadPhoto": "رفع صورة"
+  },
+  "playscanner": {
+    "meta": {
+      "title": "PLAYSCANNER — احجز الملاعب الرياضية",
+      "description": "ابحث واحجز ملاعب كرة القدم والبادل وكرة السلة والتنس في أنحاء لندن. قارن الأسعار لحظياً عبر مزوّدين منهم Playtomic وMATCHi وPadel Mates.",
+      "ogTitle": "PLAYSCANNER — احجز الملاعب الرياضية",
+      "ogDescription": "حجز ملاعب مجمَّع عبر المزوّدين. قارن الأسعار لحظياً."
+    },
+    "search": {
+      "brandLine": "PLAYSCANNER - {city}",
+      "title": "بحث واحد. كل المواعيد.",
+      "subtitle": "نجمع أكثر من 10 مزوّدين — Playtomic وMATCHi وPowerLeague وGoals وFooty Addicts وغيرهم. تتحدث البيانات كل 15 دقيقة.",
+      "dates": {
+        "today": "اليوم",
+        "tomorrow": "غداً",
+        "tomorrowShort": "غداً"
+      },
+      "sports": {
+        "football": "كرة القدم",
+        "padel": "بادل",
+        "basketball": "كرة السلة",
+        "tennis": "تنس"
+      },
+      "location": {
+        "london": "لندن",
+        "comingSoon": "لندن فقط — مدن أخرى قريباً"
+      },
+      "errors": {
+        "searchFailed": "فشل البحث"
+      }
+    },
+    "results": {
+      "tryAgain": "إعادة المحاولة",
+      "empty": {
+        "title": "{sport, select, football {لا ملاعب كرة قدم متاحة في هذا اليوم} tennis {لا ملاعب تنس متاحة في هذا اليوم} padel {لا ملاعب بادل متاحة في هذا اليوم} basketball {لا ملاعب كرة سلة متاحة في هذا اليوم} other {لا ملاعب متاحة في هذا اليوم}}",
+        "subtitle": "جرّب تاريخاً آخر أو رياضة أخرى، أو أخبرنا بالمزوّد الذي تودّ أن نغطيه."
+      },
+      "stats": {
+        "venues": "{count, plural, one {نادٍ واحد} two {ناديان} few {{count, number, latn} أندية} many {{count, number, latn} نادياً} other {{count, number, latn} نادٍ}}",
+        "venuesShort": "{count} ن",
+        "from": "من {price}",
+        "live": "مباشر",
+        "minutesShort": "{minutes} د"
+      },
+      "showMore": "عرض المزيد ({count, plural, one {واحد متبقٍ} two {اثنان متبقيان} few {{count, number, latn} متبقية} many {{count, number, latn} متبقياً} other {{count, number, latn} متبقٍ}})",
+      "providerRequest": {
+        "prompt": "هل ينقصنا مزوّد حجوزات؟",
+        "placeholder": "ما المزوّد الذي تودّ أن نضيفه؟ (مثال: Playtomic، MATCHi، LTA Clubspark)"
+      }
+    },
+    "filters": {
+      "title": "التصفية",
+      "clearAll": "مسح الكل",
+      "clear": "مسح",
+      "sheetDescription": "صفِّ نتائج البحث حسب السعر والمزوّد والنادي",
+      "time": {
+        "morning": "صباحاً",
+        "afternoon": "ظهراً",
+        "evening": "مساءً"
+      },
+      "indoor": "مغطى",
+      "dropIn": "لعب مفتوح",
+      "priceRange": "نطاق السعر",
+      "resetPrice": "إعادة ضبط السعر",
+      "timeRange": "نطاق الوقت",
+      "resetTime": "إعادة ضبط الوقت",
+      "providers": "المزوّدون",
+      "clearProviders": "مسح المزوّدين",
+      "venues": "الأندية",
+      "venuesWithCount": "الأندية ({count, number, latn})",
+      "searchVenues": "ابحث عن الأندية...",
+      "clearVenues": "مسح الأندية",
+      "showResults": "{count, plural, one {عرض نتيجة واحدة} two {عرض نتيجتين} few {عرض {count, number, latn} نتائج} many {عرض {count, number, latn} نتيجة} other {عرض {count, number, latn} نتيجة}}",
+      "filterOptions": "خيارات التصفية",
+      "activeFilters": "التصفيات النشطة:",
+      "providersCount": "{count, plural, one {مزوّد واحد} two {مزوّدان} few {{count, number, latn} مزوّدين} many {{count, number, latn} مزوّداً} other {{count, number, latn} مزوّد}}",
+      "venuesCount": "{count, plural, one {نادٍ واحد} two {ناديان} few {{count, number, latn} أندية} many {{count, number, latn} نادياً} other {{count, number, latn} نادٍ}}",
+      "from": "من",
+      "to": "إلى",
+      "earliestHint": "(أبكر وقت: {time})",
+      "latestHint": "(آخر وقت: {time})",
+      "selectStartTime": "اختر وقت البداية",
+      "selectEndTime": "اختر وقت النهاية",
+      "allVenues": "كل الأندية",
+      "venuesSelectedCount": "الأندية المحددة: {count, number, latn}",
+      "selectedVenues": "المحدد: {count, plural, one {نادٍ واحد} two {ناديان} few {{count, number, latn} أندية} many {{count, number, latn} نادياً} other {{count, number, latn} نادٍ}}"
+    },
+    "venue": {
+      "justNow": "الآن",
+      "minutesAgo": "قبل {minutes, number, latn} د",
+      "hoursAgo": "قبل {hours, number, latn} س",
+      "perPerson": "/شخص",
+      "perHour": "/ساعة",
+      "perDuration": "/{minutes, number, latn} د",
+      "priceOnSite": "السعر على موقع الحجز",
+      "courtsCount": "{count, plural, one {ملعب واحد} two {ملعبان} few {{count, number, latn} ملاعب} many {{count, number, latn} ملعباً} other {{count, number, latn} ملعب}}",
+      "spotsLeft": "{count, plural, one {مكان واحد متبقٍ} two {مكانان متبقيان} few {{count, number, latn} أماكن متبقية} many {{count, number, latn} مكاناً متبقياً} other {{count, number, latn} مكان متبقٍ}}",
+      "tags": {
+        "dropIn": "لعب مفتوح",
+        "aSide": "{count} ضد {count}",
+        "panoramic": "بانورامي",
+        "indoor": "مغطى",
+        "outdoor": "مكشوف",
+        "surface": "{surface, select, hard {صلب} clay {ترابي} grass {عشبي} other {{surface}}}",
+        "durations": "{durations} د"
+      },
+      "showLess": "أقل",
+      "showMoreCount": "+{count}"
+    },
+    "booking": {
+      "dialogLabel": "حجز {venue}",
+      "close": "إغلاق نافذة الحجز",
+      "time": "الوقت",
+      "durationMin": "{minutes, number, latn} د",
+      "perPerson": "للشخص الواحد",
+      "price": "السعر",
+      "priceOnSite": "السعر على موقع الحجز",
+      "slotUnavailable": "قد لا يكون هذا الموعد متاحاً بعد الآن. جرّب وقتاً آخر.",
+      "priceChanged": "تغيّر السعر منذ آخر تحقق",
+      "checking": "جارٍ التحقق من التوفر...",
+      "unavailable": "غير متاح",
+      "bookOn": "احجز عبر {provider}",
+      "joinOn": "انضم عبر {provider}",
+      "redirectNotice": "سيتم تحويلك إلى {provider} لإتمام حجزك"
+    },
+    "map": {
+      "loading": "جارٍ تحميل الخريطة",
+      "slotsCount": "{count, plural, one {موعد واحد} two {موعدان} few {{count, number, latn} مواعيد} many {{count, number, latn} موعداً} other {{count, number, latn} موعد}}",
+      "from": "من",
+      "next": "التالي",
+      "book": "احجز",
+      "emptyTitle": "لا أندية لعرضها على الخريطة",
+      "emptySubtitle": "جرّب بحثاً مختلفاً أو عُد لاحقاً"
+    }
+  },
+  "profile": {
+    "meta": {
+      "notFound": "الملف الشخصي غير موجود",
+      "profileDescription": "ملف {name} الشخصي على PLAYBACK Sports",
+      "moduleDescription": "ملف {module} الخاص بـ{name} على PLAYBACK Sports"
+    },
+    "hero": {
+      "featuredHighlight": "اللقطة المميزة"
+    },
+    "about": {
+      "title": "نبذة"
+    },
+    "keyInfo": {
+      "title": "معلومات أساسية",
+      "position": "المركز",
+      "foot": "القدم",
+      "height": "الطول",
+      "weight": "الوزن",
+      "age": "العمر",
+      "jersey": "رقم القميص"
+    },
+    "positions": {
+      "title": "المراكز"
+    },
+    "coaching": {
+      "title": "التدريب",
+      "ageGroups": "الفئات العمرية",
+      "philosophy": "الفلسفة التدريبية"
+    },
+    "career": {
+      "title": "المسيرة",
+      "present": "حتى الآن",
+      "range": "{start} - {end}",
+      "rangeOngoing": "{start} - حتى الآن"
+    },
+    "education": {
+      "title": "التعليم"
+    },
+    "stats": {
+      "title": "الإحصائيات",
+      "empty": "لا إحصائيات بعد",
+      "emptyHint": "ستظهر هنا الإحصائيات من PlayerData والإدخالات اليدوية.",
+      "vsOpponent": "ضد {opponent}"
+    },
+    "highlights": {
+      "title": "اللقطات",
+      "empty": "لا لقطات بعد",
+      "views": "{count, plural, one {مشاهدة واحدة} two {مشاهدتان} few {{count, number, latn} مشاهدات} many {{count, number, latn} مشاهدة} other {{count, number, latn} مشاهدة}}"
+    },
+    "clips": {
+      "title": "مقاطع المباريات",
+      "taggedByClubs": "موسومة من الأندية",
+      "matchup": "{home} ضد {away}"
+    },
+    "moduleSwitcher": {
+      "ariaLabel": "وحدات الملف الشخصي"
+    },
+    "verified": {
+      "byOne": "موثّق من {name}",
+      "byList": "موثّق من {names}",
+      "byCount": "موثّق من {count, plural, one {نادٍ واحد} two {ناديين} few {{count, number, latn} أندية} many {{count, number, latn} نادياً} other {{count, number, latn} نادٍ}}"
+    },
+    "share": {
+      "trigger": "مشاركة",
+      "title": "مشاركة الملف الشخصي",
+      "description": "اختر ما تريد مشاركته. الرابط عام — يمكن لأي شخص يملكه المشاهدة.",
+      "fullProfile": "الملف الكامل",
+      "fullProfileDescription": "جميع الوحدات العامة — يرى المستلم كل ما جعلته عاماً.",
+      "noPublicModules": "لا وحدات عامة بعد — فعّل واحدة لتتمكن من مشاركة وحدة بمفردها.",
+      "moduleOption": "وحدة {label}",
+      "moduleOptionDescription": "واجهة {label} فقط — لا شيء آخر مرئي عبر هذا الرابط.",
+      "generatedLink": "الرابط المُنشأ",
+      "copyLink": "نسخ الرابط",
+      "shareSheet": "المشاركة عبر نافذة مشاركة النظام",
+      "shareTitle": "⁦{username}⁩ على PLAYBACK"
+    },
+    "shareClip": {
+      "title": "مشاركة {type}",
+      "description": "{match}. الرابط عام — يمكن لأي شخص يملكه المشاهدة على PLAYHUB.",
+      "descriptionWithTitle": "{clipTitle} — {match}. الرابط عام — يمكن لأي شخص يملكه المشاهدة على PLAYHUB.",
+      "shareTitleWithClip": "{type}: {clipTitle} — {match}",
+      "shareTitleFromMatch": "{type} من {match}",
+      "matchup": "{home} ضد {away}"
+    },
+    "privacy": {
+      "visibilityAriaLabel": "ظهور الوحدة",
+      "visibilityAriaLabelFor": "ظهور وحدة {label}",
+      "saved": "تم الحفظ",
+      "failed": "فشل",
+      "options": {
+        "public": {
+          "label": "عام",
+          "description": "يمكن لأي شخص عرض هذه الوحدة"
+        },
+        "authenticated": {
+          "label": "للمسجّلين فقط",
+          "description": "أي شخص لديه حساب PLAYBACK"
+        },
+        "clubOnly": {
+          "label": "للنادي فقط",
+          "description": "قريباً — اختر الأندية التي يمكنها رؤية هذه الوحدة"
+        },
+        "private": {
+          "label": "خاص",
+          "description": "أنت فقط"
+        }
+      }
+    },
+    "edit": {
+      "sections": {
+        "personal": "المعلومات الشخصية",
+        "personalEmpty": "أضف الاسم والجنسية",
+        "about": "نبذة",
+        "aboutEmpty": "أضف نبذة تعريفية",
+        "physical": "المعلومات البدنية",
+        "physicalEmpty": "أضف الطول والوزن وتاريخ الميلاد",
+        "football": "تفاصيل كرة القدم",
+        "footballEmpty": "عدّل تفاصيل كرة القدم"
+      },
+      "dialogs": {
+        "personal": "تعديل المعلومات الشخصية",
+        "about": "تعديل النبذة",
+        "physical": "تعديل المعلومات البدنية",
+        "football": "تعديل تفاصيل كرة القدم"
+      },
+      "fields": {
+        "fullName": "الاسم الكامل",
+        "fullNamePlaceholder": "اسمك الكامل",
+        "nationality": "الجنسية",
+        "bio": "نبذة",
+        "bioPlaceholder": "عرّف الناس بنفسك...",
+        "location": "الموقع",
+        "locationPlaceholder": "مثال: لندن، المملكة المتحدة",
+        "socialLinks": "روابط التواصل الاجتماعي",
+        "instagramPlaceholder": "اسم المستخدم في Instagram",
+        "twitterPlaceholder": "اسم المستخدم في Twitter/X",
+        "linkedinPlaceholder": "اسم المستخدم في LinkedIn",
+        "height": "الطول (سم)",
+        "weight": "الوزن (كجم)",
+        "dateOfBirth": "تاريخ الميلاد",
+        "dateOfBirthPlaceholder": "اختر تاريخ ميلادك",
+        "experienceLevel": "المستوى",
+        "experiencePlaceholder": "اختر المستوى",
+        "preferredFoot": "القدم المفضلة",
+        "primaryPosition": "المركز الأساسي",
+        "positionPlaceholder": "اختر المركز",
+        "secondaryPositions": "المراكز الثانوية",
+        "jerseyNumber": "رقم القميص",
+        "jerseyPlaceholder": "مثال: 10"
+      },
+      "nationality": {
+        "select": "اختر الجنسية",
+        "search": "ابحث عن دولة...",
+        "empty": "لم يُعثر على دولة."
+      },
+      "actions": {
+        "cancel": "إلغاء",
+        "save": "حفظ"
+      },
+      "errors": {
+        "saveFailed": "تعذّر الحفظ"
+      }
+    },
+    "form": {
+      "steps": {
+        "basicTitle": "المعلومات الأساسية",
+        "basicDescription": "أخبرنا عن خلفيتك الكروية.",
+        "positionsTitle": "مراكز اللعب",
+        "positionsDescription": "اختر مركزك الأساسي وأي مراكز ثانوية.",
+        "reviewTitle": "المراجعة والإنشاء",
+        "reviewDescription": "تحقق من بياناتك قبل إنشاء ملف اللاعب."
+      },
+      "fields": {
+        "experienceLevel": "المستوى",
+        "experiencePlaceholder": "اختر مستواك",
+        "preferredFoot": "القدم المفضلة",
+        "jerseyNumber": "رقم القميص",
+        "jerseyPlaceholder": "مثال: 10",
+        "primaryPosition": "المركز الأساسي",
+        "positionPlaceholder": "اختر المركز",
+        "secondaryPositions": "المراكز الثانوية",
+        "optional": "(اختياري)"
+      },
+      "summary": {
+        "experience": "الخبرة",
+        "preferredFoot": "القدم المفضلة",
+        "primaryPosition": "المركز الأساسي",
+        "secondary": "الثانوية",
+        "jerseyNumber": "رقم القميص"
+      },
+      "actions": {
+        "cancel": "إلغاء",
+        "back": "رجوع",
+        "next": "التالي",
+        "create": "إنشاء الملف"
+      },
+      "errors": {
+        "generic": "حدث خطأ ما"
+      }
+    }
+  },
+  "profileLabels": {
+    "positions": {
+      "goalkeeper": "حارس مرمى",
+      "centreBack": "قلب دفاع",
+      "leftBack": "ظهير أيسر",
+      "rightBack": "ظهير أيمن",
+      "leftWingBack": "ظهير جناح أيسر",
+      "rightWingBack": "ظهير جناح أيمن",
+      "defensiveMidfielder": "وسط دفاعي",
+      "centralMidfielder": "وسط",
+      "attackingMidfielder": "وسط هجومي",
+      "leftMidfielder": "وسط أيسر",
+      "rightMidfielder": "وسط أيمن",
+      "leftWinger": "جناح أيسر",
+      "rightWinger": "جناح أيمن",
+      "striker": "مهاجم صريح",
+      "centreForward": "رأس حربة"
+    },
+    "experience": {
+      "recreational": "ترفيهي",
+      "schoolTeam": "فريق مدرسي",
+      "sundayLeague": "كرة الأحياء",
+      "clubYouth": "ناشئو الأندية",
+      "academy": "أكاديمية",
+      "amateurClub": "نادٍ للهواة",
+      "nonLeague": "خارج الدوريات المحترفة",
+      "collegeUniversity": "كلية / جامعة",
+      "semiProfessional": "شبه محترف",
+      "professional": "محترف",
+      "formerProfessional": "محترف سابق"
+    },
+    "foot": {
+      "left": "اليسرى",
+      "right": "اليمنى",
+      "both": "كلتاهما"
+    },
+    "variants": {
+      "player": "لاعب",
+      "coach": "مدرب",
+      "scout": "كشاف",
+      "agent": "وكيل لاعبين",
+      "referee": "حكم",
+      "trainer": "مدرب لياقة",
+      "physio": "أخصائي علاج طبيعي"
+    },
+    "clipTypes": {
+      "goal": "هدف",
+      "assist": "تمريرة حاسمة",
+      "save": "تصدٍ",
+      "tackle": "تدخل",
+      "skill": "مهارة",
+      "custom": "مقطع"
+    }
+  }
+}

@@ -34,9 +34,12 @@ function splitLocalePrefix(pathname: string) {
   return { prefix: '', bare: pathname };
 }
 
-// Paths that require authentication. The /admin route additionally checks
-// profiles.is_admin inside src/app/[locale]/admin/layout.tsx via
-// requireAdmin().
+// Paths that require authentication. This middleware match is ADVISORY
+// (best-effort UX redirect) — real enforcement is server-side: /admin goes
+// through requireAdmin() (getUser() + profiles.is_admin) in
+// src/app/[locale]/admin/layout.tsx, and every /dashboard data path
+// re-authenticates via getUser() + RLS. Do not add data access that trusts
+// this check alone.
 const protectedPaths = ['/dashboard', '/admin'];
 
 // Paths that should redirect authenticated users
