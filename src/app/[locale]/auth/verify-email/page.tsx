@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@braintwopoint0/playback-commons/auth';
 import { Button } from '@braintwopoint0/playback-commons/ui';
 
 export default function VerifyEmailPage() {
+  const t = useTranslations('auth.verifyEmail');
   const { user, signOut } = useAuth();
   const router = useRouter();
 
@@ -26,23 +28,26 @@ export default function VerifyEmailPage() {
           className="text-2xl font-bold"
           style={{ color: 'var(--timberwolf)' }}
         >
-          Verify your email
+          {t('title')}
         </h1>
         <p style={{ color: 'var(--ash-grey)' }}>
-          We&apos;ve sent a verification link to{' '}
-          <span
-            className="font-semibold"
-            style={{ color: 'var(--timberwolf)' }}
-          >
-            {user?.email}
-          </span>
-          .<br />
-          Please check your inbox (and spam folder) and click the link to
-          activate your account.
+          {t.rich('sentTo', {
+            email: user?.email ?? '',
+            highlight: (chunks) => (
+              <span
+                dir="ltr"
+                className="font-semibold"
+                style={{ color: 'var(--timberwolf)' }}
+              >
+                {chunks}
+              </span>
+            ),
+          })}
+          <br />
+          {t('instructions')}
         </p>
         <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
-          You can close this window after verifying. Once done, sign in with
-          your credentials.
+          {t('closeHint')}
         </p>
         <Button
           onClick={async () => {
@@ -52,7 +57,7 @@ export default function VerifyEmailPage() {
           className="w-full font-semibold rounded-xl"
           style={{ backgroundColor: 'var(--ash-grey)', color: 'var(--night)' }}
         >
-          Back to login
+          {t('backToLogin')}
         </Button>
       </div>
     </div>

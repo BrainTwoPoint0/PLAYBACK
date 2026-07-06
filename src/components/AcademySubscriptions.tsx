@@ -1,15 +1,25 @@
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { Button, HoverEffect } from '@braintwopoint0/playback-commons/ui';
 import SectionTitle from './ui/section-title';
 
 export function AcademySubscriptions() {
+  const t = useTranslations('academy.subscriptions');
+  const items = teams.map(({ descriptionKey, ...team }) => ({
+    ...team,
+    description: t(`clubs.${descriptionKey}`),
+  }));
+
   return (
     <div className="max-w-5xl mx-auto px-8">
-      <SectionTitle title="PLAYBACK Academy Services" />
-      <HoverEffect items={teams} />
+      <SectionTitle title={t('sectionTitle')} />
+      <HoverEffect items={items} />
       <Link href="https://billing.stripe.com/p/login/cN29D13rV5X84UgdQQ">
         <Button variant="playback" className="w-full">
-          Billing Management &rarr;
+          {t('billing')}{' '}
+          <span aria-hidden className="inline-block rtl:-scale-x-100">
+            →
+          </span>
         </Button>
       </Link>
 
@@ -17,6 +27,9 @@ export function AcademySubscriptions() {
     </div>
   );
 }
+
+// Titles are club/partner names (data — never translated). Descriptions are
+// looked up from academy.subscriptions.clubs.* at render time.
 export const teams = [
   {
     // Unlike the other partners (which link out to Stripe Payment Links),
@@ -24,58 +37,44 @@ export const teams = [
     // parents land on /academy/lyl and pick their club + age group, then
     // checkout + claim-account happens via the integrated D1/D2 flow.
     title: 'London Youth League',
-    description:
-      'Pick your club from across the London Youth League and subscribe to your age group — match recordings, training clips, and analysis from every fixture.',
+    descriptionKey: 'lyl',
     link: '/academy/lyl',
     logoUrl: '/partners/lyl.png',
   },
   {
     title: 'Soccer Elite FA',
-    description:
-      'With venue coverage at Star Meadow Sports Complex, SEFA players now have access to the PLAYBACK services.',
+    descriptionKey: 'sefa',
     link: 'https://buy.stripe.com/14keYz1AS5WQ0QU5km',
     logoUrl: '/partners/soccerelite.svg',
   },
   {
     title: 'Complete Football Academy',
-    description:
-      'JPL & Mezzie Youth teams can now access the PLAYBACK services across their venues.',
+    descriptionKey: 'cfa',
     link: 'https://buy.stripe.com/28obMn1ASdpi1UY9AJ',
     logoUrl: '/partners/cfa.png',
   },
   {
     title: 'Maestros Academy',
-    description:
-      'Select Maestros Academy teams can now access the PLAYBACK services across both of their venues.',
+    descriptionKey: 'maestros',
     link: 'https://buy.stripe.com/eVa8AbdjA5WQczCbIP',
     logoUrl: '/partners/maestros.png',
   },
   {
     title: 'Hollands & Blair',
-    description:
-      'Select Hollands & Blair teams are able to utilize the PLAYBACK infrastructure to access their match footage at Star Meadow Sports Complex.',
+    descriptionKey: 'hb',
     link: 'https://buy.stripe.com/9AQdUv4N484Y0QU5kn',
     logoUrl: '/partners/hb.png',
   },
   {
     title: 'Maidstone United',
-    description:
-      'We have partnered with Maidstone United to provide their players with the PLAYBACK Academy service.',
+    descriptionKey: 'maidstone',
     link: 'https://buy.stripe.com/3cs6s30wO992eHKdQU',
     logoUrl: '/partners/maidstone.svg',
   },
   {
     title: 'Soccer Elite FA Women',
-    description:
-      'With venue coverage at Star Meadow Sports Complex, SEFA Women players now have access to the PLAYBACK services.',
+    descriptionKey: 'sefaWomen',
     link: 'https://buy.stripe.com/cN26s393kgBuczC8wC',
     logoUrl: '/partners/soccerelite.svg',
   },
-  // {
-  //   title: 'Coming Soon',
-  //   description:
-  //     'The PLAYBACK team is continuously working on onboarding new venues and academies. If you would like to be part of the PLAYBACK ecosystem, REACH OUT!',
-  //   link: '/contact',
-  //   logoUrl: '/branding/PB-icon.png',
-  // },
-];
+] as const;

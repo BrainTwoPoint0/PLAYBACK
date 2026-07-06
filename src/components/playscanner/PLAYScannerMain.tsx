@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/i18n/navigation';
+import { useTranslations, useFormatter } from 'next-intl';
 import { motion, useReducedMotion } from 'motion/react';
 import SearchResults from './SearchResults';
 import SportIcon from './SportIcon';
@@ -28,50 +29,44 @@ function toLocalISODate(d: Date) {
 }
 
 const DATES = (() => {
-  const dates: { label: string; shortLabel: string; value: string }[] = [];
+  const dates: { date: Date; offset: number; value: string }[] = [];
   for (let i = 0; i < 7; i++) {
     const d = new Date();
     d.setDate(d.getDate() + i);
-    const value = toLocalISODate(d);
-    const label =
-      i === 0
-        ? 'Today'
-        : i === 1
-          ? 'Tomorrow'
-          : d.toLocaleDateString('en-GB', {
-              weekday: 'short',
-              day: 'numeric',
-            });
-    const shortLabel =
-      i === 0
-        ? 'Today'
-        : i === 1
-          ? 'Tmrw'
-          : d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' });
-    dates.push({ label, shortLabel, value });
+    dates.push({ date: d, offset: i, value: toLocalISODate(d) });
   }
   return dates;
 })();
 
-const SPORTS: { id: Sport; label: string }[] = [
-  { id: 'football', label: 'Football' },
-  { id: 'padel', label: 'Padel' },
-  { id: 'basketball', label: 'Basketball' },
-  { id: 'tennis', label: 'Tennis' },
-];
+const SPORTS: Sport[] = ['football', 'padel', 'basketball', 'tennis'];
 
 /* ── Component ────────────────────────────────────────── */
 export default function PLAYScannerMain() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const reduceMotion = useReducedMotion();
+  const t = useTranslations('playscanner.search');
+  const format = useFormatter();
 
   const urlSport = (searchParams.get('sport') as Sport) || 'padel';
   const urlDate = searchParams.get('date') || DATES[0].value;
 
   const [sport, setSport] = useState<Sport>(
-    SPORTS.some((s) => s.id === urlSport) ? urlSport : 'padel'
+    SPORTS.includes(urlSport) ? urlSport : 'padel'
   );
+
+  /* Localized labels for the 7-day date strip. Today/Tomorrow are
+     translated; the rest use the locale's short weekday + day. */
+  const dateLabel = (d: (typeof DATES)[number], short: boolean) => {
+    if (d.offset === 0) return t('dates.today');
+    if (d.offset === 1)
+      return short ? t('dates.tomorrowShort') : t('dates.tomorrow');
+    return format.dateTime(d.date, {
+      weekday: 'short',
+      day: 'numeric',
+      numberingSystem: 'latn',
+    });
+  };
   const [date, setDate] = useState(
     DATES.some((d) => d.value === urlDate) ? urlDate : DATES[0].value
   );
@@ -122,10 +117,11 @@ export default function PLAYScannerMain() {
       setResults(data.results || []);
       setHasSearched(true);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Search failed');
+      setError(e instanceof Error ? e.message : t('errors.searchFailed'));
     } finally {
       setIsSearching(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* URL sync — runs on every sport/date change. router is intentionally not in
@@ -185,14 +181,13 @@ export default function PLAYScannerMain() {
             aria-hidden
             className="inline-block h-1.5 w-1.5 rounded-full bg-[rgb(224,173,98)] shadow-[0_0_8px_rgba(224,173,98,0.55)]"
           />
-          PLAYSCANNER - London
+          {t('brandLine', { city: t('location.london') })}
         </div>
         <h1 className="mt-2 font-display font-semibold text-[clamp(24px,3.4vw,34px)] leading-[1.1] tracking-[-0.02em] text-timberwolf">
-          One search. Every slot.
+          {t('title')}
         </h1>
         <p className="mt-1.5 max-w-[52ch] text-[13px] sm:text-[14px] leading-[1.5] text-ink-muted">
-          Aggregating 10+ providers - Playtomic, MATCHi, PowerLeague, Goals,
-          Footy Addicts and more. Data refreshes every 15 minutes.
+          {t('subtitle')}
         </p>
       </header>
 
@@ -225,8 +220,10 @@ export default function PLAYScannerMain() {
                       : 'text-ink-subtle hover:text-ink-muted'
                   }`}
                 >
-                  <span className="sm:hidden">{d.shortLabel}</span>
-                  <span className="hidden sm:inline">{d.label}</span>
+                  <span className="sm:hidden">{dateLabel(d, true)}</span>
+                  <span className="hidden sm:inline">
+                    {dateLabel(d, false)}
+                  </span>
                 </button>
               ))}
             </div>
@@ -260,7 +257,8 @@ export default function PLAYScannerMain() {
                   />
                 )}
                 {SPORTS.map((s) => {
-                  const active = sport === s.id;
+                  const active = sport === s;
+                  const label = t(`sports.${s}`);
                   const chipSpring = reduceMotion
                     ? { duration: 0 }
                     : {
@@ -271,12 +269,12 @@ export default function PLAYScannerMain() {
                       };
                   return (
                     <button
-                      key={s.id}
-                      data-sport={s.id}
+                      key={s}
+                      data-sport={s}
                       onClick={() => {
-                        setSport(s.id);
+                        setSport(s);
                       }}
-                      aria-label={s.label}
+                      aria-label={label}
                       aria-pressed={active}
                       className="relative flex shrink-0 items-center rounded-lg px-3 py-1.5 text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-timberwolf/60 focus-visible:ring-offset-2 focus-visible:ring-offset-night"
                     >
@@ -293,9 +291,9 @@ export default function PLAYScannerMain() {
                         }}
                         transition={chipSpring}
                       >
-                        <SportIcon sport={s.id} size={12} />
+                        <SportIcon sport={s} size={12} />
                         {/* Desktop: label always visible. */}
-                        <span className="hidden sm:inline">{s.label}</span>
+                        <span className="hidden sm:inline">{label}</span>
                         {/* Mobile: render the label directly when active —
                             no width animation. The button's offsetWidth is
                             therefore the full icon+label width on the same
@@ -319,7 +317,7 @@ export default function PLAYScannerMain() {
                             }
                             className="sm:hidden whitespace-nowrap"
                           >
-                            {s.label}
+                            {label}
                           </motion.span>
                         )}
                       </motion.span>
@@ -328,11 +326,11 @@ export default function PLAYScannerMain() {
                 })}
               </div>
               <div
-                className="flex shrink-0 items-center gap-1.5 rounded-xl bg-[rgba(214,213,201,0.04)] px-3 py-1.5 text-xs text-ink-muted ml-auto sm:ml-0"
-                title="London only - more cities coming"
+                className="flex shrink-0 items-center gap-1.5 rounded-xl bg-[rgba(214,213,201,0.04)] px-3 py-1.5 text-xs text-ink-muted ms-auto sm:ms-0"
+                title={t('location.comingSoon')}
               >
                 <MapPinIcon className="h-3 w-3" aria-hidden />
-                London
+                {t('location.london')}
               </div>
             </div>
           </div>

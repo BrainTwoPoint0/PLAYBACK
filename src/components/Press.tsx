@@ -3,6 +3,7 @@
 import SectionTitle from './ui/section-title';
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useReducedMotion } from 'motion/react';
 import { cn } from '@/lib/utils';
 
@@ -118,13 +119,11 @@ function InfiniteLogoSlider({
 }
 
 export default function Press() {
+  const t = useTranslations('landing.press');
   return (
     <section id="press" className="relative mt-32 md:mt-40">
       <div className="mx-auto max-w-[1400px] px-6 sm:px-10">
-        <SectionTitle
-          eyebrow="Awards & recognition"
-          title="Redefining the industry."
-        />
+        <SectionTitle eyebrow={t('eyebrow')} title={t('title')} />
 
         <div className="md:hidden flex justify-center">
           <InfiniteLogoSlider

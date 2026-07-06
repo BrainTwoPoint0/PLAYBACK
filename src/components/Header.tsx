@@ -3,6 +3,7 @@
 import { Link } from '@/i18n/navigation';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { motion, useReducedMotion } from 'motion/react';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { getMarketingAssetUrl } from '@/lib/supabase/storage';
@@ -15,17 +16,13 @@ const trustLogos = [
   { name: 'DAFL', src: '/network/DAFL-logo.png' },
 ];
 
-const stats = [
-  { value: '75,000+', label: 'Players powered globally' },
-  { value: '25+', label: 'Partners in 10+ countries' },
-  { value: '£750k+', label: 'Saved for our partners' },
-  { value: '12', label: 'Pro contracts signed' },
-];
+const STAT_KEYS = ['players', 'partners', 'saved', 'contracts'] as const;
 
 const GRAIN_SVG =
   "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>";
 
 export function Header() {
+  const t = useTranslations('landing.header');
   const prefersReduced = useReducedMotion();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -54,7 +51,7 @@ export function Header() {
               className="flex items-center gap-3 text-[12px] uppercase tracking-[0.22em] text-ink-muted"
             >
               <span aria-hidden className="h-px w-8 bg-line-strong" />
-              You PLAY. We BACK.
+              {t('eyebrow')}
             </motion.p>
           </div>
 
@@ -68,12 +65,14 @@ export function Header() {
             }
             className="mt-7 font-display font-semibold text-timberwolf text-[clamp(48px,7.8vw,104px)] leading-[0.95] tracking-[-0.045em] max-w-[22ch]"
           >
-            The top 1%
-            <br className="md:hidden" aria-hidden /> of tools.
+            {t.rich('titleLine1', {
+              br: () => <br className="md:hidden" aria-hidden />,
+            })}
             <br />
             <span className="text-ink-muted">
-              For the 99%
-              <br className="md:hidden" aria-hidden /> who play.
+              {t.rich('titleLine2', {
+                br: () => <br className="md:hidden" aria-hidden />,
+              })}
             </span>
           </motion.h1>
 
@@ -87,7 +86,7 @@ export function Header() {
             }
             className="mt-7 max-w-[32ch] text-[19px] md:text-[24px] leading-[1.35] font-medium text-timberwolf tracking-[-0.015em]"
           >
-            Every match filmed. Every stat tracked. Every player seen.
+            {t('tagline')}
           </motion.p>
 
           <motion.p
@@ -100,8 +99,7 @@ export function Header() {
             }
             className="mt-4 max-w-[54ch] text-[15px] md:text-[17px] leading-[1.55] text-ink-muted [text-wrap:balance]"
           >
-            PLAYBACK gives all players access to the same tech professionals use
-            - across 25+ clubs in 10+ countries.
+            {t('subtitle')}
           </motion.p>
 
           <motion.div
@@ -118,9 +116,9 @@ export function Header() {
               href="/auth/register"
               className="group inline-flex items-center justify-center gap-2 h-12 px-6 rounded-full bg-timberwolf text-night text-[15px] font-medium transition-colors hover:bg-ash-grey focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-timberwolf focus-visible:ring-offset-2 focus-visible:ring-offset-night shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_1px_2px_rgba(0,0,0,0.35)]"
             >
-              Create your profile
+              {t('ctaPrimary')}
               <ArrowRight
-                className="h-4 w-4 transition-transform duration-300 motion-reduce:transition-none group-hover:translate-x-0.5"
+                className="h-4 w-4 transition-transform duration-300 motion-reduce:transition-none group-hover:translate-x-0.5 rtl:rotate-180"
                 aria-hidden
               />
             </Link>
@@ -128,9 +126,9 @@ export function Header() {
               href="/#contact"
               className="group inline-flex items-center justify-center gap-2 h-12 px-6 rounded-full border border-[rgba(214,213,201,0.22)] bg-[rgba(10,16,13,0.35)] backdrop-blur-sm text-timberwolf text-[15px] transition-colors hover:bg-[rgba(10,16,13,0.55)] hover:border-timberwolf focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-timberwolf focus-visible:ring-offset-2 focus-visible:ring-offset-night"
             >
-              For clubs - talk to us
+              {t('ctaSecondary')}
               <ArrowUpRight
-                className="h-4 w-4 transition-transform duration-300 motion-reduce:transition-none group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                className="h-4 w-4 transition-transform duration-300 motion-reduce:transition-none group-hover:-translate-y-0.5 group-hover:translate-x-0.5 rtl:-scale-x-100"
                 aria-hidden
               />
             </Link>
@@ -145,13 +143,13 @@ export function Header() {
             className="mt-16 md:mt-20"
           >
             <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-8 md:gap-y-6 border-t border-[rgba(214,213,201,0.14)] pt-10">
-              {stats.map((s) => (
-                <div key={s.label} className="flex flex-col gap-2">
+              {STAT_KEYS.map((key) => (
+                <div key={key} className="flex flex-col gap-2">
                   <dd className="font-display font-semibold tabular-nums text-[clamp(32px,3.6vw,48px)] tracking-[-0.035em] text-timberwolf leading-[0.95]">
-                    {s.value}
+                    {t(`stats.${key}.value`)}
                   </dd>
                   <dt className="text-[11px] uppercase tracking-[0.16em] text-ink-subtle leading-[1.3]">
-                    {s.label}
+                    {t(`stats.${key}.label`)}
                   </dt>
                 </div>
               ))}
@@ -163,7 +161,7 @@ export function Header() {
       <div className="relative">
         <div className="mx-auto max-w-[1400px] px-6 sm:px-10 py-12">
           <p className="text-[11px] uppercase tracking-[0.2em] text-ink-subtle mb-6">
-            Powering the PLAYBACK Network
+            {t('trustLabel')}
           </p>
           <ul className="flex flex-wrap items-center gap-x-10 gap-y-5">
             {trustLogos.map((logo) => (

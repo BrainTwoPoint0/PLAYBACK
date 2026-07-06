@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button, Input, Label } from '@braintwopoint0/playback-commons/ui';
 import { Textarea } from '@/components/ui/textarea';
 import { LoadingSpinner } from '@/components/ui/loading';
@@ -34,6 +35,7 @@ export function StatsForm({
   onSuccess,
   onCancel,
 }: StatsFormProps) {
+  const t = useTranslations('stats.form');
   const [formData, setFormData] = useState({
     sport_id: '',
     sport_name: '',
@@ -118,12 +120,12 @@ export function StatsForm({
     e.preventDefault();
 
     if (!formData.stat_name.trim()) {
-      setError('Please select a statistic type');
+      setError(t('errorSelectStat'));
       return;
     }
 
     if (!formData.value.trim() || isNaN(Number(formData.value))) {
-      setError('Please enter a valid numeric value');
+      setError(t('errorInvalidValue'));
       return;
     }
 
@@ -169,9 +171,7 @@ export function StatsForm({
         setTimeout(() => setSuccess(false), 3000);
       }
     } catch (error) {
-      setError(
-        error instanceof Error ? error.message : 'Failed to save statistic'
-      );
+      setError(error instanceof Error ? error.message : t('errorSaveFailed'));
     } finally {
       setSaving(false);
     }
@@ -188,11 +188,11 @@ export function StatsForm({
             <BarChart3 className="h-6 w-6 text-blue-400" />
           </div>
           <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent">
-            Add Statistic
+            {t('title')}
           </h2>
         </div>
         <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
-          Track your athletic performance and achievements
+          {t('subtitle')}
         </p>
       </div>
 
@@ -206,7 +206,7 @@ export function StatsForm({
                 className="text-sm font-medium"
                 style={{ color: 'var(--ash-grey)' }}
               >
-                Sport
+                {t('sportLabel')}
               </Label>
               <select
                 id="sport"
@@ -215,7 +215,7 @@ export function StatsForm({
                 className="w-full mt-1 px-3 py-2 bg-neutral-800/50 border border-neutral-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 style={{ color: 'var(--timberwolf)' }}
               >
-                <option value="">Select sport</option>
+                <option value="">{t('sportPlaceholder')}</option>
                 {userSports.map((userSport) => (
                   <option key={userSport.sport?.id} value={userSport.sport?.id}>
                     {userSport.sport?.name}
@@ -230,7 +230,7 @@ export function StatsForm({
                 className="text-sm font-medium"
                 style={{ color: 'var(--ash-grey)' }}
               >
-                Season
+                {t('seasonLabel')}
               </Label>
               <Input
                 id="season"
@@ -239,7 +239,7 @@ export function StatsForm({
                 onChange={(e) => handleFieldChange('season', e.target.value)}
                 className="mt-1 bg-neutral-800/50 border-neutral-600 rounded-xl"
                 style={{ color: 'var(--timberwolf)' }}
-                placeholder="2024"
+                placeholder={t('seasonPlaceholder')}
               />
             </div>
           </div>
@@ -251,7 +251,7 @@ export function StatsForm({
                 className="text-sm font-medium"
                 style={{ color: 'var(--ash-grey)' }}
               >
-                Category
+                {t('categoryLabel')}
               </Label>
               <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
                 {availableCategories.map((category) => (
@@ -259,7 +259,7 @@ export function StatsForm({
                     key={category.type}
                     type="button"
                     onClick={() => handleCategoryChange(category.type)}
-                    className={`p-3 rounded-xl border transition-all text-left ${
+                    className={`p-3 rounded-xl border transition-all text-start ${
                       formData.stat_type === category.type
                         ? 'border-blue-400 bg-blue-400/10'
                         : 'border-neutral-600 hover:border-neutral-500 bg-neutral-800/30'
@@ -275,7 +275,7 @@ export function StatsForm({
                       className="text-xs mt-1"
                       style={{ color: 'var(--ash-grey)' }}
                     >
-                      {category.stats.length} statistics available
+                      {t('statsAvailable', { count: category.stats.length })}
                     </p>
                   </button>
                 ))}
@@ -290,7 +290,7 @@ export function StatsForm({
                 className="text-sm font-medium"
                 style={{ color: 'var(--ash-grey)' }}
               >
-                Statistic
+                {t('statisticLabel')}
               </Label>
               <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3 max-h-48 overflow-y-auto">
                 {selectedCategory.stats.map((stat) => (
@@ -298,7 +298,7 @@ export function StatsForm({
                     key={stat.name}
                     type="button"
                     onClick={() => handleStatChange(stat.name)}
-                    className={`p-3 rounded-xl border transition-all text-left ${
+                    className={`p-3 rounded-xl border transition-all text-start ${
                       formData.stat_name === stat.name
                         ? 'border-green-400 bg-green-400/10'
                         : 'border-neutral-600 hover:border-neutral-500 bg-neutral-800/30'
@@ -331,7 +331,7 @@ export function StatsForm({
                   className="text-sm font-medium"
                   style={{ color: 'var(--ash-grey)' }}
                 >
-                  Value *
+                  {t('valueLabel')}
                 </Label>
                 <div className="mt-1 flex">
                   <Input
@@ -340,13 +340,13 @@ export function StatsForm({
                     step="0.01"
                     value={formData.value}
                     onChange={(e) => handleFieldChange('value', e.target.value)}
-                    className="bg-neutral-800/50 border-neutral-600 rounded-l-xl rounded-r-none"
+                    className="bg-neutral-800/50 border-neutral-600 rounded-s-xl rounded-e-none"
                     style={{ color: 'var(--timberwolf)' }}
                     placeholder="0"
                     required
                   />
                   {formData.unit && (
-                    <div className="px-3 py-2 bg-neutral-700/50 border border-l-0 border-neutral-600 rounded-r-xl flex items-center">
+                    <div className="px-3 py-2 bg-neutral-700/50 border border-s-0 border-neutral-600 rounded-e-xl flex items-center">
                       <span
                         className="text-sm"
                         style={{ color: 'var(--ash-grey)' }}
@@ -364,7 +364,7 @@ export function StatsForm({
                   className="text-sm font-medium"
                   style={{ color: 'var(--ash-grey)' }}
                 >
-                  Date Recorded
+                  {t('dateLabel')}
                 </Label>
                 <Input
                   id="date"
@@ -389,7 +389,7 @@ export function StatsForm({
                 className="text-sm font-medium"
                 style={{ color: 'var(--ash-grey)' }}
               >
-                Description
+                {t('descriptionLabel')}
               </Label>
               <Textarea
                 id="description"
@@ -399,7 +399,7 @@ export function StatsForm({
                 }
                 className="mt-1 bg-neutral-800/50 border-neutral-600 rounded-xl resize-none"
                 style={{ color: 'var(--timberwolf)' }}
-                placeholder="Additional context about this statistic..."
+                placeholder={t('descriptionPlaceholder')}
                 rows={3}
                 maxLength={250}
               />
@@ -424,7 +424,7 @@ export function StatsForm({
                     className="text-sm"
                     style={{ color: 'var(--ash-grey)' }}
                   >
-                    This is a personal best
+                    {t('personalBest')}
                   </span>
                 </div>
               </label>
@@ -446,7 +446,7 @@ export function StatsForm({
           <div className="bg-green-900/20 border border-green-800 rounded-xl p-4">
             <div className="flex items-center gap-2 text-green-400">
               <CheckCircle className="h-4 w-4" />
-              <span className="text-sm">Statistic saved successfully!</span>
+              <span className="text-sm">{t('success')}</span>
             </div>
           </div>
         )}
@@ -462,7 +462,7 @@ export function StatsForm({
               className="border-neutral-600 hover:bg-neutral-800"
               style={{ color: 'var(--ash-grey)' }}
             >
-              Cancel
+              {t('cancel')}
             </Button>
           )}
 
@@ -473,13 +473,13 @@ export function StatsForm({
           >
             {saving ? (
               <>
-                <LoadingSpinner size="sm" className="mr-2" />
-                Saving...
+                <LoadingSpinner size="sm" className="me-2" />
+                {t('saving')}
               </>
             ) : (
               <>
-                <Save className="h-4 w-4 mr-2" />
-                Save Statistic
+                <Save className="h-4 w-4 me-2" />
+                {t('save')}
               </>
             )}
           </Button>

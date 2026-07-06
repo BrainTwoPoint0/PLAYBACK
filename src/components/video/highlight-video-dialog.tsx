@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { VideoPlayer } from './video-player';
@@ -26,6 +27,7 @@ export function HighlightVideoDialog({
   open,
   onOpenChange,
 }: HighlightVideoDialogProps) {
+  const t = useTranslations('media');
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
   const [resolvedType, setResolvedType] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -43,14 +45,14 @@ export function HighlightVideoDialog({
       try {
         const res = await fetch(`/api/highlights/${highlightId}/video`);
         if (!res.ok) {
-          setError('Could not load video');
+          setError(t('couldNotLoadVideo'));
           return;
         }
         const data = await res.json();
         setResolvedUrl(data.url);
         setResolvedType(data.type);
       } catch {
-        setError('Failed to load video');
+        setError(t('failedToLoadVideo'));
       } finally {
         setLoading(false);
       }

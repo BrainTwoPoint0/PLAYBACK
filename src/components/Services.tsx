@@ -2,10 +2,12 @@
 
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { ArrowRight } from 'lucide-react';
 import SectionTitle from './ui/section-title';
 
 type Service = {
+  key: string;
   eyebrow: string;
   title: string;
   body: string;
@@ -14,51 +16,45 @@ type Service = {
   image: { src: string; alt: string };
 };
 
-const services: Service[] = [
+const SERVICE_CONFIG = [
   {
-    eyebrow: 'PLAYBACK Academy',
-    title: 'Every match, every moment, every player.',
-    body: 'The subscription that turns an academy season into a professional-grade showcase. Match recordings, AI highlights, GPS data, and a player profile scouts can find.',
-    features: [
-      'AI-generated match highlights',
-      'Player profile - LinkedIn for Sports',
-      'PlayerData GPS: distance, speed, accelerations',
-      'Match recordings via Veo, Spiideo, Clutch',
-      'Parent-friendly sharing and scouting exposure',
-    ],
-    cta: { label: 'Join the Academy', href: '/academy' },
-    image: {
-      src: '/assets/PLAYBACK-Profiles.png',
-      alt: 'PLAYBACK Player Profile - the LinkedIn for Sports surface',
-    },
+    key: 'academy',
+    ctaHref: '/academy',
+    imageSrc: '/assets/PLAYBACK-Profiles.png',
   },
   {
-    eyebrow: 'PLAYBACK Tournament',
-    title: 'Run the trophy day everyone remembers.',
-    body: 'AI cameras, automatic match capture, and shareable clips for every fixture - the same tech trusted by Inter Milan, Roma, and Brentford. Charity cups to 11s leagues, covered.',
-    features: [
-      'Automated match capture per fixture',
-      'AI highlight detection and clip export',
-      'Live streaming and broadcast-grade output',
-      'Team and player analytics',
-      'Tournament branding and media hub',
-    ],
-    cta: { label: 'Host a tournament', href: '/tournament' },
-    image: {
-      src: '/assets/PLAYBACK-Tournament.png',
-      alt: 'PLAYBACK-powered match broadcast from a tournament fixture',
-    },
+    key: 'tournament',
+    ctaHref: '/tournament',
+    imageSrc: '/assets/PLAYBACK-Tournament.png',
   },
-];
+] as const;
+
+const FEATURE_COUNT = 5;
 
 export default function Services() {
+  const t = useTranslations('landing.services');
+
+  const services: Service[] = SERVICE_CONFIG.map(
+    ({ key, ctaHref, imageSrc }) => ({
+      key,
+      eyebrow: t(`${key}.eyebrow`),
+      title: t(`${key}.title`),
+      body: t(`${key}.body`),
+      features: Array.from({ length: FEATURE_COUNT }, (_, i) =>
+        t(`${key}.feature${i + 1}`)
+      ),
+      cta: { label: t(`${key}.cta`), href: ctaHref },
+      image: { src: imageSrc, alt: t(`${key}.imageAlt`) },
+    })
+  );
+
   return (
     <section id="services" className="relative mt-32 md:mt-40">
       <div className="mx-auto max-w-[1400px] px-6 sm:px-10">
-        <SectionTitle eyebrow="What we do" title="Elite tools, within reach." />
+        <SectionTitle eyebrow={t('eyebrow')} title={t('title')} />
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {services.map((s) => (
-            <ServiceCard key={s.eyebrow} service={s} />
+            <ServiceCard key={s.key} service={s} />
           ))}
         </div>
       </div>
@@ -111,7 +107,7 @@ function ServiceCard({ service }: { service: Service }) {
           >
             {service.cta.label}
             <ArrowRight
-              className="h-4 w-4 transition-transform duration-300 group-hover/cta:translate-x-0.5"
+              className="h-4 w-4 transition-transform duration-300 group-hover/cta:translate-x-0.5 rtl:rotate-180"
               aria-hidden
             />
           </Link>

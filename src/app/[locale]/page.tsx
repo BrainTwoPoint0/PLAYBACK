@@ -1,19 +1,26 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import HomeClient from '@/components/HomeClient';
 
-export const metadata: Metadata = {
-  title: { absolute: 'PLAYBACK' },
-  description:
-    'PLAYBACK is the Operating System for Sports. AI match recordings, highlights, analytics, academy management, and player profiles for 75,000+ players across 25+ clubs in 10+ countries.',
-  alternates: { canonical: '/' },
-  openGraph: {
-    type: 'website',
-    url: '/',
-    title: 'PLAYBACK',
-    description:
-      'The Operating System for Sports. AI match recordings, highlights, analytics, academy management, and player profiles.',
-  },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'landing.header' });
+  return {
+    title: { absolute: 'PLAYBACK' },
+    description: t('metaDescription'),
+    alternates: { canonical: '/' },
+    openGraph: {
+      type: 'website',
+      url: '/',
+      title: 'PLAYBACK',
+      description: t('ogDescription'),
+    },
+  };
+}
 
 export default function HomePage() {
   return <HomeClient />;

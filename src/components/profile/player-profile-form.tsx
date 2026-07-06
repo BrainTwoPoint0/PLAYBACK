@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@braintwopoint0/playback-commons/ui';
 import { Label } from '@/components/ui/label';
 import {
@@ -15,12 +16,13 @@ import { LoadingSpinner } from '@/components/ui/loading';
 import { createPlayerVariant } from '@/lib/profile/actions';
 import {
   FOOTBALL_POSITIONS,
-  FOOTBALL_POSITION_LABELS,
   FOOTBALL_EXPERIENCE_LEVELS,
-  FOOTBALL_EXPERIENCE_LABELS,
   PREFERRED_FOOT_OPTIONS,
   type FootballPosition,
+  type FootballExperienceLevel,
+  type PreferredFoot,
 } from '@/lib/profile/constants';
+import { useProfileLabels } from '@/lib/profile/use-profile-labels';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 
 interface PlayerProfileFormProps {
@@ -34,6 +36,8 @@ export function PlayerProfileForm({
   onSuccess,
   onCancel,
 }: PlayerProfileFormProps) {
+  const t = useTranslations('profile.form');
+  const labels = useProfileLabels();
   const [step, setStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +85,7 @@ export function PlayerProfileForm({
     if (result.success && result.data) {
       onSuccess(result.data.variantId);
     } else {
-      setError(result.error || 'Something went wrong');
+      setError(result.error || t('errors.generic'));
     }
   };
 
@@ -117,23 +121,23 @@ export function PlayerProfileForm({
               className="text-base font-semibold mb-1"
               style={{ color: 'var(--timberwolf)' }}
             >
-              Basic Information
+              {t('steps.basicTitle')}
             </h3>
             <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
-              Tell us about your playing background.
+              {t('steps.basicDescription')}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label>Experience Level</Label>
+            <Label>{t('fields.experienceLevel')}</Label>
             <Select value={experienceLevel} onValueChange={setExperienceLevel}>
               <SelectTrigger>
-                <SelectValue placeholder="Select your level" />
+                <SelectValue placeholder={t('fields.experiencePlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {FOOTBALL_EXPERIENCE_LEVELS.map((level) => (
                   <SelectItem key={level} value={level}>
-                    {FOOTBALL_EXPERIENCE_LABELS[level]}
+                    {labels.experience[level]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -141,7 +145,7 @@ export function PlayerProfileForm({
           </div>
 
           <div className="space-y-2">
-            <Label>Preferred Foot</Label>
+            <Label>{t('fields.preferredFoot')}</Label>
             <RadioGroup
               value={preferredFoot}
               onValueChange={setPreferredFoot}
@@ -154,7 +158,7 @@ export function PlayerProfileForm({
                     htmlFor={`foot-${foot}`}
                     className="font-normal cursor-pointer"
                   >
-                    {foot.charAt(0).toUpperCase() + foot.slice(1)}
+                    {labels.foot[foot]}
                   </Label>
                 </div>
               ))}
@@ -163,8 +167,10 @@ export function PlayerProfileForm({
 
           <div className="space-y-2">
             <Label>
-              Jersey Number{' '}
-              <span style={{ color: 'var(--ash-grey)' }}>(optional)</span>
+              {t('fields.jerseyNumber')}{' '}
+              <span style={{ color: 'var(--ash-grey)' }}>
+                {t('fields.optional')}
+              </span>
             </Label>
             <input
               type="number"
@@ -172,7 +178,7 @@ export function PlayerProfileForm({
               max={99}
               value={jerseyNumber}
               onChange={(e) => setJerseyNumber(e.target.value)}
-              placeholder="e.g. 10"
+              placeholder={t('fields.jerseyPlaceholder')}
               className="flex h-10 w-24 rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300"
             />
           </div>
@@ -187,15 +193,15 @@ export function PlayerProfileForm({
               className="text-base font-semibold mb-1"
               style={{ color: 'var(--timberwolf)' }}
             >
-              Playing Positions
+              {t('steps.positionsTitle')}
             </h3>
             <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
-              Select your primary position and any secondary ones.
+              {t('steps.positionsDescription')}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label>Primary Position</Label>
+            <Label>{t('fields.primaryPosition')}</Label>
             <Select
               value={primaryPosition}
               onValueChange={(val) => {
@@ -204,12 +210,12 @@ export function PlayerProfileForm({
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select position" />
+                <SelectValue placeholder={t('fields.positionPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {FOOTBALL_POSITIONS.map((pos) => (
                   <SelectItem key={pos} value={pos}>
-                    {pos} - {FOOTBALL_POSITION_LABELS[pos]}
+                    {pos} - {labels.positions[pos]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -218,8 +224,10 @@ export function PlayerProfileForm({
 
           <div className="space-y-2">
             <Label>
-              Secondary Positions{' '}
-              <span style={{ color: 'var(--ash-grey)' }}>(optional)</span>
+              {t('fields.secondaryPositions')}{' '}
+              <span style={{ color: 'var(--ash-grey)' }}>
+                {t('fields.optional')}
+              </span>
             </Label>
             <div className="flex flex-wrap gap-2">
               {FOOTBALL_POSITIONS.filter((p) => p !== primaryPosition).map(
@@ -255,40 +263,43 @@ export function PlayerProfileForm({
               className="text-base font-semibold mb-1"
               style={{ color: 'var(--timberwolf)' }}
             >
-              Review & Create
+              {t('steps.reviewTitle')}
             </h3>
             <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
-              Check your details before creating your player profile.
+              {t('steps.reviewDescription')}
             </p>
           </div>
 
           <div className="space-y-3">
             <SummaryRow
-              label="Experience"
+              label={t('summary.experience')}
               value={
-                FOOTBALL_EXPERIENCE_LABELS[
-                  experienceLevel as keyof typeof FOOTBALL_EXPERIENCE_LABELS
-                ] || experienceLevel
+                labels.experience[experienceLevel as FootballExperienceLevel] ||
+                experienceLevel
               }
             />
             <SummaryRow
-              label="Preferred Foot"
+              label={t('summary.preferredFoot')}
               value={
+                labels.foot[preferredFoot as PreferredFoot] ||
                 preferredFoot.charAt(0).toUpperCase() + preferredFoot.slice(1)
               }
             />
             <SummaryRow
-              label="Primary Position"
-              value={`${primaryPosition} - ${FOOTBALL_POSITION_LABELS[primaryPosition as FootballPosition] || primaryPosition}`}
+              label={t('summary.primaryPosition')}
+              value={`${primaryPosition} - ${labels.positions[primaryPosition as FootballPosition] || primaryPosition}`}
             />
             {secondaryPositions.length > 0 && (
               <SummaryRow
-                label="Secondary"
+                label={t('summary.secondary')}
                 value={secondaryPositions.join(', ')}
               />
             )}
             {jerseyNumber && (
-              <SummaryRow label="Jersey Number" value={`#${jerseyNumber}`} />
+              <SummaryRow
+                label={t('summary.jerseyNumber')}
+                value={`#${jerseyNumber}`}
+              />
             )}
           </div>
         </div>
@@ -304,8 +315,8 @@ export function PlayerProfileForm({
           }
           style={{ color: 'var(--ash-grey)' }}
         >
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          {step === 1 ? 'Cancel' : 'Back'}
+          <ChevronLeft className="h-4 w-4 me-1 rtl:rotate-180" />
+          {step === 1 ? t('actions.cancel') : t('actions.back')}
         </Button>
 
         {step < 3 ? (
@@ -315,8 +326,8 @@ export function PlayerProfileForm({
             onClick={() => setStep((step + 1) as Step)}
             className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white disabled:opacity-50"
           >
-            Next
-            <ChevronRight className="h-4 w-4 ml-1" />
+            {t('actions.next')}
+            <ChevronRight className="h-4 w-4 ms-1 rtl:rotate-180" />
           </Button>
         ) : (
           <Button
@@ -329,8 +340,8 @@ export function PlayerProfileForm({
               <LoadingSpinner size="sm" />
             ) : (
               <>
-                <Check className="h-4 w-4 mr-1" />
-                Create Profile
+                <Check className="h-4 w-4 me-1" />
+                {t('actions.create')}
               </>
             )}
           </Button>

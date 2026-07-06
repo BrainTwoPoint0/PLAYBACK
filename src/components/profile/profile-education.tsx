@@ -1,3 +1,4 @@
+import { useFormatter, useTranslations } from 'next-intl';
 import { GraduationCap } from 'lucide-react';
 
 interface EducationEntry {
@@ -17,7 +18,36 @@ interface ProfileEducationProps {
 }
 
 export function ProfileEducation({ entries }: ProfileEducationProps) {
+  const t = useTranslations('profile');
+  const format = useFormatter();
+
   if (entries.length === 0) return null;
+
+  // "MMM yyyy" — matches the old en-GB rendering; numberingSystem 'latn'
+  // mirrors the app-wide digit pinning in src/i18n/request.ts.
+  const formatDate = (d: string) =>
+    format.dateTime(new Date(d), {
+      month: 'short',
+      year: 'numeric',
+      numberingSystem: 'latn',
+    });
+
+  const formatDateRange = (
+    start: string | null,
+    end: string | null,
+    isCurrent: boolean | null
+  ): string => {
+    if (!start && !end) return isCurrent ? t('career.present') : '';
+    if (start && !end && isCurrent)
+      return t('career.rangeOngoing', { start: formatDate(start) });
+    if (start && end)
+      return t('career.range', {
+        start: formatDate(start),
+        end: formatDate(end),
+      });
+    if (start) return formatDate(start);
+    return '';
+  };
 
   return (
     <div className="space-y-3">
@@ -25,7 +55,7 @@ export function ProfileEducation({ entries }: ProfileEducationProps) {
         className="text-xs font-semibold uppercase tracking-widest"
         style={{ color: 'var(--ash-grey)' }}
       >
-        Education
+        {t('education.title')}
       </h2>
 
       <div className="space-y-3">
@@ -80,24 +110,4 @@ export function ProfileEducation({ entries }: ProfileEducationProps) {
       </div>
     </div>
   );
-}
-
-function formatDateRange(
-  start: string | null,
-  end: string | null,
-  isCurrent: boolean | null
-): string {
-  const formatDate = (d: string) => {
-    const date = new Date(d);
-    return date.toLocaleDateString('en-GB', {
-      month: 'short',
-      year: 'numeric',
-    });
-  };
-
-  if (!start && !end) return isCurrent ? 'Present' : '';
-  if (start && !end && isCurrent) return `${formatDate(start)} - Present`;
-  if (start && end) return `${formatDate(start)} - ${formatDate(end)}`;
-  if (start) return formatDate(start);
-  return '';
 }

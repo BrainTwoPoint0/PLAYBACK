@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition, useRef, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Select,
   SelectContent,
@@ -30,10 +31,12 @@ interface ModulePrivacySwitchProps {
   onChange?: (visibility: Visibility) => void;
 }
 
+// Labels + descriptions live under `profile.privacy.options.<key>.*` in
+// messages/partials/profile.json; `key` maps the snake_case DB value to the
+// camelCase i18n key.
 const VISIBILITY_OPTIONS: {
   value: Visibility;
-  label: string;
-  description: string;
+  key: string;
   Icon: React.ComponentType<{ className?: string }>;
   // `club_only` lives in the schema + API but the org-picker UI hasn't
   // shipped — selecting it without a picker would silently persist `[]` and
@@ -43,31 +46,10 @@ const VISIBILITY_OPTIONS: {
   // when the picker eventually sends it explicitly.
   disabled?: boolean;
 }[] = [
-  {
-    value: 'public',
-    label: 'Public',
-    description: 'Anyone can view this module',
-    Icon: Globe,
-  },
-  {
-    value: 'authenticated',
-    label: 'Signed-in only',
-    description: 'Anyone with a PLAYBACK account',
-    Icon: Users,
-  },
-  {
-    value: 'club_only',
-    label: 'Club only',
-    description: 'Coming soon — pick which clubs can see this module',
-    Icon: Building2,
-    disabled: true,
-  },
-  {
-    value: 'private',
-    label: 'Private',
-    description: 'Only you',
-    Icon: Lock,
-  },
+  { value: 'public', key: 'public', Icon: Globe },
+  { value: 'authenticated', key: 'authenticated', Icon: Users },
+  { value: 'club_only', key: 'clubOnly', Icon: Building2, disabled: true },
+  { value: 'private', key: 'private', Icon: Lock },
 ];
 
 /**
@@ -81,6 +63,7 @@ export function ModulePrivacySwitch({
   variantLabel,
   onChange,
 }: ModulePrivacySwitchProps) {
+  const t = useTranslations('profile.privacy');
   const [visibility, setVisibility] = useState<Visibility>(initialVisibility);
   const [error, setError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<number | null>(null);
@@ -119,7 +102,7 @@ export function ModulePrivacySwitch({
         setSavedAt(Date.now());
       } catch (err) {
         setVisibility(prev);
-        setError(err instanceof Error ? err.message : 'Failed');
+        setError(err instanceof Error ? err.message : t('failed'));
       } finally {
         inFlightRef.current = false;
       }
@@ -138,15 +121,17 @@ export function ModulePrivacySwitch({
         <SelectTrigger
           aria-label={
             variantLabel
-              ? `${variantLabel} module visibility`
-              : 'Module visibility'
+              ? t('visibilityAriaLabelFor', { label: variantLabel })
+              : t('visibilityAriaLabel')
           }
           className="w-full"
         >
           <div className="flex items-center gap-2 min-w-0">
             <Icon className="h-3.5 w-3.5 shrink-0" />
             <SelectValue>
-              <span className="truncate">{current.label}</span>
+              <span className="truncate">
+                {t(`options.${current.key}.label`)}
+              </span>
             </SelectValue>
           </div>
         </SelectTrigger>
@@ -163,9 +148,11 @@ export function ModulePrivacySwitch({
                 <div className="flex items-start gap-2 py-0.5">
                   <OptIcon className="h-3.5 w-3.5 mt-0.5 shrink-0" />
                   <div className="min-w-0">
-                    <div className="text-sm font-medium">{opt.label}</div>
+                    <div className="text-sm font-medium">
+                      {t(`options.${opt.key}.label`)}
+                    </div>
                     <div className="text-[11px] text-muted-foreground">
-                      {opt.description}
+                      {t(`options.${opt.key}.description`)}
                     </div>
                   </div>
                 </div>
@@ -190,7 +177,7 @@ export function ModulePrivacySwitch({
             style={{ color: 'var(--ash-grey)' }}
           >
             <Check className="h-3 w-3 shrink-0" aria-hidden />
-            <span>Saved</span>
+            <span>{t('saved')}</span>
           </div>
         )}
       </div>

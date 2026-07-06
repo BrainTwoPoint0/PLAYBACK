@@ -1,5 +1,6 @@
 'use client';
 
+import { useFormatter, useTranslations } from 'next-intl';
 import { ShieldCheck } from 'lucide-react';
 import { DashboardSection } from './dashboard-section';
 
@@ -19,20 +20,6 @@ interface DashboardVerificationsSectionProps {
   lastSeenAt?: string | null;
 }
 
-function formatDate(iso: string): string {
-  try {
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return '';
-    return d.toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  } catch {
-    return '';
-  }
-}
-
 /**
  * Surfaces every active verification — a small, calm list. Multi-club
  * verifications stack here (Verified by CFA + SEFA both visible). The
@@ -43,6 +30,13 @@ export function DashboardVerificationsSection({
   verifications,
   lastSeenAt,
 }: DashboardVerificationsSectionProps) {
+  const t = useTranslations('dashboard.verifications');
+  const format = useFormatter();
+  const formatDate = (iso: string): string => {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    return format.dateTime(d, 'short');
+  };
   const lastSeenMs = lastSeenAt ? new Date(lastSeenAt).getTime() : null;
   const isNewSince = (iso: string) => {
     const t = new Date(iso).getTime();
@@ -51,10 +45,7 @@ export function DashboardVerificationsSection({
     return t > lastSeenMs;
   };
   return (
-    <DashboardSection
-      title="Verifications"
-      count={verifications.length || null}
-    >
+    <DashboardSection title={t('title')} count={verifications.length || null}>
       {verifications.length === 0 ? (
         // Day-1 zero-state collapses to a single muted line — earn the card
         // shell only when there's content. Avoids the "four empty cards
@@ -63,9 +54,7 @@ export function DashboardVerificationsSection({
           className="text-sm leading-relaxed max-w-prose"
           style={{ color: 'var(--text-subtle)' }}
         >
-          No verifications yet. A club admin can verify you from their roster
-          page — once they do, the badge appears on your public profile and
-          here.
+          {t('empty')}
         </p>
       ) : (
         <ul
@@ -100,9 +89,9 @@ export function DashboardVerificationsSection({
                     <span
                       className="inline-flex items-center text-[9px] uppercase tracking-[0.22em] font-semibold"
                       style={{ color: 'var(--timberwolf)' }}
-                      aria-label="New verification"
+                      aria-label={t('newAria')}
                     >
-                      New
+                      {t('new')}
                     </span>
                   )}
                 </div>
@@ -110,8 +99,12 @@ export function DashboardVerificationsSection({
                   className="mt-0.5 text-xs truncate tabular-nums"
                   style={{ color: 'var(--text-muted)' }}
                 >
-                  {v.seasonLabel ? `${v.seasonLabel} · ` : ''}
-                  {formatDate(v.verifiedAt)}
+                  {v.seasonLabel
+                    ? t('seasonAndDate', {
+                        season: v.seasonLabel,
+                        date: formatDate(v.verifiedAt),
+                      })
+                    : formatDate(v.verifiedAt)}
                 </div>
               </div>
             </li>

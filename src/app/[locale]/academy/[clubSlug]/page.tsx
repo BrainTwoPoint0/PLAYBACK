@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { cache } from 'react';
 import { createServiceClient } from '@/lib/supabase/server';
 import { AcademyTeamPicker } from './AcademyTeamPicker';
@@ -170,17 +171,20 @@ export async function generateMetadata({
   params: Promise<{ clubSlug: string }>;
 }): Promise<Metadata> {
   const { clubSlug } = await params;
-  const data = await loadClubAndTeams(clubSlug);
+  const [data, t] = await Promise.all([
+    loadClubAndTeams(clubSlug),
+    getTranslations('academy.clubPage'),
+  ]);
   if (!data) {
-    return { title: 'Academy Subscription' };
+    return { title: t('metaFallbackTitle') };
   }
   return {
-    title: `${data.club.name} — Academy Subscription`,
-    description: `Subscribe to ${data.club.name} on PLAYBACK to unlock match recordings, training clips, and analysis from every fixture.`,
+    title: t('metaTitle', { name: data.club.name }),
+    description: t('metaDescription', { name: data.club.name }),
     alternates: { canonical: `/academy/${clubSlug}` },
     openGraph: {
-      title: `${data.club.name} — Academy Subscription`,
-      description: `Subscribe to ${data.club.name} on PLAYBACK.`,
+      title: t('metaTitle', { name: data.club.name }),
+      description: t('ogDescription', { name: data.club.name }),
       type: 'website',
       url: `/academy/${clubSlug}`,
     },
@@ -196,7 +200,10 @@ export default async function AcademyClubPage({
 }) {
   const { clubSlug } = await params;
   const { canceled } = await searchParams;
-  const data = await loadClubAndTeams(clubSlug);
+  const [data, t] = await Promise.all([
+    loadClubAndTeams(clubSlug),
+    getTranslations('academy.clubPage'),
+  ]);
   if (!data) notFound();
 
   const { club, teams, subclubs } = data;
@@ -221,14 +228,14 @@ export default async function AcademyClubPage({
         <section className="px-6 pb-16 pt-24 md:pb-20 md:pt-32 lg:pt-40">
           <div className="mx-auto max-w-5xl">
             <p className="mb-10 text-[10px] uppercase tracking-[0.32em] text-[#b9baa3] md:text-xs">
-              PLAYBACK Academy · Subscribe
+              {t('eyebrow')}
             </p>
 
             <div className="flex flex-col items-start gap-6 md:flex-row md:items-center md:gap-8">
               {club.logo_url && (
                 <Image
                   src={club.logo_url}
-                  alt={`${club.name} crest`}
+                  alt={t('crestAlt', { name: club.name })}
                   width={128}
                   height={128}
                   className="h-20 w-20 shrink-0 object-contain md:h-24 md:w-24"
@@ -240,17 +247,14 @@ export default async function AcademyClubPage({
             </div>
 
             <p className="mt-10 max-w-xl text-base leading-relaxed text-[#b9baa3] md:text-lg">
-              {isHierarchical
-                ? 'Pick your club to see the age groups available for subscription. Each subscription unlocks match recordings, training clips, and analysis from every fixture this season.'
-                : 'Subscribe to your team and unlock match recordings, training clips, and analysis from every fixture this season — delivered to your PLAYBACK account, accessible from any device.'}
+              {isHierarchical ? t('introHierarchical') : t('introFlat')}
             </p>
 
             {canceled === '1' && (
               <div className="mt-8 inline-flex items-center gap-2 rounded-md border border-[#d6d5c9]/20 bg-[#d6d5c9]/[0.04] px-3 py-2 text-xs text-[#b9baa3]">
-                Checkout cancelled.{' '}
                 {isHierarchical
-                  ? 'Pick a club below to try again.'
-                  : 'Pick a team below to try again.'}
+                  ? t('cancelledHierarchical')
+                  : t('cancelledFlat')}
               </div>
             )}
           </div>
@@ -262,12 +266,12 @@ export default async function AcademyClubPage({
           <div className="mx-auto max-w-5xl">
             <div className="mb-8 flex items-baseline justify-between border-b border-[#d6d5c9]/10 pb-4">
               <h2 className="text-xl font-semibold tracking-tight text-[#d6d5c9]">
-                {isHierarchical ? 'Clubs' : 'Teams'}
+                {isHierarchical ? t('clubsHeading') : t('teamsHeading')}
               </h2>
               <p className="text-[10px] uppercase tracking-[0.28em] text-[#b9baa3] md:text-xs">
                 {isHierarchical
-                  ? `${subclubs.length} ${subclubs.length === 1 ? 'club' : 'clubs'}`
-                  : `${teams.length} ${teams.length === 1 ? 'team' : 'teams'}`}
+                  ? t('clubCount', { count: subclubs.length })
+                  : t('teamCount', { count: teams.length })}
               </p>
             </div>
 
@@ -296,12 +300,9 @@ export default async function AcademyClubPage({
             ) : teams.length === 0 ? (
               <div className="rounded-xl border border-dashed border-[#d6d5c9]/20 px-6 py-16 text-center text-sm text-[#b9baa3]">
                 <p className="text-[#d6d5c9]">
-                  {club.name} hasn&apos;t opened any teams for subscription yet.
+                  {t('noTeamsTitle', { name: club.name })}
                 </p>
-                <p className="mt-2">
-                  New teams usually go live before the season starts. Check back
-                  soon.
-                </p>
+                <p className="mt-2">{t('noTeamsHint')}</p>
               </div>
             ) : (
               <AcademyTeamPicker
@@ -317,9 +318,7 @@ export default async function AcademyClubPage({
             )}
 
             <p className="mt-12 text-sm leading-relaxed text-[#b9baa3]">
-              Payments are processed by Stripe. After successful checkout
-              you&apos;ll be invited to claim your PLAYBACK account — your
-              subscription is held against the email address you provide.
+              {t('paymentsNote')}
             </p>
           </div>
         </section>

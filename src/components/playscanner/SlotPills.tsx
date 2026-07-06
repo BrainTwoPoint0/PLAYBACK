@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useTranslations, useFormatter } from 'next-intl';
 import { CourtSlot } from '@/lib/playscanner/types';
 
 interface SlotPillsProps {
@@ -20,6 +21,8 @@ export default function SlotPills({
   onBook,
   maxVisible = 7,
 }: SlotPillsProps) {
+  const t = useTranslations('playscanner.venue');
+  const format = useFormatter();
   const [expanded, setExpanded] = useState(false);
 
   // Group slots by time - show unique times with cheapest price + court count
@@ -27,9 +30,12 @@ export default function SlotPills({
     const groups = new Map<string, TimeGroup>();
 
     for (const slot of slots) {
-      const time = new Date(slot.startTime).toLocaleTimeString('en-GB', {
+      // 24h digits, always Latin numerals — pill times never localize.
+      const time = format.dateTime(new Date(slot.startTime), {
         hour: '2-digit',
         minute: '2-digit',
+        hour12: false,
+        numberingSystem: 'latn',
       });
 
       if (!groups.has(time)) {
@@ -47,7 +53,9 @@ export default function SlotPills({
     }
 
     return Array.from(groups.values());
-  }, [slots]);
+  }, [slots, format]);
+
+  const currency = slots[0]?.currency ?? 'GBP';
 
   const visible = expanded ? timeGroups : timeGroups.slice(0, maxVisible);
   const hasMore = timeGroups.length > maxVisible;
@@ -56,7 +64,14 @@ export default function SlotPills({
     <div className="flex flex-wrap gap-1.5">
       {visible.map((group) => {
         const price =
-          group.cheapest > 0 ? `£${(group.cheapest / 100).toFixed(0)}` : null;
+          group.cheapest > 0
+            ? format.number(group.cheapest / 100, {
+                style: 'currency',
+                currency,
+                maximumFractionDigits: 0,
+                numberingSystem: 'latn',
+              })
+            : null;
         const courtCount = group.slots.length;
         // Pick the cheapest slot to book when clicked
         const bestSlot = group.slots.reduce((a, b) =>
@@ -69,7 +84,10 @@ export default function SlotPills({
             onClick={() => onBook(bestSlot)}
             className="group relative flex items-center gap-1.5 rounded-lg border border-line bg-[rgba(214,213,201,0.02)] px-2.5 py-1.5 text-sm transition-all hover:border-[rgba(214,213,201,0.3)] hover:bg-[rgba(214,213,201,0.04)] active:scale-[0.97]"
           >
-            <span className="font-medium text-timberwolf">{group.time}</span>
+            {/* dir="ltr" pins "18:00" so the digits don't reorder in RTL */}
+            <span dir="ltr" className="font-medium text-timberwolf">
+              {group.time}
+            </span>
             {price && (
               <span className="text-[11px] text-ink-muted group-hover:text-[rgba(214,213,201,0.7)]">
                 {price}
@@ -88,7 +106,9 @@ export default function SlotPills({
           onClick={() => setExpanded(!expanded)}
           className="rounded-lg border border-line bg-[rgba(214,213,201,0.02)] px-2.5 py-1.5 text-xs text-ink-muted transition-colors hover:text-timberwolf"
         >
-          {expanded ? 'Less' : `+${timeGroups.length - maxVisible}`}
+          {expanded
+            ? t('showLess')
+            : t('showMoreCount', { count: timeGroups.length - maxVisible })}
         </button>
       )}
     </div>

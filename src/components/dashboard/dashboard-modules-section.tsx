@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import {
   Trophy,
@@ -48,12 +49,15 @@ const VARIANT_ICON: Record<
 
 const VISIBILITY_CONFIG: Record<
   Visibility,
-  { label: string; Icon: React.ComponentType<{ className?: string }> }
+  {
+    labelKey: 'public' | 'authenticated' | 'clubOnly' | 'private';
+    Icon: React.ComponentType<{ className?: string }>;
+  }
 > = {
-  public: { label: 'Public', Icon: Globe },
-  authenticated: { label: 'Signed-in only', Icon: Users },
-  club_only: { label: 'Club only', Icon: Building2 },
-  private: { label: 'Private', Icon: Lock },
+  public: { labelKey: 'public', Icon: Globe },
+  authenticated: { labelKey: 'authenticated', Icon: Users },
+  club_only: { labelKey: 'clubOnly', Icon: Building2 },
+  private: { labelKey: 'private', Icon: Lock },
 };
 
 /**
@@ -68,8 +72,9 @@ export function DashboardModulesSection({
   onEditModule,
   onCreateFirstModule,
 }: DashboardModulesSectionProps) {
+  const t = useTranslations('dashboard.modules');
   return (
-    <DashboardSection title="Your modules" count={modules.length || null}>
+    <DashboardSection title={t('title')} count={modules.length || null}>
       {modules.length === 0 ? (
         // Day-1 empty state has a real CTA — Modules is the one section the
         // user can act on themselves to unblock the rest of the dashboard.
@@ -78,8 +83,7 @@ export function DashboardModulesSection({
             className="text-sm leading-relaxed"
             style={{ color: 'var(--text-subtle)' }}
           >
-            No profiles yet. Set up a player or coach profile to start receiving
-            attributed clips from clubs.
+            {t('empty')}
           </p>
           {onCreateFirstModule && (
             <button
@@ -92,7 +96,7 @@ export function DashboardModulesSection({
                 color: 'var(--timberwolf)',
               }}
             >
-              Set up your first profile
+              {t('setUpFirst')}
             </button>
           )}
         </div>
@@ -136,7 +140,7 @@ export function DashboardModulesSection({
                       style={{ color: 'var(--text-muted)' }}
                     >
                       <VIcon className="h-3 w-3" aria-hidden />
-                      <span>{visibility.label}</span>
+                      <span>{t(`visibility.${visibility.labelKey}`)}</span>
                     </div>
                   </div>
                   {/* Reserve the Eye column even when the module isn't
@@ -149,8 +153,8 @@ export function DashboardModulesSection({
                         rel="noopener"
                         className="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-[var(--surface-2)] transition-colors motion-reduce:transition-none"
                         style={{ color: 'var(--text-muted)' }}
-                        aria-label={`View public ${m.label} page`}
-                        title="View public page"
+                        aria-label={t('viewPublicAria', { label: m.label })}
+                        title={t('viewPublicPage')}
                       >
                         <Eye className="h-4 w-4" aria-hidden />
                       </Link>
@@ -162,8 +166,8 @@ export function DashboardModulesSection({
                       onClick={() => onEditModule(m.variantId)}
                       className="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-[var(--surface-2)] transition-colors motion-reduce:transition-none"
                       style={{ color: 'var(--text-muted)' }}
-                      aria-label={`Edit ${m.label}`}
-                      title={`Edit ${m.label} — opens the global editor (per-module editing coming soon)`}
+                      aria-label={t('editAria', { label: m.label })}
+                      title={t('editTitle', { label: m.label })}
                     >
                       <Pencil className="h-4 w-4" aria-hidden />
                     </button>

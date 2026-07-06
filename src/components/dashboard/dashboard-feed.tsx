@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   MatchGroupCard,
   type ClipType,
@@ -41,30 +42,32 @@ interface MatchGroup {
   clips: MatchClip[];
 }
 
+type BucketKey = 'today' | 'yesterday' | 'thisWeek' | 'thisMonth' | 'earlier';
+
 interface BucketedGroups {
-  label: string;
+  key: BucketKey;
   groups: MatchGroup[];
 }
 
-function bucketLabel(iso: string, now: Date): string {
+function bucketKey(iso: string, now: Date): BucketKey {
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return 'Earlier';
+  if (Number.isNaN(d.getTime())) return 'earlier';
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const ts = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
   const diffDays = Math.round((today.getTime() - ts) / (24 * 60 * 60 * 1000));
-  if (diffDays <= 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return 'This week';
-  if (diffDays < 30) return 'This month';
-  return 'Earlier';
+  if (diffDays <= 0) return 'today';
+  if (diffDays === 1) return 'yesterday';
+  if (diffDays < 7) return 'thisWeek';
+  if (diffDays < 30) return 'thisMonth';
+  return 'earlier';
 }
 
-const BUCKET_ORDER = [
-  'Today',
-  'Yesterday',
-  'This week',
-  'This month',
-  'Earlier',
+const BUCKET_ORDER: BucketKey[] = [
+  'today',
+  'yesterday',
+  'thisWeek',
+  'thisMonth',
+  'earlier',
 ];
 
 /**
@@ -77,6 +80,7 @@ const BUCKET_ORDER = [
  * widen the key if we ever normalize matches across orgs.
  */
 export function DashboardFeed({ clips, lastSeenAt }: DashboardFeedProps) {
+  const t = useTranslations('dashboard.feed');
   const buckets = useMemo<BucketedGroups[]>(() => {
     if (clips.length === 0) return [];
     const map = new Map<string, MatchGroup>();
@@ -120,16 +124,16 @@ export function DashboardFeed({ clips, lastSeenAt }: DashboardFeedProps) {
     });
 
     const now = new Date();
-    const byLabel = new Map<string, MatchGroup[]>();
+    const byKey = new Map<BucketKey, MatchGroup[]>();
     for (const g of groups) {
-      const label = bucketLabel(g.matchDate, now);
-      if (!byLabel.has(label)) byLabel.set(label, []);
-      byLabel.get(label)!.push(g);
+      const key = bucketKey(g.matchDate, now);
+      if (!byKey.has(key)) byKey.set(key, []);
+      byKey.get(key)!.push(g);
     }
 
-    return BUCKET_ORDER.filter((l) => byLabel.has(l)).map((label) => ({
-      label,
-      groups: byLabel.get(label)!,
+    return BUCKET_ORDER.filter((k) => byKey.has(k)).map((key) => ({
+      key,
+      groups: byKey.get(key)!,
     }));
   }, [clips]);
 
@@ -141,15 +145,14 @@ export function DashboardFeed({ clips, lastSeenAt }: DashboardFeedProps) {
         // Today / Yesterday play full-bleed (one card per row). Older buckets
         // pack 2-up at lg+ so the page reads as a film roll, not a stack of
         // receipts (Veo / Hudl pattern for archive views).
-        const isFresh =
-          bucket.label === 'Today' || bucket.label === 'Yesterday';
+        const isFresh = bucket.key === 'today' || bucket.key === 'yesterday';
         return (
-          <section key={bucket.label} className="space-y-4">
+          <section key={bucket.key} className="space-y-4">
             <h2
               className="flex items-center gap-3 text-[11px] uppercase tracking-[0.2em] font-semibold"
               style={{ color: 'var(--ash-grey)' }}
             >
-              <span>{bucket.label}</span>
+              <span>{t(`buckets.${bucket.key}`)}</span>
               <span
                 className="flex-1 h-px"
                 style={{ backgroundColor: 'var(--line)' }}

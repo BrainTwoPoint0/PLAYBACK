@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@braintwopoint0/playback-commons/ui';
 import { LoadingSpinner } from '@/components/ui/loading';
 import {
@@ -42,6 +43,7 @@ export function AvatarUpload({
   size = 'md',
   disabled = false,
 }: AvatarUploadProps) {
+  const t = useTranslations('media');
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -78,7 +80,7 @@ export function AvatarUpload({
         const uploadResult = await uploadAvatar(processedFile, userId);
 
         if (!uploadResult.success) {
-          setUploadError(uploadResult.error || 'Upload failed');
+          setUploadError(uploadResult.error || t('uploadFailed'));
           clearMessages();
           return;
         }
@@ -89,7 +91,7 @@ export function AvatarUpload({
         );
 
         if (!updateResult.success) {
-          setUploadError(updateResult.error || 'Failed to update profile');
+          setUploadError(updateResult.error || t('failedToUpdateProfile'));
           clearMessages();
           return;
         }
@@ -100,7 +102,7 @@ export function AvatarUpload({
         setShowModal(false);
       } catch (error) {
         setUploadError(
-          error instanceof Error ? error.message : 'Upload failed'
+          error instanceof Error ? error.message : t('uploadFailed')
         );
         clearMessages();
       } finally {
@@ -139,7 +141,7 @@ export function AvatarUpload({
     if (file && file.type.startsWith('image/')) {
       handleFileSelect(file);
     } else {
-      setUploadError('Please drop a valid image file');
+      setUploadError(t('dropValidImage'));
       clearMessages();
     }
   };
@@ -153,14 +155,14 @@ export function AvatarUpload({
     try {
       const deleteResult = await deleteAvatar(currentAvatarUrl);
       if (!deleteResult.success) {
-        setUploadError(deleteResult.error || 'Failed to delete avatar');
+        setUploadError(deleteResult.error || t('failedToDeleteAvatar'));
         clearMessages();
         return;
       }
 
       const updateResult = await updateProfileAvatar(userId, null);
       if (!updateResult.success) {
-        setUploadError(updateResult.error || 'Failed to update profile');
+        setUploadError(updateResult.error || t('failedToUpdateProfile'));
         clearMessages();
         return;
       }
@@ -171,7 +173,7 @@ export function AvatarUpload({
       setShowModal(false);
     } catch (error) {
       setUploadError(
-        error instanceof Error ? error.message : 'Failed to delete avatar'
+        error instanceof Error ? error.message : t('failedToDeleteAvatar')
       );
       clearMessages();
     } finally {
@@ -260,7 +262,7 @@ export function AvatarUpload({
                 style={{ color: 'var(--timberwolf)' }}
               >
                 <Upload className="h-4 w-4" />
-                {hasCustomAvatar ? 'Change Photo' : 'Upload Photo'}
+                {hasCustomAvatar ? t('changePhoto') : t('uploadPhoto')}
               </Button>
 
               {hasCustomAvatar && (

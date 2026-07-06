@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { randomUUID } from 'crypto';
+import { getTranslations } from 'next-intl/server';
 import { startAcademyCheckoutProxy } from '@/lib/academy/checkout-proxy';
 
 // Slug shape mirrors the validation in PLAYHUB's checkout-session route +
@@ -42,21 +43,15 @@ export async function startAcademyCheckout(
    *  picker passes the subclub the parent navigated through. */
   subclubSlug: string | null = null
 ): Promise<{ ok: false; message: string }> {
+  const t = await getTranslations('academy.checkout');
+
   if (!CLUB_SLUG_RE.test(clubSlug) || !TEAM_SLUG_RE.test(teamSlug)) {
-    return {
-      ok: false,
-      message:
-        'Something looked wrong with that team selection — please refresh and try again.',
-    };
+    return { ok: false, message: t('invalidSelection') };
   }
   // Defence-in-depth: even though subclubSlug arrives from a server-rendered
   // page (not URL-supplied), revalidate to bound the value before forwarding.
   if (subclubSlug !== null && !SUBCLUB_SLUG_RE.test(subclubSlug)) {
-    return {
-      ok: false,
-      message:
-        'Something looked wrong with that team selection — please refresh and try again.',
-    };
+    return { ok: false, message: t('invalidSelection') };
   }
 
   const safeKey = IDEMPOTENCY_KEY_RE.test(idempotencyKey)
@@ -97,13 +92,13 @@ export async function startAcademyCheckout(
   // underlying PLAYHUB / Stripe message — the structured log keeps ops covered.
   const userMessage =
     outcome.reason === 'club_or_team_not_found'
-      ? "We couldn't find that team — please refresh the page and try again."
+      ? t('teamNotFound')
       : outcome.reason === 'rate_limited' ||
           outcome.reason === 'upstream_unreachable'
-        ? 'Checkout is busy right now — please try again in a moment.'
+        ? t('busy')
         : outcome.reason === 'invalid_input'
-          ? 'Something looked wrong with that team selection — please refresh and try again.'
-          : 'Checkout is unavailable right now — please try again in a few minutes.';
+          ? t('invalidSelection')
+          : t('unavailable');
 
   return { ok: false, message: userMessage };
 }

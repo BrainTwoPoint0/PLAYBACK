@@ -1,5 +1,6 @@
 'use client';
 
+import { useFormatter, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import {
   Play,
@@ -51,29 +52,15 @@ export interface MatchGroupCardProps {
 
 const TYPE_CONFIG: Record<
   ClipType,
-  { label: string; Icon: React.ComponentType<{ className?: string }> }
+  { Icon: React.ComponentType<{ className?: string }> }
 > = {
-  goal: { label: 'Goal', Icon: Trophy },
-  assist: { label: 'Assist', Icon: Sparkles },
-  save: { label: 'Save', Icon: Shield },
-  tackle: { label: 'Tackle', Icon: Wrench },
-  skill: { label: 'Skill', Icon: Dumbbell },
-  custom: { label: 'Clip', Icon: Film },
+  goal: { Icon: Trophy },
+  assist: { Icon: Sparkles },
+  save: { Icon: Shield },
+  tackle: { Icon: Wrench },
+  skill: { Icon: Dumbbell },
+  custom: { Icon: Film },
 };
-
-function formatDateLabel(iso: string): string {
-  try {
-    const d = new Date(iso);
-    return d.toLocaleDateString(undefined, {
-      day: 'numeric',
-      month: 'short',
-      year:
-        d.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined,
-    });
-  } catch {
-    return iso;
-  }
-}
 
 /**
  * The Veo-style match block — single recording, big thumbnail, clip-moment
@@ -96,6 +83,13 @@ export function MatchGroupCard({
   playhubBaseUrl,
   lastSeenAt,
 }: MatchGroupCardProps) {
+  const t = useTranslations('dashboard.matchCard');
+  const format = useFormatter();
+  const formatDateLabel = (iso: string): string => {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return format.dateTime(d, 'short');
+  };
   const playhub =
     playhubBaseUrl ??
     process.env.NEXT_PUBLIC_PLAYHUB_URL?.replace(/\/$/, '') ??
@@ -121,11 +115,15 @@ export function MatchGroupCard({
         href={watchUrl}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label={`Watch full match: ${homeTeam} vs ${awayTeam}${
+        aria-label={
           hasAnyNew
-            ? `, ${newClips.length} new clip${newClips.length === 1 ? '' : 's'}`
-            : ''
-        }`}
+            ? t('watchAriaNew', {
+                homeTeam,
+                awayTeam,
+                count: newClips.length,
+              })
+            : t('watchAria', { homeTeam, awayTeam })
+        }
         className="block relative aspect-video overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--timberwolf)]/50"
         style={{ backgroundColor: 'var(--surface-2)' }}
       >
@@ -133,7 +131,7 @@ export function MatchGroupCard({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={thumbnailUrl}
-            alt={`${homeTeam} vs ${awayTeam}`}
+            alt={t('teamsVs', { homeTeam, awayTeam })}
             loading="lazy"
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] motion-reduce:transition-none"
           />
@@ -148,7 +146,7 @@ export function MatchGroupCard({
         {/* Top-left: club/source badge */}
         {ownerOrgName && (
           <div
-            className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest backdrop-blur-md"
+            className="absolute top-3 start-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest backdrop-blur-md"
             style={{
               backgroundColor: 'rgba(10,16,13,0.6)',
               color: 'var(--timberwolf)',
@@ -165,7 +163,7 @@ export function MatchGroupCard({
             wrapping link's aria-label above; this pulse is decorative and
             aria-hidden so screen readers don't double-announce. */}
         <div
-          className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-medium tabular-nums backdrop-blur-md"
+          className="absolute top-3 end-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-medium tabular-nums backdrop-blur-md"
           style={{
             backgroundColor: 'rgba(10,16,13,0.6)',
             color: 'var(--timberwolf)',
@@ -187,7 +185,7 @@ export function MatchGroupCard({
               />
             </span>
           )}
-          {clips.length} {clips.length === 1 ? 'clip' : 'clips'}
+          {t('clipCount', { count: clips.length })}
         </div>
 
         {/* Hover/focus play disc — mirrors keyboard focus on the link wrapper
@@ -216,8 +214,13 @@ export function MatchGroupCard({
             className="text-xl font-semibold tracking-tight"
             style={{ color: 'var(--timberwolf)' }}
           >
-            {homeTeam} <span style={{ color: 'var(--text-muted)' }}>vs</span>{' '}
-            {awayTeam}
+            {t.rich('teamsVsStyled', {
+              homeTeam,
+              awayTeam,
+              muted: (chunks) => (
+                <span style={{ color: 'var(--text-muted)' }}>{chunks}</span>
+              ),
+            })}
           </div>
         </div>
       </Link>
@@ -229,10 +232,15 @@ export function MatchGroupCard({
           style={{ borderColor: 'var(--line)' }}
         >
           {clips.map((clip) => {
-            const cfg = TYPE_CONFIG[clip.type] ?? TYPE_CONFIG.custom;
-            const Icon = cfg.Icon;
+            const safeType: ClipType = TYPE_CONFIG[clip.type]
+              ? clip.type
+              : 'custom';
+            const Icon = TYPE_CONFIG[safeType].Icon;
+            const typeLabel = t(`types.${safeType}`);
             const clipIsNew = isNew(clip.attributedAt, lastSeenMs);
-            const clipLabel = `${cfg.label}${clip.title ? `: ${clip.title}` : ''}`;
+            const clipLabel = clip.title
+              ? t('clipLabelWithTitle', { type: typeLabel, title: clip.title })
+              : typeLabel;
             return (
               <span
                 key={clip.attributionId}
@@ -243,9 +251,13 @@ export function MatchGroupCard({
                   href={watchUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  title={`${clipLabel} — opens the full match (clip-level deep-link is coming soon)`}
-                  aria-label={`${clipLabel}${clipIsNew ? ', new' : ''}, opens full match`}
-                  className="inline-flex items-center gap-1.5 pl-3 pr-2 py-1.5 text-xs font-medium transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--timberwolf)]/50"
+                  title={t('chipTitle', { label: clipLabel })}
+                  aria-label={
+                    clipIsNew
+                      ? t('chipAriaNew', { label: clipLabel })
+                      : t('chipAria', { label: clipLabel })
+                  }
+                  className="inline-flex items-center gap-1.5 ps-3 pe-2 py-1.5 text-xs font-medium transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--timberwolf)]/50"
                   style={{
                     backgroundColor: 'var(--surface-2)',
                     color: 'var(--timberwolf)',
@@ -261,7 +273,7 @@ export function MatchGroupCard({
                     />
                   )}
                   <Icon className="h-3 w-3" />
-                  <span>{cfg.label}</span>
+                  <span>{typeLabel}</span>
                   {clip.title && (
                     <span
                       className="hidden sm:inline truncate max-w-[180px]"
@@ -278,8 +290,8 @@ export function MatchGroupCard({
                     e.stopPropagation();
                     setShareClip(clip);
                   }}
-                  aria-label={`Share ${clipLabel}`}
-                  title="Share clip"
+                  aria-label={t('shareClipAria', { label: clipLabel })}
+                  title={t('shareClip')}
                   // Resting Share2 sits on `--ash-grey` (not `--text-muted`)
                   // so the icon reads as actionable, not disabled — the chip
                   // is a two-action segmented control, not a watch link with
@@ -288,7 +300,7 @@ export function MatchGroupCard({
                   style={{
                     backgroundColor: 'var(--surface-2)',
                     color: 'var(--ash-grey)',
-                    borderLeft: '1px solid var(--line-strong)',
+                    borderInlineStart: '1px solid var(--line-strong)',
                   }}
                 >
                   <Share2 className="h-3 w-3" />
@@ -300,11 +312,11 @@ export function MatchGroupCard({
             href={watchUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-auto inline-flex items-center gap-1 text-xs font-medium hover:underline focus-visible:outline-none focus-visible:underline"
+            className="ms-auto inline-flex items-center gap-1 text-xs font-medium hover:underline focus-visible:outline-none focus-visible:underline"
             style={{ color: 'var(--text-muted)' }}
           >
-            Watch full match
-            <ArrowUpRight className="h-3 w-3" />
+            {t('watchFullMatch')}
+            <ArrowUpRight className="h-3 w-3 rtl:-scale-x-100" />
           </Link>
         </div>
       )}
@@ -352,6 +364,7 @@ function isNew(
  *  - "MATCH RECORDING" eyebrow underneath the monogram
  */
 function BrandedThumbnailFallback({ monogram }: { monogram: string }) {
+  const t = useTranslations('dashboard.matchCard');
   return (
     <>
       <div
@@ -386,7 +399,7 @@ function BrandedThumbnailFallback({ monogram }: { monogram: string }) {
           style={{ color: 'var(--text-subtle)' }}
         >
           <Film className="h-3 w-3" aria-hidden />
-          Match recording
+          {t('matchRecording')}
         </div>
       </div>
     </>

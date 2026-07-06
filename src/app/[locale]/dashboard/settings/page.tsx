@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { useAuth, useProfile } from '@braintwopoint0/playback-commons/auth';
@@ -14,29 +15,9 @@ type Visibility = 'public' | 'authenticated' | 'club_only' | 'private';
 interface SettingsVariant {
   variantId: string;
   moduleSlug: string;
-  label: string;
+  sportName: string | null;
   visibility: Visibility;
   variantType: string;
-}
-
-function VARIANT_LABEL(t: string, sportName: string | null): string {
-  if (t === 'player' && sportName) {
-    return sportName.charAt(0).toUpperCase() + sportName.slice(1) + ' player';
-  }
-  return t.charAt(0).toUpperCase() + t.slice(1);
-}
-
-function VISIBILITY_DESCRIPTION(v: Visibility): string {
-  switch (v) {
-    case 'public':
-      return 'Anyone with the link can view';
-    case 'authenticated':
-      return 'Only signed-in PLAYBACK users';
-    case 'club_only':
-      return 'Only members of selected clubs';
-    case 'private':
-      return 'Hidden from everyone but you';
-  }
 }
 
 export default function DashboardSettingsPage() {
@@ -48,10 +29,40 @@ export default function DashboardSettingsPage() {
 }
 
 function SettingsContent() {
+  const t = useTranslations('dashboard.settings');
+  const tc = useTranslations('dashboard.common');
   const { signOut } = useAuth();
   const { profile } = useProfile();
   const [variants, setVariants] = useState<SettingsVariant[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Label is computed at render (not stored in state) so it re-translates on
+  // locale change. Sport names come from the DB in English and are
+  // interpolated as-is.
+  const variantLabel = (variantType: string, sportName: string | null) => {
+    if (variantType === 'player') {
+      return sportName
+        ? t('playerWithSport', {
+            sport: sportName.charAt(0).toUpperCase() + sportName.slice(1),
+          })
+        : t('variantPlayer');
+    }
+    if (variantType === 'coach') return t('variantCoach');
+    return variantType.charAt(0).toUpperCase() + variantType.slice(1);
+  };
+
+  const visibilityDescription = (v: Visibility): string => {
+    switch (v) {
+      case 'public':
+        return t('visibilityPublic');
+      case 'authenticated':
+        return t('visibilityAuthenticated');
+      case 'club_only':
+        return t('visibilityClubOnly');
+      case 'private':
+        return t('visibilityPrivate');
+    }
+  };
 
   useEffect(() => {
     const profileId = profile.data?.id;
@@ -93,10 +104,7 @@ function SettingsContent() {
         return {
           variantId: v.id as string,
           moduleSlug: v.module_slug as string,
-          label: VARIANT_LABEL(
-            v.variant_type as string,
-            (sport?.name as string | null) ?? null
-          ),
+          sportName: (sport?.name as string | null) ?? null,
           variantType: v.variant_type as string,
           visibility: (privacyByVariant.get(v.id as string) ??
             'public') as Visibility,
@@ -132,20 +140,20 @@ function SettingsContent() {
             className="inline-flex items-center gap-1 text-sm hover:underline"
             style={{ color: 'var(--text-muted)' }}
           >
-            <ChevronLeft className="h-4 w-4" />
-            Back to dashboard
+            <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+            {t('backToDashboard')}
           </Link>
           <h1
             className="mt-4 text-2xl sm:text-3xl font-bold tracking-tight"
             style={{ color: 'var(--timberwolf)' }}
           >
-            Settings
+            {t('title')}
           </h1>
           <p
             className="mt-1 text-sm max-w-prose"
             style={{ color: 'var(--text-muted)' }}
           >
-            Control who sees your profile and how PLAYBACK reaches you.
+            {t('subtitle')}
           </p>
         </div>
 
@@ -165,22 +173,22 @@ function SettingsContent() {
               className="text-sm font-semibold"
               style={{ color: 'var(--timberwolf)' }}
             >
-              Module visibility
+              {t('moduleVisibilityTitle')}
             </h2>
             <p
               className="text-xs mt-1 max-w-prose"
               style={{ color: 'var(--text-muted)' }}
             >
-              Each module on your profile has its own visibility. Public modules
-              appear at /p/{profile.data?.username ?? '<username>'} for anyone
-              with the link.
+              {t.rich('moduleVisibilityDescription', {
+                username: profile.data?.username ?? '<username>',
+                path: (chunks) => <span dir="ltr">{chunks}</span>,
+              })}
             </p>
           </div>
           {variants.length === 0 ? (
             <div className="px-5 sm:px-6 py-6">
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                You don&apos;t have any modules yet. Create a player or coach
-                module from the dashboard.
+                {t('noModules')}
               </p>
             </div>
           ) : (
@@ -196,20 +204,23 @@ function SettingsContent() {
                       className="text-sm font-medium"
                       style={{ color: 'var(--timberwolf)' }}
                     >
-                      {variant.label}
+                      {variantLabel(variant.variantType, variant.sportName)}
                     </div>
                     <div
                       className="text-xs mt-0.5"
                       style={{ color: 'var(--text-muted)' }}
                     >
-                      {VISIBILITY_DESCRIPTION(variant.visibility)}
+                      {visibilityDescription(variant.visibility)}
                     </div>
                   </div>
                   <div className="w-full sm:w-56 shrink-0">
                     <ModulePrivacySwitch
                       variantId={variant.variantId}
                       initialVisibility={variant.visibility}
-                      variantLabel={variant.label}
+                      variantLabel={variantLabel(
+                        variant.variantType,
+                        variant.sportName
+                      )}
                       onChange={(v) =>
                         setVariants((prev) =>
                           prev.map((x) =>
@@ -230,17 +241,17 @@ function SettingsContent() {
         {/* Notifications — v1.1 stub */}
         <PlaceholderSection
           Icon={Bell}
-          title="Notifications"
-          body="Email and push alerts when a coach attributes a clip, issues a verification, or invites you to a roster."
-          chip="Coming soon"
+          title={t('notificationsTitle')}
+          body={t('notificationsBody')}
+          chip={tc('comingSoon')}
         />
 
         {/* Parental controls — v1.1 stub */}
         <PlaceholderSection
           Icon={Users}
-          title="Parental controls"
-          body="If you manage a minor's profile, you'll be able to require consent for new attributions, set default visibility, and approve verifications from this section."
-          chip="Coming soon"
+          title={t('parentalTitle')}
+          body={t('parentalBody')}
+          chip={tc('comingSoon')}
         />
 
         <div className="pt-4">
@@ -250,8 +261,8 @@ function SettingsContent() {
             onClick={signOut}
             className="border-[var(--line-strong)] hover:bg-[var(--surface-2)]"
           >
-            <LogOut className="h-4 w-4 mr-1.5" />
-            Sign out
+            <LogOut className="h-4 w-4 me-1.5" />
+            {tc('signOut')}
           </Button>
         </div>
       </div>

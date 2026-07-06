@@ -1,3 +1,4 @@
+import { useFormatter, useTranslations } from 'next-intl';
 import { Briefcase } from 'lucide-react';
 
 interface CareerEntry {
@@ -15,7 +16,33 @@ interface ProfileCareerProps {
 }
 
 export function ProfileCareer({ entries }: ProfileCareerProps) {
+  const t = useTranslations('profile.career');
+  const format = useFormatter();
+
   if (entries.length === 0) return null;
+
+  // "MMM yyyy" — matches the old en-GB rendering; numberingSystem 'latn'
+  // mirrors the app-wide digit pinning in src/i18n/request.ts.
+  const formatDate = (d: string) =>
+    format.dateTime(new Date(d), {
+      month: 'short',
+      year: 'numeric',
+      numberingSystem: 'latn',
+    });
+
+  const formatDateRange = (
+    start: string | null,
+    end: string | null,
+    isCurrent: boolean | null
+  ): string => {
+    if (!start && !end) return isCurrent ? t('present') : '';
+    if (start && !end && isCurrent)
+      return t('rangeOngoing', { start: formatDate(start) });
+    if (start && end)
+      return t('range', { start: formatDate(start), end: formatDate(end) });
+    if (start) return formatDate(start);
+    return '';
+  };
 
   return (
     <div className="space-y-3">
@@ -23,7 +50,7 @@ export function ProfileCareer({ entries }: ProfileCareerProps) {
         className="text-xs font-semibold uppercase tracking-widest"
         style={{ color: 'var(--ash-grey)' }}
       >
-        Career
+        {t('title')}
       </h2>
 
       <div className="space-y-3">
@@ -76,24 +103,4 @@ export function ProfileCareer({ entries }: ProfileCareerProps) {
       </div>
     </div>
   );
-}
-
-function formatDateRange(
-  start: string | null,
-  end: string | null,
-  isCurrent: boolean | null
-): string {
-  const formatDate = (d: string) => {
-    const date = new Date(d);
-    return date.toLocaleDateString('en-GB', {
-      month: 'short',
-      year: 'numeric',
-    });
-  };
-
-  if (!start && !end) return isCurrent ? 'Present' : '';
-  if (start && !end && isCurrent) return `${formatDate(start)} - Present`;
-  if (start && end) return `${formatDate(start)} - ${formatDate(end)}`;
-  if (start) return formatDate(start);
-  return '';
 }

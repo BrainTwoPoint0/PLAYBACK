@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import SectionTitle from './ui/section-title';
 import { LogoCarousel, Logo } from './ui/logo-carousel';
 
@@ -24,13 +25,11 @@ const partnerLogos: Logo[] = [
 ];
 
 export const Network = () => {
+  const t = useTranslations('landing.network');
   return (
     <section id="network" className="relative mt-32 md:mt-40 scroll-mt-24">
       <div className="mx-auto max-w-[1400px] px-6 sm:px-10">
-        <SectionTitle
-          eyebrow="The PLAYBACK Network"
-          title="Powered by PLAYBACK."
-        />
+        <SectionTitle eyebrow={t('eyebrow')} title={t('title')} />
         <LogoCarousel logos={partnerLogos} columnCount={4} />
       </div>
     </section>

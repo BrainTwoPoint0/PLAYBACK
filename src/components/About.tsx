@@ -1,10 +1,12 @@
 'use client';
 
 import { Link } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { ArrowRight } from 'lucide-react';
 import SectionTitle from './ui/section-title';
 
 type Audience = {
+  key: string;
   eyebrow: string;
   headline: string;
   body: string;
@@ -12,53 +14,35 @@ type Audience = {
   cta: { label: string; href: string };
 };
 
-const audiences: Audience[] = [
-  {
-    eyebrow: 'For clubs & academies',
-    headline: 'The last partner you\u2019ll ever need.',
-    body: 'AI, software, media, and cloud - all built in-house. Layered on top of best-in-class hardware from the likes of Veo, Spiideo, and Clutch. One operating system for every team, season, and venue.',
-    bullets: [
-      'In-house AI, software, and cloud architecture',
-      'Media automations - clips, graphics, distribution',
-      'Elite hardware included - Veo, Spiideo, Clutch, GameCam, Hudl, FairVision, PlayerData',
-      'Performance-based model - we grow together',
-    ],
-    cta: { label: 'Join the Network', href: '/#contact' },
-  },
-  {
-    eyebrow: 'For players & parents',
-    headline: 'Access the Moment.',
-    body: 'Our AI captures every match, clips every goal, and builds the profile scouts can actually find. The same tech pros rely on, put to work for the 99% who play.',
-    bullets: [
-      'AI-generated highlights, delivered in minutes',
-      'PLAYBACK Profile - the LinkedIn for Sports',
-      'GPS, analytics, and match graphics built in',
-      '25 trials secured through PLAYBACK profiles',
-    ],
-    cta: { label: 'Join the Academy', href: '/academy' },
-  },
-  {
-    eyebrow: 'For coaches & staff',
-    headline: 'Video, GPS, Ops - one stack.',
-    body: 'Our software replaces the six tools most coaches stitch together. Tagging, analytics, clip distribution, player data - one interface, built by us to work together.',
-    bullets: [
-      'AI match tagging and instant video breakdowns',
-      'GPS, events, and benchmarks per player',
-      'AI-native processes for ops automation',
-      'Automated clip delivery to players and parents',
-    ],
-    cta: { label: 'See the platform', href: '/#services' },
-  },
-];
+const AUDIENCE_CONFIG = [
+  { key: 'clubs', ctaHref: '/#contact' },
+  { key: 'players', ctaHref: '/academy' },
+  { key: 'coaches', ctaHref: '/#services' },
+] as const;
+
+const BULLET_COUNT = 4;
 
 export function About() {
+  const t = useTranslations('landing.about');
+
+  const audiences: Audience[] = AUDIENCE_CONFIG.map(({ key, ctaHref }) => ({
+    key,
+    eyebrow: t(`audiences.${key}.eyebrow`),
+    headline: t(`audiences.${key}.headline`),
+    body: t(`audiences.${key}.body`),
+    bullets: Array.from({ length: BULLET_COUNT }, (_, i) =>
+      t(`audiences.${key}.bullet${i + 1}`)
+    ),
+    cta: { label: t(`audiences.${key}.cta`), href: ctaHref },
+  }));
+
   return (
     <section id="audiences" className="relative mt-32 md:mt-40">
       <div className="mx-auto max-w-[1400px] px-6 sm:px-10">
-        <SectionTitle eyebrow="Built for" title="One Network. Every side." />
+        <SectionTitle eyebrow={t('eyebrow')} title={t('title')} />
         <div className="grid grid-cols-1 gap-5 md:gap-6 lg:grid-cols-3">
           {audiences.map((a) => (
-            <AudienceCard key={a.eyebrow} audience={a} />
+            <AudienceCard key={a.key} audience={a} />
           ))}
         </div>
       </div>
@@ -101,7 +85,7 @@ function AudienceCard({ audience }: { audience: Audience }) {
         >
           {audience.cta.label}
           <ArrowRight
-            className="h-4 w-4 transition-transform duration-300 group-hover/link:translate-x-0.5"
+            className="h-4 w-4 transition-transform duration-300 group-hover/link:translate-x-0.5 rtl:rotate-180"
             aria-hidden
           />
         </Link>

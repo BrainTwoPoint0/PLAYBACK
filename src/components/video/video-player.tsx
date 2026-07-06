@@ -191,7 +191,10 @@ export function VideoPlayer({
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
+    // Player chrome (seek fill direction, time order, volume slider) is a
+    // timeline metaphor that must not mirror in RTL locales.
     <div
+      dir="ltr"
       className={`relative bg-black rounded-xl overflow-hidden group ${className}`}
       onMouseMove={handleMouseMove}
       onMouseLeave={() => isPlaying && setShowControls(false)}

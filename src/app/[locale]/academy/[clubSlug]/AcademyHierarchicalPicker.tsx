@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -46,6 +47,7 @@ export function AcademyHierarchicalPicker({
   subclubs,
   teams,
 }: Props) {
+  const t = useTranslations('academy.picker');
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialFromUrl = searchParams.get('club');
@@ -169,14 +171,14 @@ export function AcademyHierarchicalPicker({
         {canScrollLeft && (
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-[#0a100d] via-[#0a100d]/80 to-transparent motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200"
+            className="pointer-events-none absolute inset-y-0 start-0 z-10 w-16 bg-gradient-to-r from-[#0a100d] via-[#0a100d]/80 to-transparent rtl:bg-gradient-to-l motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200"
           />
         )}
         {/* Right edge fade — symmetric. */}
         {canScrollRight && (
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-[#0a100d] via-[#0a100d]/80 to-transparent motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200"
+            className="pointer-events-none absolute inset-y-0 end-0 z-10 w-16 bg-gradient-to-l from-[#0a100d] via-[#0a100d]/80 to-transparent rtl:bg-gradient-to-r motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200"
           />
         )}
         {/* Left chevron — hidden when fully scrolled left. Sits above the
@@ -185,20 +187,20 @@ export function AcademyHierarchicalPicker({
           <button
             type="button"
             onClick={() => scrollByCards('left')}
-            aria-label="Scroll clubs left"
-            className="absolute left-2 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center rounded-full border border-[#d6d5c9]/20 bg-[#0a100d]/80 p-2 text-[#d6d5c9] backdrop-blur-sm transition-all hover:border-[#d6d5c9]/50 hover:bg-[#0a100d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6d5c9]/60 md:inline-flex"
+            aria-label={t('scrollLeft')}
+            className="absolute start-2 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center rounded-full border border-[#d6d5c9]/20 bg-[#0a100d]/80 p-2 text-[#d6d5c9] backdrop-blur-sm transition-all hover:border-[#d6d5c9]/50 hover:bg-[#0a100d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6d5c9]/60 md:inline-flex"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
           </button>
         )}
         {canScrollRight && (
           <button
             type="button"
             onClick={() => scrollByCards('right')}
-            aria-label="Scroll clubs right"
-            className="absolute right-2 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center rounded-full border border-[#d6d5c9]/20 bg-[#0a100d]/80 p-2 text-[#d6d5c9] backdrop-blur-sm transition-all hover:border-[#d6d5c9]/50 hover:bg-[#0a100d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6d5c9]/60 md:inline-flex"
+            aria-label={t('scrollRight')}
+            className="absolute end-2 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center rounded-full border border-[#d6d5c9]/20 bg-[#0a100d]/80 p-2 text-[#d6d5c9] backdrop-blur-sm transition-all hover:border-[#d6d5c9]/50 hover:bg-[#0a100d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6d5c9]/60 md:inline-flex"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4 rtl:rotate-180" />
           </button>
         )}
         {/* Carousel — horizontal scroll. snap-proximity (not mandatory)
@@ -208,7 +210,7 @@ export function AcademyHierarchicalPicker({
         <div
           ref={railRef}
           role="radiogroup"
-          aria-label={`Clubs in ${clubName}`}
+          aria-label={t('railLabel', { club: clubName })}
           onScroll={recomputeScrollState}
           className="overflow-x-auto scroll-smooth px-6 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
@@ -225,7 +227,7 @@ export function AcademyHierarchicalPicker({
                     role="radio"
                     aria-checked={isSelected}
                     onClick={() => handleSelectSubclub(sc.subclubSlug)}
-                    aria-label={`Choose ${sc.displayName}`}
+                    aria-label={t('chooseClub', { name: sc.displayName })}
                     className={[
                       'group relative flex h-full w-full flex-col items-center justify-start gap-4 rounded-xl border bg-white p-5 text-center',
                       'motion-safe:transition-all motion-safe:duration-200',
@@ -274,7 +276,7 @@ export function AcademyHierarchicalPicker({
       <div ref={ageGroupsRef} className="mt-12">
         {!selectedSubclubMeta ? (
           <div className="rounded-xl border border-dashed border-[#d6d5c9]/15 px-6 py-12 text-center text-sm text-[#b9baa3]">
-            Pick a club above to see the age groups available for subscription.
+            {t('pickPrompt')}
           </div>
         ) : (
           <div
@@ -284,10 +286,12 @@ export function AcademyHierarchicalPicker({
             <div className="mb-6 flex items-baseline justify-between border-b border-[#d6d5c9]/10 pb-4">
               <div className="flex flex-col gap-1">
                 <p className="text-[10px] uppercase tracking-[0.28em] text-[#b9baa3] md:text-xs">
-                  {selectedSubclubMeta.displayName} · Age groups
+                  {t('ageGroupsEyebrow', {
+                    name: selectedSubclubMeta.displayName,
+                  })}
                 </p>
                 <h2 className="text-xl font-semibold tracking-tight text-[#d6d5c9]">
-                  Choose an age group
+                  {t('chooseAgeGroup')}
                 </h2>
               </div>
               <button
@@ -295,7 +299,7 @@ export function AcademyHierarchicalPicker({
                 onClick={handleClearSelection}
                 className="text-xs text-[#b9baa3] underline-offset-4 transition-colors hover:text-[#d6d5c9] hover:underline"
               >
-                Clear
+                {t('clear')}
               </button>
             </div>
 
@@ -311,17 +315,17 @@ export function AcademyHierarchicalPicker({
             {teamsForSelection.length === 0 ? (
               <div className="rounded-xl border border-dashed border-[#d6d5c9]/15 px-6 py-12 text-center text-sm text-[#b9baa3]">
                 <p className="text-[#d6d5c9]">
-                  {selectedSubclubMeta.displayName} hasn&apos;t opened any age
-                  groups for subscription yet.
+                  {t('noAgeGroupsTitle', {
+                    name: selectedSubclubMeta.displayName,
+                  })}
                 </p>
-                <p className="mt-2">
-                  New age groups usually go live before the season starts. Check
-                  back soon.
-                </p>
+                <p className="mt-2">{t('noAgeGroupsHint')}</p>
               </div>
             ) : (
               <ul
-                aria-label={`Age groups at ${selectedSubclubMeta.displayName}`}
+                aria-label={t('ageGroupsListLabel', {
+                  name: selectedSubclubMeta.displayName,
+                })}
                 className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3"
               >
                 {teamsForSelection.map((team) => {
@@ -332,9 +336,13 @@ export function AcademyHierarchicalPicker({
                         type="button"
                         onClick={() => handlePickTeam(team.teamSlug)}
                         aria-disabled={pending}
-                        aria-label={`Subscribe to ${team.displayName} in ${selectedSubclubMeta.displayName} at ${clubName}`}
+                        aria-label={t('subscribeAriaNested', {
+                          team: team.displayName,
+                          subclub: selectedSubclubMeta.displayName,
+                          club: clubName,
+                        })}
                         className={[
-                          'group relative w-full overflow-hidden rounded-xl border bg-[#d6d5c9]/[0.015] p-6 text-left',
+                          'group relative w-full overflow-hidden rounded-xl border bg-[#d6d5c9]/[0.015] p-6 text-start',
                           'motion-safe:transition-all motion-safe:duration-300',
                           isPending
                             ? 'border-[#d6d5c9]/50 bg-[#d6d5c9]/[0.04]'
@@ -361,12 +369,17 @@ export function AcademyHierarchicalPicker({
                                 aria-hidden
                                 className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[#d6d5c9]"
                               />
-                              Redirecting to Stripe…
+                              {t('redirecting')}
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-sm text-[#d6d5c9] motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:translate-x-1">
-                              Subscribe
-                              <span aria-hidden>→</span>
+                            <span className="inline-flex items-center gap-1 text-sm text-[#d6d5c9] motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:translate-x-1 rtl:motion-safe:group-hover:-translate-x-1">
+                              {t('subscribe')}
+                              <span
+                                aria-hidden
+                                className="inline-block rtl:-scale-x-100"
+                              >
+                                →
+                              </span>
                             </span>
                           )}
                         </div>

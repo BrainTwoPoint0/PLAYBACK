@@ -68,3 +68,29 @@ input[type='number'] {
 .no-visible-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Arabic is a connected script — letter-spacing breaks glyph joining.
+   (tracking-tight is deliberately excluded: only used on Latin display
+   type like the logo/wordmark.) */
+[dir='rtl'] .tracking-wide,
+[dir='rtl'] .tracking-wider,
+[dir='rtl'] .tracking-widest,
+[dir='rtl'] [class*='tracking-['] {
+  letter-spacing: 0;
+}
+
+/* Any element that overflows inline-start (left in RTL) widens the document
+   and lets mobile pinch-zoom out past the layout. Clip the document edge —
+   individual scroll areas keep their own overflow behavior. */
+html {
+  overflow-x: clip;
+}
+/* overflow: clip is dropped (not fallback-ed) below Safari 16 / Chrome 90.
+   hidden makes html a scroll container, acceptable as the degraded mode; it
+   also covers any inline left:-9999 live regions no class override can
+   reach. */
+@supports not (overflow: clip) {
+  html {
+    overflow-x: hidden;
+  }
+}

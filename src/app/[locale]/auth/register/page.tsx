@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { Link } from '@/i18n/navigation';
 import {
@@ -10,6 +11,7 @@ import {
   validatePassword,
   validateUsername,
   getAuthErrorMessage,
+  getAuthErrorCode,
 } from '@braintwopoint0/playback-commons/auth';
 import { createClient } from '@braintwopoint0/playback-commons/supabase';
 import { Button, Input, Label } from '@braintwopoint0/playback-commons/ui';
@@ -36,6 +38,8 @@ type AcademyClaim =
   | { state: 'error'; message: string };
 
 export default function RegisterPage() {
+  const t = useTranslations('auth.register');
+  const tAuth = useTranslations('auth');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -113,8 +117,7 @@ export default function RegisterPage() {
         } else if (result.reason === 'transient') {
           setAcademyClaim({
             state: 'error',
-            message:
-              "We're having trouble loading your subscription details — please refresh in a moment.",
+            message: t('errors.academyTransient'),
           });
         } else {
           // not_found / config_error: fall back to the generic register
@@ -170,12 +173,12 @@ export default function RegisterPage() {
 
     // Basic validation
     if (!email || !password || !confirmPassword || !username || !fullName) {
-      setError('Please fill in all fields');
+      setError(t('errors.fillAllFields'));
       return;
     }
 
     if (!validateEmail(email)) {
-      setError('Please enter a valid email address');
+      setError(t('errors.invalidEmail'));
       return;
     }
 
@@ -186,12 +189,12 @@ export default function RegisterPage() {
     }
 
     if (usernameStatus !== 'available') {
-      setError('Please choose an available username');
+      setError(t('errors.usernameUnavailable'));
       return;
     }
 
     if (fullName.trim().length < 2) {
-      setError('Full name must be at least 2 characters');
+      setError(t('errors.fullNameTooShort'));
       return;
     }
 
@@ -202,7 +205,7 @@ export default function RegisterPage() {
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('errors.passwordsMismatch'));
       return;
     }
 
@@ -215,14 +218,17 @@ export default function RegisterPage() {
 
       const { data, error } = await signUp(email, password, metadata);
       if (error) {
-        setError(getAuthErrorMessage(error));
+        // Recognized Supabase errors get localized copy; anything else falls
+        // back to commons' English getAuthErrorMessage.
+        const code = getAuthErrorCode(error);
+        setError(
+          code ? tAuth(`serverErrors.${code}`) : getAuthErrorMessage(error)
+        );
       } else if (data?.user) {
         // Check if email already exists using identities array
         // When email confirmation is enabled, existing emails return user with empty identities
         if (data.user.identities && data.user.identities.length === 0) {
-          setError(
-            'An account with this email already exists. Please sign in instead.'
-          );
+          setError(t('errors.emailExists'));
         } else {
           posthog.identify(data.user.id, { email, username: username.trim() });
           posthog.capture('user_signed_up', {
@@ -233,10 +239,10 @@ export default function RegisterPage() {
           router.push('/auth/verify-email');
         }
       } else {
-        setError('Failed to create account. Please try again.');
+        setError(t('errors.createFailed'));
       }
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.');
+      setError(t('errors.unexpected'));
     } finally {
       setLoading(false);
     }
@@ -271,24 +277,21 @@ export default function RegisterPage() {
               className="text-3xl font-bold mb-2"
               style={{ color: 'var(--timberwolf)' }}
             >
-              {academyClaim.state === 'ready'
-                ? 'Claim your account'
-                : 'Create account'}
+              {academyClaim.state === 'ready' ? t('academyTitle') : t('title')}
             </h1>
             <p style={{ color: 'var(--ash-grey)' }}>
-              {academyClaim.state === 'ready' ? (
-                <>
-                  Thanks for subscribing to{' '}
-                  <span style={{ color: 'var(--timberwolf)' }}>
-                    {academyClaim.data.clubName}
-                  </span>
-                  . Set a password to access your team&apos;s recordings.
-                </>
-              ) : academyClaim.state === 'loading' ? (
-                'Loading your subscription details…'
-              ) : (
-                'Join PLAYBACK and unlock your athletic journey'
-              )}
+              {academyClaim.state === 'ready'
+                ? t.rich('academySubtitle', {
+                    clubName: academyClaim.data.clubName,
+                    club: (chunks) => (
+                      <span style={{ color: 'var(--timberwolf)' }}>
+                        {chunks}
+                      </span>
+                    ),
+                  })
+                : academyClaim.state === 'loading'
+                  ? t('academyLoading')
+                  : t('subtitle')}
             </p>
           </div>
 
@@ -296,7 +299,9 @@ export default function RegisterPage() {
             <div className="bg-yellow-900/20 backdrop-blur border border-yellow-700/30 rounded-xl p-4">
               <div className="flex items-center gap-3 text-yellow-300">
                 <AlertCircle className="h-5 w-5" />
-                <span className="text-sm">{academyClaim.message}</span>
+                <span className="text-sm" dir="auto">
+                  {academyClaim.message}
+                </span>
               </div>
             </div>
           )}
@@ -307,7 +312,9 @@ export default function RegisterPage() {
               <div className="bg-red-900/20 backdrop-blur border border-red-700/30 rounded-xl p-4">
                 <div className="flex items-center gap-3 text-red-400">
                   <AlertCircle className="h-5 w-5" />
-                  <span className="text-sm">{error}</span>
+                  <span className="text-sm" dir="auto">
+                    {error}
+                  </span>
                 </div>
               </div>
             )}
@@ -319,12 +326,12 @@ export default function RegisterPage() {
                 className="font-medium"
                 style={{ color: 'var(--timberwolf)' }}
               >
-                Full name
+                {t('fullNameLabel')}
               </Label>
               <Input
                 id="fullName"
                 type="text"
-                placeholder="Your full name"
+                placeholder={t('fullNamePlaceholder')}
                 value={fullName}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setFullName(e.target.value)
@@ -342,18 +349,19 @@ export default function RegisterPage() {
                 className="font-medium"
                 style={{ color: 'var(--timberwolf)' }}
               >
-                Username
+                {t('usernameLabel')}
               </Label>
               <div className="relative">
                 <Input
                   id="username"
                   type="text"
-                  placeholder="Choose a username"
+                  dir="ltr"
+                  placeholder={t('usernamePlaceholder')}
                   value={username}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setUsername(e.target.value)
                   }
-                  className={`h-12 pr-12 ${
+                  className={`h-12 pe-12 ${
                     usernameStatus === 'taken' || usernameStatus === 'invalid'
                       ? 'ring-2 ring-red-500'
                       : usernameStatus === 'available'
@@ -364,7 +372,7 @@ export default function RegisterPage() {
                   autoComplete="username"
                 />
                 {/* Username status indicator */}
-                <div className="absolute right-4 top-3.5">
+                <div className="absolute end-4 top-3.5">
                   {usernameStatus === 'checking' && (
                     <Loader2 className="h-5 w-5 animate-spin text-blue-400" />
                   )}
@@ -381,18 +389,15 @@ export default function RegisterPage() {
               </div>
               {/* Username status message */}
               {usernameStatus === 'taken' && (
-                <p className="text-sm text-red-400">
-                  This username is already taken
-                </p>
+                <p className="text-sm text-red-400">{t('usernameTaken')}</p>
               )}
               {usernameStatus === 'available' && (
-                <p className="text-sm text-green-400">Username is available</p>
+                <p className="text-sm text-green-400">
+                  {t('usernameAvailable')}
+                </p>
               )}
               {usernameStatus === 'invalid' && (
-                <p className="text-sm text-red-400">
-                  Username must be 3-30 characters, letters, numbers,
-                  underscore, and hyphens only
-                </p>
+                <p className="text-sm text-red-400">{t('usernameInvalid')}</p>
               )}
             </div>
 
@@ -403,18 +408,19 @@ export default function RegisterPage() {
                 className="font-medium"
                 style={{ color: 'var(--timberwolf)' }}
               >
-                Email address
+                {t('emailLabel')}
               </Label>
               <div className="relative">
                 <Input
                   id="email"
                   type="email"
-                  placeholder="athlete@example.com"
+                  dir="ltr"
+                  placeholder={t('emailPlaceholder')}
                   value={email}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setEmail(e.target.value)
                   }
-                  className="h-12 pl-12"
+                  className="h-12 ps-12"
                   // Lock the email field in academy-claim mode — it's bound to
                   // the Stripe customer the parent paid as. Letting them
                   // retype it would create a mismatch with the pending sub
@@ -424,14 +430,13 @@ export default function RegisterPage() {
                   autoComplete="email"
                 />
                 <Mail
-                  className="h-5 w-5 absolute left-4 top-3.5"
+                  className="h-5 w-5 absolute start-4 top-3.5"
                   style={{ color: 'var(--ash-grey)' }}
                 />
               </div>
               {academyClaim.state === 'ready' && (
                 <p className="text-xs" style={{ color: 'var(--ash-grey)' }}>
-                  Locked to the email you used at checkout. To use a different
-                  email, contact support.
+                  {t('emailLocked')}
                 </p>
               )}
             </div>
@@ -443,23 +448,23 @@ export default function RegisterPage() {
                 className="font-medium"
                 style={{ color: 'var(--timberwolf)' }}
               >
-                Password
+                {t('passwordLabel')}
               </Label>
               <div className="relative">
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Create a password"
+                  placeholder={t('passwordPlaceholder')}
                   value={password}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setPassword(e.target.value)
                   }
-                  className="h-12 pl-12"
+                  className="h-12 ps-12"
                   disabled={loading}
                   autoComplete="new-password"
                 />
                 <Lock
-                  className="h-5 w-5 absolute left-4 top-3.5"
+                  className="h-5 w-5 absolute start-4 top-3.5"
                   style={{ color: 'var(--ash-grey)' }}
                 />
               </div>
@@ -472,23 +477,23 @@ export default function RegisterPage() {
                 className="font-medium"
                 style={{ color: 'var(--timberwolf)' }}
               >
-                Confirm password
+                {t('confirmPasswordLabel')}
               </Label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
                   type="password"
-                  placeholder="Re-enter password"
+                  placeholder={t('confirmPasswordPlaceholder')}
                   value={confirmPassword}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setConfirmPassword(e.target.value)
                   }
-                  className="h-12 pl-12"
+                  className="h-12 ps-12"
                   disabled={loading}
                   autoComplete="new-password"
                 />
                 <Lock
-                  className="h-5 w-5 absolute left-4 top-3.5"
+                  className="h-5 w-5 absolute start-4 top-3.5"
                   style={{ color: 'var(--ash-grey)' }}
                 />
               </div>
@@ -506,11 +511,11 @@ export default function RegisterPage() {
             >
               {loading ? (
                 <>
-                  <LoadingSpinner size="sm" className="mr-2" />
-                  Creating account…
+                  <LoadingSpinner size="sm" className="me-2" />
+                  {t('creatingAccount')}
                 </>
               ) : (
-                'Sign up'
+                t('signUp')
               )}
             </Button>
           </form>
@@ -518,13 +523,13 @@ export default function RegisterPage() {
           {/* Sign-in link */}
           <div className="text-center pt-2">
             <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
-              Already have an account?{' '}
+              {t('haveAccount')}{' '}
               <Link
                 href="/auth/login"
                 className="font-semibold transition-colors hover:opacity-80"
                 style={{ color: 'var(--timberwolf)' }}
               >
-                Sign in
+                {t('signIn')}
               </Link>
             </p>
           </div>

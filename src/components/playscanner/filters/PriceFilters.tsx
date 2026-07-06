@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useTranslations, useFormatter } from 'next-intl';
 import { Button, Label } from '@braintwopoint0/playback-commons/ui';
 import { Slider } from '@/components/ui/slider';
 import { PoundSterlingIcon } from 'lucide-react';
@@ -22,6 +23,8 @@ export default function PriceFilters({
   onPriceRangeChange,
   searchResults,
 }: PriceFiltersProps) {
+  const t = useTranslations('playscanner.filters');
+  const format = useFormatter();
   // Calculate dynamic price bounds from search results
   const { dynamicMin, dynamicMax } = useMemo(() => {
     if (searchResults.length === 0) {
@@ -53,16 +56,21 @@ export default function PriceFilters({
     onPriceRangeChange(undefined);
   };
 
-  const formatPrice = (pence: number) => {
-    return `£${(pence / 100).toFixed(0)}`;
-  };
+  const currency = searchResults[0]?.currency ?? 'GBP';
+  const formatPrice = (pence: number) =>
+    format.number(pence / 100, {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 0,
+      numberingSystem: 'latn',
+    });
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <PoundSterlingIcon className="h-4 w-4" />
-          <Label className="text-sm font-medium">Price Range</Label>
+          <Label className="text-sm font-medium">{t('priceRange')}</Label>
         </div>
         {priceRange && (
           <Button
@@ -71,7 +79,7 @@ export default function PriceFilters({
             onClick={clearPriceRange}
             className="text-xs"
           >
-            Clear
+            {t('clear')}
           </Button>
         )}
       </div>

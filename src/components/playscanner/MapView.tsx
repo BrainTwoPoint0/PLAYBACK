@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations, useFormatter } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { CourtSlot } from '@/lib/playscanner/types';
 import { Badge } from '@braintwopoint0/playback-commons/ui';
@@ -62,6 +63,7 @@ function injectLeafletStyles() {
 }
 
 function MapSkeleton() {
+  const t = useTranslations('playscanner.map');
   return (
     <div className="absolute inset-0 z-10 rounded-xl bg-[#0a100d] overflow-hidden">
       <div className="absolute inset-0 opacity-[0.03]">
@@ -100,7 +102,7 @@ function MapSkeleton() {
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="flex items-center gap-2 rounded-lg bg-[rgba(214,213,201,0.04)] px-4 py-2 backdrop-blur-sm">
           <MapPinIcon className="h-4 w-4 animate-pulse text-[rgba(214,213,201,0.5)]" />
-          <span className="text-xs text-ink-subtle">Loading map</span>
+          <span className="text-xs text-ink-subtle">{t('loading')}</span>
         </div>
       </div>
     </div>
@@ -112,6 +114,8 @@ export default function MapView({
   sport,
   onSlotSelect,
 }: MapViewProps) {
+  const t = useTranslations('playscanner.map');
+  const format = useFormatter();
   const [isClient, setIsClient] = useState(false);
   const [leafletLoaded, setLeafletLoaded] = useState(false);
   const [tilesReady, setTilesReady] = useState(false);
@@ -245,7 +249,7 @@ export default function MapView({
               {cheapestSlot.provider}
             </Badge>
             <span className="text-[10px] text-ink-muted">
-              {slots.length} slot{slots.length !== 1 ? 's' : ''}
+              {t('slotsCount', { count: slots.length })}
             </span>
           </div>
         </div>
@@ -255,21 +259,28 @@ export default function MapView({
         <div className="flex items-center justify-between">
           <div>
             <div className="text-[10px] text-[#b9baa3] uppercase tracking-wide font-medium">
-              From
+              {t('from')}
             </div>
             <div className="text-base font-bold text-timberwolf">
-              £{(cheapestSlot.price / 100).toFixed(2)}
+              {format.number(cheapestSlot.price / 100, {
+                style: 'currency',
+                currency: cheapestSlot.currency || 'GBP',
+                numberingSystem: 'latn',
+              })}
             </div>
           </div>
           <div className="text-right">
             <div className="text-[10px] text-[#b9baa3] uppercase tracking-wide font-medium">
-              Next
+              {t('next')}
             </div>
             <div className="text-xs font-medium flex items-center justify-end text-timberwolf">
               <ClockIcon className="h-3 w-3 mr-1" />
-              {new Date(cheapestSlot.startTime).toLocaleTimeString('en-GB', {
+              {/* 24h digits; popup lives inside the dir="ltr" map wrapper */}
+              {format.dateTime(new Date(cheapestSlot.startTime), {
                 hour: '2-digit',
                 minute: '2-digit',
+                hour12: false,
+                numberingSystem: 'latn',
               })}
             </div>
           </div>
@@ -281,7 +292,7 @@ export default function MapView({
           onClick={() => onSlotSelect?.(cheapestSlot)}
           className="w-full bg-timberwolf hover:bg-ash-grey text-night font-medium py-1.5 px-3 rounded-lg flex items-center justify-center space-x-1 transition-colors text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-timberwolf focus-visible:ring-offset-2 focus-visible:ring-offset-night"
         >
-          <span>Book</span>
+          <span>{t('book')}</span>
           <ExternalLinkIcon className="h-3 w-3" aria-hidden />
         </button>
       </div>
@@ -296,17 +307,17 @@ export default function MapView({
       <div className="rounded-xl border border-line bg-[rgba(214,213,201,0.02)] p-10 text-center">
         <MapPinIcon className="mx-auto h-8 w-8 text-ink-subtle mb-3" />
         <h3 className="text-base font-semibold text-timberwolf mb-1">
-          No venues to show on map
+          {t('emptyTitle')}
         </h3>
-        <p className="text-sm text-ink-muted">
-          Try a different search or check back later
-        </p>
+        <p className="text-sm text-ink-muted">{t('emptySubtitle')}</p>
       </div>
     );
   }
 
   return (
-    <div className="relative h-[500px] rounded-xl overflow-hidden">
+    // dir="ltr" — Leaflet's controls, attribution and popup positioning break
+    // when mirrored; the map (and its skeleton) always render left-to-right.
+    <div dir="ltr" className="relative h-[500px] rounded-xl overflow-hidden">
       {/* Skeleton overlay - visible until tiles load, then fades out */}
       {!tilesReady && <MapSkeleton />}
 

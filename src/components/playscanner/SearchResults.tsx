@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useTranslations, useFormatter } from 'next-intl';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   SearchResultsProps,
@@ -30,12 +31,6 @@ import { ProviderRequestGotcha } from './ProviderRequestGotcha';
 
 type ViewMode = 'list' | 'map';
 
-function formatHour(h: number): string {
-  if (h === 0 || h === 24) return '12 AM';
-  if (h === 12) return '12 PM';
-  return h < 12 ? `${h} AM` : `${h - 12} PM`;
-}
-
 export default function SearchResults({
   results,
   isLoading,
@@ -43,6 +38,24 @@ export default function SearchResults({
   error,
   onConversion,
 }: SearchResultsProps) {
+  const t = useTranslations('playscanner');
+  const format = useFormatter();
+
+  // Locale-aware hour mark for the time-range slider (e.g. "6 PM").
+  const formatHour = (h: number): string =>
+    format.dateTime(new Date(2000, 0, 1, h % 24), {
+      hour: 'numeric',
+      numberingSystem: 'latn',
+    });
+
+  const formatPrice = (pence: number, currency: string) =>
+    format.number(pence / 100, {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 0,
+      numberingSystem: 'latn',
+    });
+
   // Responsive: bottom sheet on mobile, right panel on desktop
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -201,6 +214,9 @@ export default function SearchResults({
     setSelectedSlot(slot);
   }, []);
 
+  // Currency for aggregate price displays (slots in one search share it)
+  const currency = results[0]?.currency ?? 'GBP';
+
   // Stats
   const stats = useMemo(() => {
     if (filteredResults.length === 0) return null;
@@ -229,7 +245,7 @@ export default function SearchResults({
               className="h-7 w-20 animate-pulse rounded-full bg-[rgba(214,213,201,0.04)]"
             />
           ))}
-          <div className="ml-auto h-7 w-7 animate-pulse rounded-md bg-[rgba(214,213,201,0.04)]" />
+          <div className="ms-auto h-7 w-7 animate-pulse rounded-md bg-[rgba(214,213,201,0.04)]" />
         </div>
         {/* Card skeletons */}
         {[0, 1, 2, 3].map((i) => (
@@ -267,19 +283,13 @@ export default function SearchResults({
           onClick={() => window.location.reload()}
           className="mt-3 rounded-full border border-line-strong px-4 py-2 text-sm text-ink-muted hover:text-timberwolf hover:border-timberwolf/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-timberwolf/60 focus-visible:ring-offset-2 focus-visible:ring-offset-night"
         >
-          Try again
+          {t('results.tryAgain')}
         </button>
       </div>
     );
   }
 
   if (results.length === 0) {
-    const labels: Record<string, string> = {
-      football: 'football pitches',
-      tennis: 'tennis courts',
-      padel: 'padel courts',
-      basketball: 'basketball courts',
-    };
     return (
       <div className="rounded-xl border border-line-strong bg-[rgba(214,213,201,0.02)] p-10 text-center">
         <div className="mb-3 flex justify-center text-ink-muted">
@@ -289,11 +299,10 @@ export default function SearchResults({
           />
         </div>
         <h3 className="text-base font-display font-semibold text-timberwolf mb-1">
-          No {labels[sport] || 'courts'} for this day
+          {t('results.empty.title', { sport })}
         </h3>
         <p className="text-sm text-ink-muted max-w-[40ch] mx-auto">
-          Try a different date, switch sport, or let us know which provider
-          you&rsquo;d like to see covered.
+          {t('results.empty.subtitle')}
         </p>
         <div className="mt-5 flex items-center justify-center gap-2">
           <ProviderRequestGotcha />
@@ -317,7 +326,7 @@ export default function SearchResults({
             }`}
           >
             <SlidersHorizontalIcon className="h-3 w-3" />
-            Filters
+            {t('filters.title')}
             {activeFilterCount > 0 && (
               <span className="flex h-4 w-4 items-center justify-center rounded-full bg-timberwolf text-[10px] font-bold text-night">
                 {activeFilterCount}
@@ -327,22 +336,28 @@ export default function SearchResults({
 
           <ProviderRequestGotcha />
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ms-auto flex items-center gap-2">
             {stats && (
               <span className="text-[11px] text-ink-subtle tabular-nums">
-                <span className="sm:hidden">{venueGroups.length}v</span>
+                <span className="sm:hidden">
+                  {t('results.stats.venuesShort', {
+                    count: venueGroups.length,
+                  })}
+                </span>
                 <span className="hidden sm:inline">
-                  {venueGroups.length} venues
+                  {t('results.stats.venues', { count: venueGroups.length })}
                 </span>
                 {stats.cheapest > 0 && (
                   <>
                     <span className="sm:hidden">
-                      {' · £'}
-                      {(stats.cheapest / 100).toFixed(0)}
+                      {' · '}
+                      {formatPrice(stats.cheapest, currency)}
                     </span>
                     <span className="hidden sm:inline">
-                      {' · from £'}
-                      {(stats.cheapest / 100).toFixed(0)}
+                      {' · '}
+                      {t('results.stats.from', {
+                        price: formatPrice(stats.cheapest, currency),
+                      })}
                     </span>
                   </>
                 )}
@@ -358,7 +373,11 @@ export default function SearchResults({
                             : 'text-[rgb(214,151,98)]'
                       }
                     >
-                      {stats.ageMin < 1 ? 'live' : `${stats.ageMin}m`}
+                      {stats.ageMin < 1
+                        ? t('results.stats.live')
+                        : t('results.stats.minutesShort', {
+                            minutes: stats.ageMin,
+                          })}
                     </span>
                   </>
                 )}
@@ -402,7 +421,7 @@ export default function SearchResults({
                   : 'border-line-strong bg-[rgba(214,213,201,0.03)] text-ink-muted hover:border-line-strong hover:text-timberwolf'
               }`}
             >
-              {chip.label}
+              {t(`filters.time.${chip.id}`)}
             </button>
           ))}
           {(sport === 'padel' || sport === 'tennis') && (
@@ -414,7 +433,7 @@ export default function SearchResults({
                   : 'border-line-strong bg-[rgba(214,213,201,0.03)] text-ink-muted hover:border-line-strong hover:text-timberwolf'
               }`}
             >
-              Indoor
+              {t('filters.indoor')}
             </button>
           )}
           {sport === 'football' && (
@@ -426,7 +445,7 @@ export default function SearchResults({
                   : 'border-line-strong bg-[rgba(214,213,201,0.03)] text-ink-muted hover:border-line-strong hover:text-timberwolf'
               }`}
             >
-              Drop-in
+              {t('filters.dropIn')}
             </button>
           )}
         </div>
@@ -444,18 +463,18 @@ export default function SearchResults({
         >
           <SheetHeader className="pb-4">
             <SheetTitle className="text-timberwolf flex items-center justify-between">
-              <span>Filters</span>
+              <span>{t('filters.title')}</span>
               {activeFilterCount > 0 && (
                 <button
                   onClick={clearAllFilters}
                   className="text-xs font-normal text-ink-muted hover:text-timberwolf transition-colors"
                 >
-                  Clear all
+                  {t('filters.clearAll')}
                 </button>
               )}
             </SheetTitle>
             <SheetDescription className="sr-only">
-              Filter search results by price, provider, and venue
+              {t('filters.sheetDescription')}
             </SheetDescription>
           </SheetHeader>
 
@@ -463,7 +482,7 @@ export default function SearchResults({
             {/* ── Price range ── */}
             <div>
               <h4 className="text-xs font-medium uppercase tracking-wider text-ink-muted mb-3">
-                Price range
+                {t('filters.priceRange')}
               </h4>
               <div className="px-1">
                 <Slider
@@ -480,10 +499,10 @@ export default function SearchResults({
                 />
                 <div className="flex justify-between mt-2 text-xs text-ink-muted">
                   <span>
-                    £{((priceRange?.[0] ?? priceMin) / 100).toFixed(0)}
+                    {formatPrice(priceRange?.[0] ?? priceMin, currency)}
                   </span>
                   <span>
-                    £{((priceRange?.[1] ?? priceMax) / 100).toFixed(0)}
+                    {formatPrice(priceRange?.[1] ?? priceMax, currency)}
                   </span>
                 </div>
               </div>
@@ -492,7 +511,7 @@ export default function SearchResults({
                   onClick={() => setPriceRange(null)}
                   className="mt-1 text-[11px] text-ink-subtle hover:text-timberwolf transition-colors"
                 >
-                  Reset price
+                  {t('filters.resetPrice')}
                 </button>
               )}
             </div>
@@ -500,7 +519,7 @@ export default function SearchResults({
             {/* ── Time range ── */}
             <div>
               <h4 className="text-xs font-medium uppercase tracking-wider text-ink-muted mb-3">
-                Time range
+                {t('filters.timeRange')}
               </h4>
               <div className="px-1">
                 <Slider
@@ -526,7 +545,7 @@ export default function SearchResults({
                   onClick={() => setTimeRange(null)}
                   className="mt-1 text-[11px] text-ink-subtle hover:text-timberwolf transition-colors"
                 >
-                  Reset time
+                  {t('filters.resetTime')}
                 </button>
               )}
             </div>
@@ -534,7 +553,7 @@ export default function SearchResults({
             {/* ── Providers ── */}
             <div>
               <h4 className="text-xs font-medium uppercase tracking-wider text-ink-muted mb-3">
-                Providers
+                {t('filters.providers')}
               </h4>
               <div className="space-y-1">
                 {availableProviders.map(({ id, count }) => {
@@ -578,7 +597,7 @@ export default function SearchResults({
                   onClick={() => setSelectedProviders(new Set())}
                   className="mt-1 text-[11px] text-ink-subtle hover:text-timberwolf transition-colors"
                 >
-                  Clear providers
+                  {t('filters.clearProviders')}
                 </button>
               )}
             </div>
@@ -586,17 +605,19 @@ export default function SearchResults({
             {/* ── Venues ── */}
             <div>
               <h4 className="text-xs font-medium uppercase tracking-wider text-ink-muted mb-3">
-                Venues ({availableVenues.length})
+                {t('filters.venuesWithCount', {
+                  count: availableVenues.length,
+                })}
               </h4>
               {availableVenues.length > 8 && (
                 <div className="relative mb-2">
-                  <SearchIcon className="absolute left-2.5 top-1/2 h-3 w-3 -translate-y-1/2 text-ink-subtle" />
+                  <SearchIcon className="absolute start-2.5 top-1/2 h-3 w-3 -translate-y-1/2 text-ink-subtle" />
                   <input
                     type="text"
                     value={venueSearch}
                     onChange={(e) => setVenueSearch(e.target.value)}
-                    placeholder="Search venues..."
-                    className="w-full rounded-lg border border-line bg-[rgba(214,213,201,0.03)] py-1.5 pl-8 pr-3 text-xs text-timberwolf placeholder:text-ink-subtle focus:border-line-strong focus:outline-none"
+                    placeholder={t('filters.searchVenues')}
+                    className="w-full rounded-lg border border-line bg-[rgba(214,213,201,0.03)] py-1.5 ps-8 pe-3 text-xs text-timberwolf placeholder:text-ink-subtle focus:border-line-strong focus:outline-none"
                   />
                 </div>
               )}
@@ -620,13 +641,13 @@ export default function SearchResults({
                             return next;
                           });
                         }}
-                        className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left transition-all ${
+                        className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-start transition-all ${
                           isSelected
                             ? 'border-[rgba(214,213,201,0.3)] bg-[rgba(214,213,201,0.05)] text-timberwolf'
                             : 'border-line bg-[rgba(214,213,201,0.02)] text-ink-muted hover:border-line-strong hover:text-timberwolf'
                         }`}
                       >
-                        <span className="text-xs font-medium truncate mr-2">
+                        <span className="text-xs font-medium truncate me-2">
                           {name}
                         </span>
                         <span className="text-[11px] text-ink-subtle shrink-0">
@@ -641,7 +662,7 @@ export default function SearchResults({
                   onClick={() => setSelectedVenues(new Set())}
                   className="mt-1 text-[11px] text-ink-subtle hover:text-timberwolf transition-colors"
                 >
-                  Clear venues
+                  {t('filters.clearVenues')}
                 </button>
               )}
             </div>
@@ -655,7 +676,7 @@ export default function SearchResults({
               }}
               className="w-full rounded-lg bg-timberwolf py-2.5 text-sm font-semibold text-night hover:bg-ash-grey transition-colors"
             >
-              Show {filteredResults.length} results
+              {t('filters.showResults', { count: filteredResults.length })}
             </button>
           </div>
         </SheetContent>
@@ -707,7 +728,7 @@ export default function SearchResults({
             onClick={() => setShowCount((p) => p + 10)}
             className="rounded-full border border-line px-5 py-2 text-xs text-ink-muted transition-colors hover:border-line-strong hover:text-timberwolf"
           >
-            Show more ({venueGroups.length - showCount} remaining)
+            {t('results.showMore', { count: venueGroups.length - showCount })}
           </button>
         </div>
       )}

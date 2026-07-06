@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { startAcademyCheckout } from './actions';
 
 interface TeamCard {
@@ -36,6 +37,7 @@ export function AcademyTeamPicker({
   subclubSlug = null,
   subclubName = null,
 }: Props) {
+  const t = useTranslations('academy.picker');
   const [pending, startTransition] = useTransition();
   const [pendingTeamSlug, setPendingTeamSlug] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -89,8 +91,11 @@ export function AcademyTeamPicker({
       <ul
         aria-label={
           subclubName
-            ? `Age groups at ${subclubName} (${clubName})`
-            : `Teams at ${clubName}`
+            ? t('ageGroupsListLabelWithClub', {
+                subclub: subclubName,
+                club: clubName,
+              })
+            : t('teamsListLabel', { club: clubName })
         }
         className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3"
       >
@@ -108,11 +113,18 @@ export function AcademyTeamPicker({
                 aria-disabled={pending}
                 aria-label={
                   subclubName
-                    ? `Subscribe to ${team.displayName} in ${subclubName} at ${clubName}`
-                    : `Subscribe to ${team.displayName} on ${clubName}`
+                    ? t('subscribeAriaNested', {
+                        team: team.displayName,
+                        subclub: subclubName,
+                        club: clubName,
+                      })
+                    : t('subscribeAria', {
+                        team: team.displayName,
+                        club: clubName,
+                      })
                 }
                 className={[
-                  'group relative w-full overflow-hidden rounded-xl border bg-[#d6d5c9]/[0.015] p-6 text-left',
+                  'group relative w-full overflow-hidden rounded-xl border bg-[#d6d5c9]/[0.015] p-6 text-start',
                   'motion-safe:transition-all motion-safe:duration-300',
                   isPending
                     ? 'border-[#d6d5c9]/50 bg-[#d6d5c9]/[0.04]'
@@ -155,12 +167,17 @@ export function AcademyTeamPicker({
                         aria-hidden
                         className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[#d6d5c9]"
                       />
-                      Redirecting to Stripe…
+                      {t('redirecting')}
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-sm text-[#d6d5c9] motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:translate-x-1">
-                      Subscribe
-                      <span aria-hidden>→</span>
+                    <span className="inline-flex items-center gap-1 text-sm text-[#d6d5c9] motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:translate-x-1 rtl:motion-safe:group-hover:-translate-x-1">
+                      {t('subscribe')}
+                      <span
+                        aria-hidden
+                        className="inline-block rtl:-scale-x-100"
+                      >
+                        →
+                      </span>
                     </span>
                   )}
                 </div>

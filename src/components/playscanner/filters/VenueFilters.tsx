@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Label, Button, Badge } from '@braintwopoint0/playback-commons/ui';
 import {
   Select,
@@ -23,6 +24,7 @@ export default function VenueFilters({
   onVenuesChange,
   searchResults,
 }: VenueFiltersProps) {
+  const t = useTranslations('playscanner.filters');
   // Get unique venues from search results
   const availableVenues = useMemo(() => {
     const venues = searchResults.map((slot) =>
@@ -76,20 +78,20 @@ export default function VenueFilters({
   // Get display text for the select trigger
   const getSelectDisplayText = () => {
     if (!selectedVenues || selectedVenues.length === 0) {
-      return 'All Venues';
+      return t('allVenues');
     }
     if (selectedVenues.length === 1) {
       return selectedVenues[0];
     }
-    return `${selectedVenues.length} venues selected`;
+    return t('venuesSelectedCount', { count: selectedVenues.length });
   };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <MapPinIcon className="h-4 w-4" />
-          <Label className="text-sm font-medium">Venues</Label>
+          <Label className="text-sm font-medium">{t('venues')}</Label>
         </div>
         {selectedVenues && selectedVenues.length > 0 && (
           <Button
@@ -98,7 +100,7 @@ export default function VenueFilters({
             onClick={clearVenues}
             className="text-xs"
           >
-            Clear
+            {t('clear')}
           </Button>
         )}
       </div>
@@ -110,7 +112,7 @@ export default function VenueFilters({
             <span>{getSelectDisplayText()}</span>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Venues</SelectItem>
+            <SelectItem value="all">{t('allVenues')}</SelectItem>
             {availableVenues.map((venue) => (
               <SelectItem key={venue} value={venue}>
                 {venue}
@@ -123,8 +125,7 @@ export default function VenueFilters({
         {selectedVenues && selectedVenues.length > 0 && (
           <div className="space-y-2">
             <div className="text-sm text-muted-foreground">
-              Selected: {selectedVenues.length} venue
-              {selectedVenues.length !== 1 ? 's' : ''}
+              {t('selectedVenues', { count: selectedVenues.length })}
             </div>
             <div className="flex flex-wrap gap-1">
               {selectedVenues.map((venue) => (

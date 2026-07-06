@@ -1,9 +1,12 @@
+import { useTranslations } from 'next-intl';
 import {
-  FOOTBALL_EXPERIENCE_LABELS,
-  FOOTBALL_POSITION_LABELS,
-  type FootballExperienceLevel,
   type FootballPosition,
+  type PreferredFoot,
 } from '@/lib/profile/constants';
+import {
+  useFootballPositionLabels,
+  usePreferredFootLabels,
+} from '@/lib/profile/use-profile-labels';
 
 interface ProfileKeyInfoProps {
   preferredFoot: string | null;
@@ -24,24 +27,28 @@ export function ProfileKeyInfo({
   jerseyNumber,
   primaryPosition,
 }: ProfileKeyInfoProps) {
+  const t = useTranslations('profile.keyInfo');
+  const positionLabels = useFootballPositionLabels();
+  const footLabels = usePreferredFootLabels();
+
   const age = dateOfBirth ? calculateAge(dateOfBirth) : null;
   const posLabel = primaryPosition
-    ? FOOTBALL_POSITION_LABELS[primaryPosition as FootballPosition] ||
-      primaryPosition
+    ? positionLabels[primaryPosition as FootballPosition] || primaryPosition
     : null;
 
   const items = [
-    { label: 'Position', value: posLabel },
+    { label: t('position'), value: posLabel },
     {
-      label: 'Foot',
+      label: t('foot'),
       value: preferredFoot
-        ? preferredFoot.charAt(0).toUpperCase() + preferredFoot.slice(1)
+        ? footLabels[preferredFoot as PreferredFoot] ||
+          preferredFoot.charAt(0).toUpperCase() + preferredFoot.slice(1)
         : null,
     },
-    { label: 'Height', value: heightCm ? `${heightCm}cm` : null },
-    { label: 'Weight', value: weightKg ? `${weightKg}kg` : null },
-    { label: 'Age', value: age !== null ? `${age}` : null },
-    { label: 'Jersey', value: jerseyNumber ? `#${jerseyNumber}` : null },
+    { label: t('height'), value: heightCm ? `${heightCm}cm` : null },
+    { label: t('weight'), value: weightKg ? `${weightKg}kg` : null },
+    { label: t('age'), value: age !== null ? `${age}` : null },
+    { label: t('jersey'), value: jerseyNumber ? `#${jerseyNumber}` : null },
   ];
 
   const visibleItems = items.filter((item) => item.value);
@@ -54,7 +61,7 @@ export function ProfileKeyInfo({
         className="text-xs font-semibold uppercase tracking-widest"
         style={{ color: 'var(--ash-grey)' }}
       >
-        Key Info
+        {t('title')}
       </h2>
       <div className="flex flex-wrap items-center gap-x-0">
         {visibleItems.map((item, i) => (

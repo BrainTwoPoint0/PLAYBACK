@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@braintwopoint0/playback-commons/ui';
 import { LoadingSpinner } from '@/components/ui/loading';
 import {
@@ -45,6 +46,7 @@ export function VideoUpload({
   maxFiles = 5,
   disabled = false,
 }: VideoUploadProps) {
+  const t = useTranslations('media');
   const [uploadingVideos, setUploadingVideos] = useState<UploadingVideo[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -133,7 +135,7 @@ export function VideoUpload({
                 v.file === file
                   ? {
                       ...v,
-                      error: uploadResult.error || 'Upload failed',
+                      error: uploadResult.error || t('uploadFailed'),
                       progress: 0,
                     }
                   : v
@@ -150,7 +152,7 @@ export function VideoUpload({
                     error:
                       error instanceof Error
                         ? error.message
-                        : 'Processing failed',
+                        : t('processingFailed'),
                     progress: 0,
                   }
                 : v
@@ -270,7 +272,7 @@ export function VideoUpload({
                   {video.thumbnail ? (
                     <img
                       src={video.thumbnail}
-                      alt="Video thumbnail"
+                      alt={t('videoThumbnail')}
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -322,9 +324,9 @@ export function VideoUpload({
                         className="text-xs mt-1"
                         style={{ color: 'var(--ash-grey)' }}
                       >
-                        {video.progress === 0 && 'Starting upload...'}
-                        {video.progress === 25 && 'Processing video...'}
-                        {video.progress === 50 && 'Uploading...'}
+                        {video.progress === 0 && t('startingUpload')}
+                        {video.progress === 25 && t('processingVideo')}
+                        {video.progress === 50 && t('uploading')}
                         {video.progress > 50 &&
                           video.progress < 100 &&
                           `Uploading ${video.progress}%`}

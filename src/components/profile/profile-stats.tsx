@@ -1,3 +1,4 @@
+import { useFormatter, useTranslations } from 'next-intl';
 import { BarChart3 } from 'lucide-react';
 
 interface Stat {
@@ -14,13 +15,16 @@ interface ProfileStatsProps {
 }
 
 export function ProfileStats({ stats }: ProfileStatsProps) {
+  const t = useTranslations('profile.stats');
+  const format = useFormatter();
+
   return (
     <div className="space-y-3">
       <h2
         className="text-xs font-semibold uppercase tracking-widest"
         style={{ color: 'var(--ash-grey)' }}
       >
-        Statistics
+        {t('title')}
       </h2>
 
       {stats.length === 0 ? (
@@ -33,13 +37,13 @@ export function ProfileStats({ stats }: ProfileStatsProps) {
             className="text-sm opacity-50"
             style={{ color: 'var(--ash-grey)' }}
           >
-            No stats yet
+            {t('empty')}
           </p>
           <p
             className="text-xs mt-1 opacity-30"
             style={{ color: 'var(--ash-grey)' }}
           >
-            Stats from PlayerData and manual entries will appear here.
+            {t('emptyHint')}
           </p>
         </div>
       ) : (
@@ -60,7 +64,7 @@ export function ProfileStats({ stats }: ProfileStatsProps) {
                   className="text-xs tabular-nums"
                   style={{ color: 'var(--ash-grey)' }}
                 >
-                  {new Date(stat.stat_date).toLocaleDateString()}
+                  {format.dateTime(new Date(stat.stat_date), 'short')}
                 </span>
               </div>
               {stat.opponent && (
@@ -68,7 +72,7 @@ export function ProfileStats({ stats }: ProfileStatsProps) {
                   className="text-xs mb-3 opacity-70"
                   style={{ color: 'var(--ash-grey)' }}
                 >
-                  vs {stat.opponent}
+                  {t('vsOpponent', { opponent: stat.opponent })}
                   {stat.competition && ` · ${stat.competition}`}
                 </p>
               )}

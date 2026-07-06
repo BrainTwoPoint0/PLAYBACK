@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@braintwopoint0/playback-commons/auth';
 import { LumaSpin } from '@braintwopoint0/playback-commons/ui';
 
@@ -21,6 +22,7 @@ export function ProtectedRoute({
   children,
   redirectTo = '/auth/login',
 }: ProtectedRouteProps) {
+  const t = useTranslations('media');
   const { user, loading } = useAuth();
   const router = useRouter();
 
@@ -42,7 +44,7 @@ export function ProtectedRoute({
         <div className="flex flex-col items-center gap-3">
           <LumaSpin />
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            Checking authentication…
+            {t('checkingAuth')}
           </p>
         </div>
       </div>

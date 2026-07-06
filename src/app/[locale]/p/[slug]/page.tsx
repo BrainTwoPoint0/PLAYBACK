@@ -1,24 +1,26 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { ProfilePage } from '@/components/profile/profile-page';
 import { getPublicProfile } from '@/lib/profile/get-public-profile';
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }
 
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { locale, slug } = await params;
+  const t = await getTranslations({ locale, namespace: 'profile.meta' });
   const data = await getPublicProfile(slug);
   if (!data || data === 'module-not-found') {
-    return { title: 'Profile Not Found' };
+    return { title: t('notFound') };
   }
   const { profile } = data;
   const title = profile.full_name ?? profile.username;
   const description = profile.bio
     ? profile.bio.slice(0, 160)
-    : `${profile.full_name ?? profile.username}'s profile on PLAYBACK Sports`;
+    : t('profileDescription', { name: title });
   return {
     title,
     description,

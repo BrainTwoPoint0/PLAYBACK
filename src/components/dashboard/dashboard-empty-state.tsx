@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Film, Users } from 'lucide-react';
 
 interface DashboardEmptyStateProps {
@@ -24,6 +25,7 @@ interface DashboardEmptyStateProps {
 export function DashboardEmptyState({
   hasAnyVariant,
 }: DashboardEmptyStateProps) {
+  const t = useTranslations('dashboard.emptyState');
   return (
     <section
       className="rounded-2xl border overflow-hidden"
@@ -61,26 +63,20 @@ export function DashboardEmptyState({
           className="text-xl font-semibold tracking-tight"
           style={{ color: 'var(--timberwolf)' }}
         >
-          {hasAnyVariant
-            ? 'Waiting for your first match clips'
-            : 'Set up your profile to start receiving clips'}
+          {hasAnyVariant ? t('titleHasVariant') : t('titleNoVariant')}
         </h2>
         <p
           className="text-sm leading-relaxed"
           style={{ color: 'var(--text-muted)' }}
         >
-          {hasAnyVariant
-            ? 'Your clips arrive automatically. After your next match, every moment with your shirt number on it lands here — no upload required.'
-            : 'Create your player profile first. As soon as your club records a match and tags your number, your clips will land here automatically.'}
+          {hasAnyVariant ? t('bodyHasVariant') : t('bodyNoVariant')}
         </p>
         {hasAnyVariant && (
           <p
             className="text-sm leading-relaxed"
             style={{ color: 'var(--text-subtle)' }}
           >
-            If nothing&apos;s shown up after a match, ask your coach to confirm
-            your shirt number for the next one. Footage usually appears within a
-            few hours of full-time.
+            {t('tip')}
           </p>
         )}
       </div>

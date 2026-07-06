@@ -1,48 +1,55 @@
 'use client';
 
+import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { SiteFooter } from '@braintwopoint0/playback-commons/ui';
 import type { FooterColumnDef } from '@braintwopoint0/playback-commons/ui';
 
-const columns: FooterColumnDef[] = [
-  {
-    title: 'Product',
-    links: [
-      { label: 'Academy', href: '/academy' },
-      { label: 'Tournament', href: '/tournament' },
-      { label: 'PLAYSCANNER', href: '/playscanner' },
+export default function Footer() {
+  const t = useTranslations('footer');
+
+  const columns: FooterColumnDef[] = useMemo(
+    () => [
       {
-        label: 'PLAYHUB',
-        href: 'https://playhub.playbacksports.ai',
-        external: true,
+        title: t('product.title'),
+        links: [
+          { label: t('product.academy'), href: '/academy' },
+          { label: t('product.tournament'), href: '/tournament' },
+          { label: t('product.playscanner'), href: '/playscanner' },
+          {
+            label: t('product.playhub'),
+            href: 'https://playhub.playbacksports.ai',
+            external: true,
+          },
+        ],
+      },
+      {
+        title: t('audiences.title'),
+        links: [
+          { label: t('audiences.forClubs'), href: '/#audiences' },
+          { label: t('audiences.forPlayers'), href: '/academy' },
+          { label: t('audiences.forCoaches'), href: '/#audiences' },
+        ],
+      },
+      {
+        title: t('company.title'),
+        links: [
+          { label: t('company.network'), href: '/#network' },
+          { label: t('company.press'), href: '/press' },
+          { label: t('company.contact'), href: '/#contact' },
+        ],
+      },
+      {
+        title: t('legal.title'),
+        links: [
+          { label: t('legal.terms'), href: '/legal/terms' },
+          { label: t('legal.privacy'), href: '/legal/privacy' },
+          { label: t('legal.cookies'), href: '/legal/cookies' },
+        ],
       },
     ],
-  },
-  {
-    title: 'Audiences',
-    links: [
-      { label: 'For clubs', href: '/#audiences' },
-      { label: 'For players', href: '/academy' },
-      { label: 'For coaches', href: '/#audiences' },
-    ],
-  },
-  {
-    title: 'Company',
-    links: [
-      { label: 'Network', href: '/#network' },
-      { label: 'Press', href: '/press' },
-      { label: 'Contact', href: '/#contact' },
-    ],
-  },
-  {
-    title: 'Legal',
-    links: [
-      { label: 'Terms', href: '/legal/terms' },
-      { label: 'Privacy', href: '/legal/privacy' },
-      { label: 'Cookies', href: '/legal/cookies' },
-    ],
-  },
-];
+    [t]
+  );
 
-export default function Footer() {
   return <SiteFooter columns={columns} />;
 }

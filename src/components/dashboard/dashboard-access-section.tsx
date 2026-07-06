@@ -1,5 +1,6 @@
 'use client';
 
+import { useFormatter, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { Film, Receipt, ArrowUpRight } from 'lucide-react';
 import { DashboardSection } from './dashboard-section';
@@ -23,35 +24,6 @@ interface DashboardAccessSectionProps {
   playhubBaseUrl?: string;
 }
 
-function relativeDate(iso: string | null): string {
-  if (!iso) return '';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '';
-  const ms = Date.now() - d.getTime();
-  const days = Math.floor(ms / (1000 * 60 * 60 * 24));
-  if (days <= 0) return 'today';
-  if (days === 1) return 'yesterday';
-  if (days < 7) return `${days} days ago`;
-  if (days < 30)
-    return `${Math.floor(days / 7)} week${Math.floor(days / 7) === 1 ? '' : 's'} ago`;
-  return d.toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
-function formatMoney(amount: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: 'currency',
-      currency: currency.toUpperCase(),
-    }).format(amount);
-  } catch {
-    return `${currency.toUpperCase()} ${amount.toFixed(2)}`;
-  }
-}
-
 /**
  * Account-management surface inside the connective-tissue dashboard.
  * Read-only summary of PLAYHUB-side ownership: recordings the user can
@@ -65,6 +37,34 @@ export function DashboardAccessSection({
   summary,
   playhubBaseUrl,
 }: DashboardAccessSectionProps) {
+  const t = useTranslations('dashboard.access');
+  const format = useFormatter();
+
+  const relativeDate = (iso: string | null): string => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    const ms = Date.now() - d.getTime();
+    const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+    if (days <= 0) return t('relative.today');
+    if (days === 1) return t('relative.yesterday');
+    if (days < 7) return t('relative.daysAgo', { count: days });
+    if (days < 30)
+      return t('relative.weeksAgo', { count: Math.floor(days / 7) });
+    return format.dateTime(d, 'short');
+  };
+
+  const formatMoney = (amount: number, currency: string): string => {
+    try {
+      return format.number(amount, {
+        style: 'currency',
+        currency: currency.toUpperCase(),
+      });
+    } catch {
+      return `${currency.toUpperCase()} ${amount.toFixed(2)}`;
+    }
+  };
+
   const playhub =
     playhubBaseUrl ??
     process.env.NEXT_PUBLIC_PLAYHUB_URL?.replace(/\/$/, '') ??
@@ -75,7 +75,7 @@ export function DashboardAccessSection({
 
   return (
     <DashboardSection
-      title="Subscriptions & access"
+      title={t('title')}
       action={
         <Link
           href={`${playhub}/library`}
@@ -84,8 +84,8 @@ export function DashboardAccessSection({
           className="inline-flex items-center gap-1 text-xs font-medium hover:underline focus-visible:outline-none focus-visible:underline"
           style={{ color: 'var(--text-muted)' }}
         >
-          Open PLAYHUB
-          <ArrowUpRight className="h-3 w-3" aria-hidden />
+          {t('openPlayhub')}
+          <ArrowUpRight className="h-3 w-3 rtl:-scale-x-100" aria-hidden />
         </Link>
       }
     >
@@ -96,8 +96,7 @@ export function DashboardAccessSection({
           className="text-sm leading-relaxed max-w-prose"
           style={{ color: 'var(--text-subtle)' }}
         >
-          No subscriptions or purchased recordings yet. Match recordings you buy
-          or are granted access to will appear here.{' '}
+          {t('empty')}{' '}
           <Link
             href={`${playhub}/library`}
             target="_blank"
@@ -105,7 +104,7 @@ export function DashboardAccessSection({
             className="underline hover:no-underline"
             style={{ color: 'var(--text-muted)' }}
           >
-            Browse on PLAYHUB →
+            {t('browsePlayhub')}
           </Link>
         </p>
       ) : (
@@ -118,26 +117,33 @@ export function DashboardAccessSection({
         >
           <SummaryTile
             Icon={Film}
-            label="Recordings you can watch"
+            label={t('recordingsLabel')}
             value={summary.recordingsAccessibleCount.toString()}
             sub={
               summary.latestGrantedAt
-                ? `last access ${relativeDate(summary.latestGrantedAt)}`
+                ? t('lastAccess', {
+                    when: relativeDate(summary.latestGrantedAt),
+                  })
                 : null
             }
           />
           <SummaryTile
             Icon={Receipt}
-            label="Completed purchases"
+            label={t('purchasesLabel')}
             value={summary.totalPurchases.toString()}
             sub={
               summary.latestPurchasedAt && summary.latestPurchaseAmount !== null
-                ? `last ${relativeDate(summary.latestPurchasedAt)} · ${formatMoney(
-                    summary.latestPurchaseAmount,
-                    summary.latestPurchaseCurrency ?? 'GBP'
-                  )}`
+                ? t('lastPurchaseWithAmount', {
+                    when: relativeDate(summary.latestPurchasedAt),
+                    amount: formatMoney(
+                      summary.latestPurchaseAmount,
+                      summary.latestPurchaseCurrency ?? 'GBP'
+                    ),
+                  })
                 : summary.latestPurchasedAt
-                  ? `last ${relativeDate(summary.latestPurchasedAt)}`
+                  ? t('lastPurchase', {
+                      when: relativeDate(summary.latestPurchasedAt),
+                    })
                   : null
             }
           />

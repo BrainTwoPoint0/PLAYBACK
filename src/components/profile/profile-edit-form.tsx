@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button, DatePicker } from '@braintwopoint0/playback-commons/ui';
 import { Label } from '@/components/ui/label';
 import {
@@ -37,11 +38,13 @@ import {
 } from '@/lib/profile/actions';
 import {
   FOOTBALL_POSITIONS,
-  FOOTBALL_POSITION_LABELS,
   FOOTBALL_EXPERIENCE_LEVELS,
-  FOOTBALL_EXPERIENCE_LABELS,
   PREFERRED_FOOT_OPTIONS,
+  type FootballPosition,
+  type FootballExperienceLevel,
+  type PreferredFoot,
 } from '@/lib/profile/constants';
+import { useProfileLabels } from '@/lib/profile/use-profile-labels';
 import { Edit3, Save, ChevronsUpDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { countries } from 'country-data-list';
@@ -100,6 +103,8 @@ export function ProfileEditForm({
   footballData,
   onSaved,
 }: ProfileEditFormProps) {
+  const t = useTranslations('profile.edit');
+  const labels = useProfileLabels();
   const [editSection, setEditSection] = useState<EditSection>(null);
 
   return (
@@ -107,24 +112,24 @@ export function ProfileEditForm({
       {/* Editable sections list */}
       <div className="space-y-3">
         <EditableSection
-          title="Personal"
+          title={t('sections.personal')}
           description={
             [
               profileData.full_name || null,
               getCountryName(profileData.nationality) || null,
             ]
               .filter(Boolean)
-              .join(' • ') || 'Add name, nationality'
+              .join(' • ') || t('sections.personalEmpty')
           }
           onEdit={() => setEditSection('personal')}
         />
         <EditableSection
-          title="About"
-          description={profileData.bio || 'Add a bio'}
+          title={t('sections.about')}
+          description={profileData.bio || t('sections.aboutEmpty')}
           onEdit={() => setEditSection('about')}
         />
         <EditableSection
-          title="Physical Info"
+          title={t('sections.physical')}
           description={
             [
               profileData.height_cm ? `${profileData.height_cm}cm` : null,
@@ -132,20 +137,31 @@ export function ProfileEditForm({
               profileData.date_of_birth || null,
             ]
               .filter(Boolean)
-              .join(' • ') || 'Add height, weight, date of birth'
+              .join(' • ') || t('sections.physicalEmpty')
           }
           onEdit={() => setEditSection('physical')}
         />
         <EditableSection
-          title="Football Details"
+          title={t('sections.football')}
           description={
             [
-              footballData.primary_position,
-              footballData.preferred_foot,
-              footballData.experience_level?.replace(/_/g, ' '),
+              footballData.primary_position
+                ? labels.positions[
+                    footballData.primary_position as FootballPosition
+                  ] || footballData.primary_position
+                : null,
+              footballData.preferred_foot
+                ? labels.foot[footballData.preferred_foot as PreferredFoot] ||
+                  footballData.preferred_foot
+                : null,
+              footballData.experience_level
+                ? labels.experience[
+                    footballData.experience_level as FootballExperienceLevel
+                  ] || footballData.experience_level.replace(/_/g, ' ')
+                : null,
             ]
               .filter(Boolean)
-              .join(' • ') || 'Edit football details'
+              .join(' • ') || t('sections.footballEmpty')
           }
           onEdit={() => setEditSection('football')}
         />
@@ -158,7 +174,7 @@ export function ProfileEditForm({
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit Personal Info</DialogTitle>
+            <DialogTitle>{t('dialogs.personal')}</DialogTitle>
           </DialogHeader>
           <PersonalEditor
             initial={profileData}
@@ -177,7 +193,7 @@ export function ProfileEditForm({
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit About</DialogTitle>
+            <DialogTitle>{t('dialogs.about')}</DialogTitle>
           </DialogHeader>
           <AboutEditor
             initial={profileData}
@@ -196,7 +212,7 @@ export function ProfileEditForm({
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit Physical Info</DialogTitle>
+            <DialogTitle>{t('dialogs.physical')}</DialogTitle>
           </DialogHeader>
           <PhysicalEditor
             initial={profileData}
@@ -215,7 +231,7 @@ export function ProfileEditForm({
       >
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Edit Football Details</DialogTitle>
+            <DialogTitle>{t('dialogs.football')}</DialogTitle>
           </DialogHeader>
           <FootballEditor
             initial={footballData}
@@ -245,7 +261,7 @@ function EditableSection({
   return (
     <button
       onClick={onEdit}
-      className="w-full flex items-center justify-between p-4 rounded-xl bg-neutral-800/30 border border-neutral-700/30 hover:border-neutral-600 transition-colors text-left group"
+      className="w-full flex items-center justify-between p-4 rounded-xl bg-neutral-800/30 border border-neutral-700/30 hover:border-neutral-600 transition-colors text-start group"
     >
       <div className="min-w-0">
         <p
@@ -261,7 +277,7 @@ function EditableSection({
           {description}
         </p>
       </div>
-      <Edit3 className="h-4 w-4 flex-shrink-0 ml-3 text-neutral-600 group-hover:text-green-400 transition-colors" />
+      <Edit3 className="h-4 w-4 flex-shrink-0 ms-3 text-neutral-600 group-hover:text-green-400 transition-colors" />
     </button>
   );
 }
@@ -275,6 +291,7 @@ function PersonalEditor({
   onSave: () => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations('profile.edit');
   const [fullName, setFullName] = useState(initial.full_name || '');
   const [nationality, setNationality] = useState(initial.nationality || '');
   const [saving, setSaving] = useState(false);
@@ -293,7 +310,7 @@ function PersonalEditor({
     if (result.success) {
       onSave();
     } else {
-      setError(result.error || 'Failed to save');
+      setError(result.error || t('errors.saveFailed'));
     }
   };
 
@@ -301,17 +318,17 @@ function PersonalEditor({
     <div className="space-y-4">
       {error && <p className="text-sm text-red-400">{error}</p>}
       <div className="space-y-2">
-        <Label>Full Name</Label>
+        <Label>{t('fields.fullName')}</Label>
         <input
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
           maxLength={100}
           className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300"
-          placeholder="Your full name"
+          placeholder={t('fields.fullNamePlaceholder')}
         />
       </div>
       <div className="space-y-2">
-        <Label>Nationality</Label>
+        <Label>{t('fields.nationality')}</Label>
         <NationalitySelector value={nationality} onChange={setNationality} />
       </div>
       <EditorFooter saving={saving} onCancel={onCancel} onSave={handleSave} />
@@ -328,6 +345,7 @@ function AboutEditor({
   onSave: () => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations('profile.edit');
   const [bio, setBio] = useState(initial.bio || '');
   const [instagram, setInstagram] = useState(
     initial.social_links?.instagram || ''
@@ -358,7 +376,7 @@ function AboutEditor({
     if (result.success) {
       onSave();
     } else {
-      setError(result.error || 'Failed to save');
+      setError(result.error || t('errors.saveFailed'));
     }
   };
 
@@ -366,48 +384,48 @@ function AboutEditor({
     <div className="space-y-4">
       {error && <p className="text-sm text-red-400">{error}</p>}
       <div className="space-y-2">
-        <Label>Bio</Label>
+        <Label>{t('fields.bio')}</Label>
         <textarea
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           maxLength={500}
           rows={3}
           className="flex w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300 resize-none"
-          placeholder="Tell people about yourself..."
+          placeholder={t('fields.bioPlaceholder')}
         />
-        <p className="text-xs text-right" style={{ color: 'var(--ash-grey)' }}>
+        <p className="text-xs text-end" style={{ color: 'var(--ash-grey)' }}>
           {bio.length}/500
         </p>
       </div>
       <div className="space-y-2">
-        <Label>Location</Label>
+        <Label>{t('fields.location')}</Label>
         <input
           value={location}
           onChange={(e) => setLocation(e.target.value)}
           className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300"
-          placeholder="e.g. London, UK"
+          placeholder={t('fields.locationPlaceholder')}
         />
       </div>
       <div className="space-y-2">
-        <Label>Social Links</Label>
+        <Label>{t('fields.socialLinks')}</Label>
         <div className="space-y-2">
           <input
             value={instagram}
             onChange={(e) => setInstagram(e.target.value)}
             className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300"
-            placeholder="Instagram username"
+            placeholder={t('fields.instagramPlaceholder')}
           />
           <input
             value={twitter}
             onChange={(e) => setTwitter(e.target.value)}
             className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300"
-            placeholder="Twitter/X username"
+            placeholder={t('fields.twitterPlaceholder')}
           />
           <input
             value={linkedin}
             onChange={(e) => setLinkedin(e.target.value)}
             className="flex h-10 w-full rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300"
-            placeholder="LinkedIn username"
+            placeholder={t('fields.linkedinPlaceholder')}
           />
         </div>
       </div>
@@ -425,6 +443,7 @@ function PhysicalEditor({
   onSave: () => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations('profile.edit');
   const [height, setHeight] = useState(initial.height_cm?.toString() || '');
   const [weight, setWeight] = useState(initial.weight_kg?.toString() || '');
   const [dob, setDob] = useState(initial.date_of_birth || '');
@@ -445,7 +464,7 @@ function PhysicalEditor({
     if (result.success) {
       onSave();
     } else {
-      setError(result.error || 'Failed to save');
+      setError(result.error || t('errors.saveFailed'));
     }
   };
 
@@ -454,7 +473,7 @@ function PhysicalEditor({
       {error && <p className="text-sm text-red-400">{error}</p>}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Height (cm)</Label>
+          <Label>{t('fields.height')}</Label>
           <input
             type="number"
             value={height}
@@ -466,7 +485,7 @@ function PhysicalEditor({
           />
         </div>
         <div className="space-y-2">
-          <Label>Weight (kg)</Label>
+          <Label>{t('fields.weight')}</Label>
           <input
             type="number"
             value={weight}
@@ -479,12 +498,12 @@ function PhysicalEditor({
         </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="profile-dob">Date of Birth</Label>
+        <Label htmlFor="profile-dob">{t('fields.dateOfBirth')}</Label>
         <DatePicker
           id="profile-dob"
           value={dob}
           onChange={setDob}
-          placeholder="Select your date of birth"
+          placeholder={t('fields.dateOfBirthPlaceholder')}
           max={new Date().toISOString().slice(0, 10)}
         />
       </div>
@@ -502,6 +521,8 @@ function FootballEditor({
   onSave: () => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations('profile.edit');
+  const labels = useProfileLabels();
   const [experienceLevel, setExperienceLevel] = useState(
     initial.experience_level || ''
   );
@@ -543,7 +564,7 @@ function FootballEditor({
     if (result.success) {
       onSave();
     } else {
-      setError(result.error || 'Failed to save');
+      setError(result.error || t('errors.saveFailed'));
     }
   };
 
@@ -552,15 +573,15 @@ function FootballEditor({
       {error && <p className="text-sm text-red-400">{error}</p>}
 
       <div className="space-y-2">
-        <Label>Experience Level</Label>
+        <Label>{t('fields.experienceLevel')}</Label>
         <Select value={experienceLevel} onValueChange={setExperienceLevel}>
           <SelectTrigger>
-            <SelectValue placeholder="Select level" />
+            <SelectValue placeholder={t('fields.experiencePlaceholder')} />
           </SelectTrigger>
           <SelectContent>
             {FOOTBALL_EXPERIENCE_LEVELS.map((level) => (
               <SelectItem key={level} value={level}>
-                {FOOTBALL_EXPERIENCE_LABELS[level]}
+                {labels.experience[level]}
               </SelectItem>
             ))}
           </SelectContent>
@@ -568,7 +589,7 @@ function FootballEditor({
       </div>
 
       <div className="space-y-2">
-        <Label>Preferred Foot</Label>
+        <Label>{t('fields.preferredFoot')}</Label>
         <RadioGroup
           value={preferredFoot}
           onValueChange={setPreferredFoot}
@@ -581,7 +602,7 @@ function FootballEditor({
                 htmlFor={`edit-foot-${foot}`}
                 className="font-normal cursor-pointer"
               >
-                {foot.charAt(0).toUpperCase() + foot.slice(1)}
+                {labels.foot[foot]}
               </Label>
             </div>
           ))}
@@ -589,7 +610,7 @@ function FootballEditor({
       </div>
 
       <div className="space-y-2">
-        <Label>Primary Position</Label>
+        <Label>{t('fields.primaryPosition')}</Label>
         <Select
           value={primaryPosition}
           onValueChange={(val) => {
@@ -598,12 +619,12 @@ function FootballEditor({
           }}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select position" />
+            <SelectValue placeholder={t('fields.positionPlaceholder')} />
           </SelectTrigger>
           <SelectContent>
             {FOOTBALL_POSITIONS.map((pos) => (
               <SelectItem key={pos} value={pos}>
-                {pos} - {FOOTBALL_POSITION_LABELS[pos]}
+                {pos} - {labels.positions[pos]}
               </SelectItem>
             ))}
           </SelectContent>
@@ -611,7 +632,7 @@ function FootballEditor({
       </div>
 
       <div className="space-y-2">
-        <Label>Secondary Positions</Label>
+        <Label>{t('fields.secondaryPositions')}</Label>
         <div className="flex flex-wrap gap-2">
           {FOOTBALL_POSITIONS.filter((p) => p !== primaryPosition).map(
             (pos) => {
@@ -637,14 +658,14 @@ function FootballEditor({
       </div>
 
       <div className="space-y-2">
-        <Label>Jersey Number</Label>
+        <Label>{t('fields.jerseyNumber')}</Label>
         <input
           type="number"
           min={1}
           max={99}
           value={jerseyNumber}
           onChange={(e) => setJerseyNumber(e.target.value)}
-          placeholder="e.g. 10"
+          placeholder={t('fields.jerseyPlaceholder')}
           className="flex h-10 w-24 rounded-md bg-zinc-800 text-white px-3 py-2 text-sm shadow-[0px_0px_1px_1px_var(--neutral-700)] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-300"
         />
       </div>
@@ -661,6 +682,7 @@ function NationalitySelector({
   value: string;
   onChange: (value: string) => void;
 }) {
+  const t = useTranslations('profile.edit.nationality');
   const [open, setOpen] = useState(false);
 
   const selectedCountry = COUNTRY_OPTIONS.find(
@@ -686,9 +708,9 @@ function NationalitySelector({
               <span>{selectedCountry.name}</span>
             </div>
           ) : (
-            <span className="text-zinc-500">Select nationality</span>
+            <span className="text-zinc-500">{t('select')}</span>
           )}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
         </button>
       </PopoverTrigger>
       <PopoverContent
@@ -697,12 +719,12 @@ function NationalitySelector({
         align="start"
       >
         <Command>
-          <CommandInput placeholder="Search country..." />
+          <CommandInput placeholder={t('search')} />
           <CommandList
             className="max-h-[200px] overflow-y-auto"
             onWheel={(e) => e.stopPropagation()}
           >
-            <CommandEmpty>No country found.</CommandEmpty>
+            <CommandEmpty>{t('empty')}</CommandEmpty>
             <CommandGroup>
               {COUNTRY_OPTIONS.map((country) => (
                 <CommandItem
@@ -743,6 +765,7 @@ function EditorFooter({
   onCancel: () => void;
   onSave: () => void;
 }) {
+  const t = useTranslations('profile.edit.actions');
   return (
     <div className="flex justify-end gap-2 pt-2">
       <Button
@@ -751,7 +774,7 @@ function EditorFooter({
         onClick={onCancel}
         style={{ color: 'var(--ash-grey)' }}
       >
-        Cancel
+        {t('cancel')}
       </Button>
       <Button
         size="sm"
@@ -763,8 +786,8 @@ function EditorFooter({
           <LoadingSpinner size="sm" />
         ) : (
           <>
-            <Save className="h-4 w-4 mr-1" />
-            Save
+            <Save className="h-4 w-4 me-1" />
+            {t('save')}
           </>
         )}
       </Button>

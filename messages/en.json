@@ -7,5 +7,1124 @@
     "home": "Home",
     "dashboard": "Dashboard",
     "findACourt": "Find a court"
+  },
+  "academy": {
+    "meta": {
+      "title": "PLAYBACK Academy — Subscription & Member Management for Clubs",
+      "description": "Run your academy on PLAYBACK. Subscription billing, member access, recording delivery, and player development tools for football clubs and academies. Used by 25+ clubs across 10+ countries.",
+      "ogTitle": "PLAYBACK Academy — Subscription & Member Management for Clubs",
+      "ogDescription": "Subscription billing, member access, and recording delivery for football clubs and academies."
+    },
+    "clubPage": {
+      "metaFallbackTitle": "Academy Subscription",
+      "metaTitle": "{name} — Academy Subscription",
+      "metaDescription": "Subscribe to {name} on PLAYBACK to unlock match recordings, training clips, and analysis from every fixture.",
+      "ogDescription": "Subscribe to {name} on PLAYBACK.",
+      "eyebrow": "PLAYBACK Academy · Subscribe",
+      "crestAlt": "{name} crest",
+      "introHierarchical": "Pick your club to see the age groups available for subscription. Each subscription unlocks match recordings, training clips, and analysis from every fixture this season.",
+      "introFlat": "Subscribe to your team and unlock match recordings, training clips, and analysis from every fixture this season — delivered to your PLAYBACK account, accessible from any device.",
+      "cancelledHierarchical": "Checkout cancelled. Pick a club below to try again.",
+      "cancelledFlat": "Checkout cancelled. Pick a team below to try again.",
+      "clubsHeading": "Clubs",
+      "teamsHeading": "Teams",
+      "clubCount": "{count, plural, one {# club} other {# clubs}}",
+      "teamCount": "{count, plural, one {# team} other {# teams}}",
+      "noTeamsTitle": "{name} hasn't opened any teams for subscription yet.",
+      "noTeamsHint": "New teams usually go live before the season starts. Check back soon.",
+      "paymentsNote": "Payments are processed by Stripe. After successful checkout you'll be invited to claim your PLAYBACK account — your subscription is held against the email address you provide."
+    },
+    "picker": {
+      "scrollLeft": "Scroll clubs left",
+      "scrollRight": "Scroll clubs right",
+      "railLabel": "Clubs in {club}",
+      "chooseClub": "Choose {name}",
+      "ageGroupsEyebrow": "{name} · Age groups",
+      "chooseAgeGroup": "Choose an age group",
+      "clear": "Clear",
+      "pickPrompt": "Pick a club above to see the age groups available for subscription.",
+      "noAgeGroupsTitle": "{name} hasn't opened any age groups for subscription yet.",
+      "noAgeGroupsHint": "New age groups usually go live before the season starts. Check back soon.",
+      "ageGroupsListLabel": "Age groups at {name}",
+      "ageGroupsListLabelWithClub": "Age groups at {subclub} ({club})",
+      "teamsListLabel": "Teams at {club}",
+      "subscribeAriaNested": "Subscribe to {team} in {subclub} at {club}",
+      "subscribeAria": "Subscribe to {team} on {club}",
+      "redirecting": "Redirecting to Stripe…",
+      "subscribe": "Subscribe"
+    },
+    "checkout": {
+      "invalidSelection": "Something looked wrong with that team selection — please refresh and try again.",
+      "teamNotFound": "We couldn't find that team — please refresh the page and try again.",
+      "busy": "Checkout is busy right now — please try again in a moment.",
+      "unavailable": "Checkout is unavailable right now — please try again in a few minutes."
+    },
+    "onboarding": {
+      "title": "Academy Onboarding",
+      "description": "Players, parents, and staff can now have a shared ecosystem where growth is promoted, moments are analysed, and memories are preserved. POWERED by PLAYBACK.",
+      "signUpTitle": "Sign Up",
+      "signUpBody": "Select your academy from the PLAYBACK Academy Services list below and sign up for a subscription. Upon successful sign up, you will be invited to the ClubHouse via e-mail to access the platform.",
+      "signUpAltOptions": "Subscription Options",
+      "signUpAltForm": "Subscription Form",
+      "accessTitle": "Access",
+      "accessBody": "Following successful onboarding to the PLAYBACK ClubHouse, you will be able to access your team's data, content, and analytics by signing in through <link>app.veo.co</link> using your chosen credentials.",
+      "accessAlt": "Platform Example",
+      "profileTitle": "Profile",
+      "profileBody": "Players will be able to create their Player Profile which will be used as a repository of the player's details, stats, and highlights - all in a shareable format.",
+      "profileAltAbout": "Player Profile - About",
+      "profileAltHighlights": "Player Profile - Highlights",
+      "profileAltInformation": "Player Profile - Information",
+      "profileAltPositions": "Player Profile - Positions",
+      "contentTitle": "Content",
+      "contentBody": "Onboarded players & parents can access their team's footage, create clips, add highlights to the Player Profile, share content, and interact with the coaching staff via @ mentions to discuss plays and celebrate achievements.",
+      "contentAlt": "Content Platform Example"
+    },
+    "subscriptions": {
+      "sectionTitle": "PLAYBACK Academy Services",
+      "billing": "Billing Management",
+      "clubs": {
+        "lyl": "Pick your club from across the London Youth League and subscribe to your age group — match recordings, training clips, and analysis from every fixture.",
+        "sefa": "With venue coverage at Star Meadow Sports Complex, SEFA players now have access to the PLAYBACK services.",
+        "cfa": "JPL & Mezzie Youth teams can now access the PLAYBACK services across their venues.",
+        "maestros": "Select Maestros Academy teams can now access the PLAYBACK services across both of their venues.",
+        "hb": "Select Hollands & Blair teams are able to utilize the PLAYBACK infrastructure to access their match footage at Star Meadow Sports Complex.",
+        "maidstone": "We have partnered with Maidstone United to provide their players with the PLAYBACK Academy service.",
+        "sefaWomen": "With venue coverage at Star Meadow Sports Complex, SEFA Women players now have access to the PLAYBACK services."
+      }
+    }
+  },
+  "tournament": {
+    "meta": {
+      "title": "PLAYBACK Tournament — Broadcast & Competition Management",
+      "description": "Run tournaments on PLAYBACK. Broadcast every match, manage fixtures and registrations, and deliver recordings to every player and parent. Trusted by youth and grassroots competitions worldwide.",
+      "ogTitle": "PLAYBACK Tournament — Broadcast & Competition Management",
+      "ogDescription": "Broadcast every match, manage fixtures, and deliver recordings to every player and parent."
+    },
+    "onboarding": {
+      "title": "Tournament Onboarding",
+      "description": "Players, parents, and staff can now have a shared platform moments are shared and memories are preserved. POWERED by PLAYBACK.",
+      "signUpTitle": "Sign Up",
+      "signUpBody": "Select your tournament from the PLAYBACK Tournament Services list below and sign up for a subscription. Upon successful sign up, you will receive an email with a link to the tournament folder/all games within 24 hours.",
+      "signUpAltOptions": "Tournament Subscription Options",
+      "signUpAltForm": "Tournament Subscription Form",
+      "contentTitle": "Content",
+      "contentBody": "Onboarded players & parents can access their team's footage, create clips, export highlights, share content, and celebrate achievements.",
+      "contentAlt": "Content Platform Example"
+    },
+    "subscriptions": {
+      "sectionTitle": "PLAYBACK Tournament Services",
+      "billing": "Billing Management",
+      "items": {
+        "ramadan": "Access your tournament footage and data with AI-detected highlights and AutoFollow technology.",
+        "atomics": "Get a personalised folder with your tournament footage and data with AI-detected highlights and AutoFollow technology.",
+        "comingSoonTitle": "Coming Soon",
+        "comingSoon": "The PLAYBACK team is continuously working on POWERING new tournaments. If you would like to be part of the PLAYBACK ecosystem, REACH OUT!"
+      }
+    }
+  },
+  "stats": {
+    "form": {
+      "title": "Add Statistic",
+      "subtitle": "Track your athletic performance and achievements",
+      "sportLabel": "Sport",
+      "sportPlaceholder": "Select sport",
+      "seasonLabel": "Season",
+      "seasonPlaceholder": "2024",
+      "categoryLabel": "Category",
+      "statsAvailable": "{count, plural, one {# statistic available} other {# statistics available}}",
+      "statisticLabel": "Statistic",
+      "valueLabel": "Value *",
+      "dateLabel": "Date Recorded",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Additional context about this statistic...",
+      "personalBest": "This is a personal best",
+      "errorSelectStat": "Please select a statistic type",
+      "errorInvalidValue": "Please enter a valid numeric value",
+      "errorSaveFailed": "Failed to save statistic",
+      "success": "Statistic saved successfully!",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "save": "Save Statistic"
+    },
+    "dashboard": {
+      "title": "Statistics Dashboard",
+      "subtitle": "Track your athletic performance and progress",
+      "addStatistic": "Add Statistic",
+      "totalStatistics": "Total Statistics",
+      "personalBests": "Personal Bests",
+      "sportsTracked": "Sports Tracked",
+      "recentStats": "Recent Stats",
+      "allSports": "All Sports",
+      "allCategories": "All Categories",
+      "seasonPlaceholder": "Season (e.g., 2024)",
+      "categoryStatistics": "{type} Statistics",
+      "confirmDelete": "Are you sure you want to delete this statistic?",
+      "deleteFailed": "Failed to delete statistic",
+      "noStatsTitle": "No statistics yet",
+      "noStatsHint": "Start tracking your athletic performance by adding your first statistic",
+      "addFirstStatistic": "Add Your First Statistic"
+    }
+  },
+  "auth": {
+    "common": {
+      "emailPlaceholder": "you@example.com"
+    },
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your PLAYBACK account to continue your journey",
+      "form": {
+        "emailLabel": "Email",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "Enter your password",
+        "submit": "Sign in",
+        "submitting": "Signing in...",
+        "forgotPassword": "Forgot your password?",
+        "noAccount": "Don't have an account?",
+        "signUp": "Sign up",
+        "showPassword": "Show password",
+        "hidePassword": "Hide password",
+        "errors": {
+          "fillAllFields": "Please fill in all fields",
+          "invalidEmail": "Please enter a valid email address",
+          "tooManyAttempts": "Too many attempts. Please wait {seconds} seconds.",
+          "unexpected": "An unexpected error occurred. Please try again."
+        }
+      }
+    },
+    "forgotPassword": {
+      "title": "Forgot password?",
+      "subtitle": "Enter your email and we'll send you a reset link.",
+      "form": {
+        "emailLabel": "Email",
+        "emailPlaceholder": "you@example.com",
+        "submit": "Send reset link",
+        "submitting": "Sending email...",
+        "cooldownSubmit": "Try again in {seconds}s",
+        "successTitle": "Check your email",
+        "successMessage": "We sent a reset link to {email}. If it's not in your inbox, check spam.",
+        "resend": "Send another email",
+        "resendCooldown": "Send another email in {seconds}s",
+        "backToSignIn": "Back to sign in",
+        "errors": {
+          "emailRequired": "Please enter your email address",
+          "invalidEmail": "Please enter a valid email address",
+          "cooldown": "Please wait {seconds} seconds before resending.",
+          "unexpected": "An unexpected error occurred. Please try again."
+        }
+      }
+    },
+    "resetPassword": {
+      "title": "Reset password",
+      "subtitle": "Enter a new password for your account.",
+      "form": {
+        "passwordLabel": "New password",
+        "passwordPlaceholder": "Enter a new password",
+        "confirmPasswordLabel": "Confirm new password",
+        "confirmPasswordPlaceholder": "Re-enter your new password",
+        "passwordHint": "At least 8 characters with an uppercase letter, a lowercase letter, and a number.",
+        "submit": "Update password",
+        "submitting": "Updating password...",
+        "successTitle": "Password updated",
+        "successMessage": "Redirecting you to sign in…",
+        "continue": "Continue to sign in",
+        "backToSignIn": "Back to sign in",
+        "showPassword": "Show password",
+        "hidePassword": "Hide password",
+        "errors": {
+          "fillBothFields": "Please fill in both fields",
+          "passwordsMismatch": "Passwords do not match",
+          "unexpected": "An unexpected error occurred. Please try again."
+        }
+      }
+    },
+    "register": {
+      "title": "Create account",
+      "subtitle": "Join PLAYBACK and unlock your athletic journey",
+      "academyTitle": "Claim your account",
+      "academySubtitle": "Thanks for subscribing to <club>{clubName}</club>. Set a password to access your team's recordings.",
+      "academyLoading": "Loading your subscription details…",
+      "fullNameLabel": "Full name",
+      "fullNamePlaceholder": "Your full name",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "Choose a username",
+      "usernameTaken": "This username is already taken",
+      "usernameInvalid": "Username must be 3-30 characters, letters, numbers, underscore, and hyphens only",
+      "usernameAvailable": "Username is available",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "athlete@example.com",
+      "emailLocked": "Locked to the email you used at checkout. To use a different email, contact support.",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Create a password",
+      "confirmPasswordLabel": "Confirm password",
+      "confirmPasswordPlaceholder": "Re-enter password",
+      "signUp": "Sign up",
+      "creatingAccount": "Creating account…",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "errors": {
+        "fillAllFields": "Please fill in all fields",
+        "invalidEmail": "Please enter a valid email address",
+        "usernameUnavailable": "Please choose an available username",
+        "fullNameTooShort": "Full name must be at least 2 characters",
+        "passwordsMismatch": "Passwords do not match",
+        "emailExists": "An account with this email already exists. Please sign in instead.",
+        "createFailed": "Failed to create account. Please try again.",
+        "unexpected": "An unexpected error occurred. Please try again.",
+        "academyTransient": "We're having trouble loading your subscription details — please refresh in a moment."
+      }
+    },
+    "verifyEmail": {
+      "title": "Verify your email",
+      "sentTo": "We've sent a verification link to <highlight>{email}</highlight>.",
+      "instructions": "Please check your inbox (and spam folder) and click the link to activate your account.",
+      "closeHint": "You can close this window after verifying. Once done, sign in with your credentials.",
+      "backToLogin": "Back to login"
+    },
+    "serverErrors": {
+      "invalid_credentials": "Invalid email or password. Please check your credentials and try again.",
+      "email_not_confirmed": "Please check your email and click the confirmation link before signing in.",
+      "user_exists": "An account with this email address already exists. Please sign in instead.",
+      "password_too_short": "Password must be at least 6 characters long.",
+      "invalid_password": "Please provide a valid password.",
+      "invalid_email": "Please provide a valid email address.",
+      "email_rate_limit": "Too many emails sent. Please wait before requesting another.",
+      "username_taken": "This username is already taken. Please choose a different username."
+    }
+  },
+  "dashboard": {
+    "common": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving...",
+      "saveFailed": "Failed to save",
+      "signOut": "Sign out",
+      "settings": "Settings",
+      "comingSoon": "Coming soon",
+      "selectDate": "Select date"
+    },
+    "page": {
+      "matchClips": "Match clips",
+      "playerModuleLabel": "Player",
+      "playerProfileLabel": "Player profile",
+      "createPlayerTitle": "Create Player Profile",
+      "createPlayerDescription": "Set up your football player profile to showcase your skills.",
+      "editProfileTitle": "Edit profile",
+      "editProfileDescription": "Update your profile details across modules.",
+      "uploadHighlightTitle": "Upload Highlight",
+      "uploadHighlightDescription": "Add a video highlight to your profile.",
+      "uploadFieldTitle": "Title *",
+      "uploadTitlePlaceholder": "e.g. Match Highlights vs FC United",
+      "uploadFieldDescription": "Description",
+      "uploadDescriptionPlaceholder": "Optional description...",
+      "saveHighlight": "Save Highlight",
+      "careerDialogTitleAdd": "Add Career Entry",
+      "careerDialogTitleEdit": "Edit Career Entry",
+      "careerDialogDescription": "Add your clubs, academies, or team history.",
+      "educationDialogTitleAdd": "Add Education Entry",
+      "educationDialogTitleEdit": "Edit Education Entry",
+      "educationDialogDescription": "Add your schools, colleges, or courses.",
+      "importPlayhubTitle": "Import from PLAYHUB",
+      "importPlayhubDescription": "Add match recordings you have access to as profile highlights.",
+      "noRecordings": "No recordings available",
+      "noRecordingsHint": "Purchase match recordings on PLAYHUB to import them here.",
+      "teamsVs": "{homeTeam} vs {awayTeam}",
+      "teamsVsWithDate": "{homeTeam} vs {awayTeam} · {date}",
+      "added": "Added"
+    },
+    "careerForm": {
+      "errorOrgRequired": "Organization name is required",
+      "organization": "Organization",
+      "organizationPlaceholder": "e.g. Chelsea FC Academy",
+      "role": "Role",
+      "rolePlaceholder": "e.g. Midfielder, U18 Captain",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "currentlyHere": "Currently here",
+      "description": "Description",
+      "descriptionPlaceholder": "Brief description…"
+    },
+    "educationForm": {
+      "errorInstitutionRequired": "Institution name is required",
+      "institution": "Institution",
+      "institutionPlaceholder": "e.g. University of Manchester",
+      "type": "Type",
+      "selectType": "Select type",
+      "typeSchool": "School",
+      "typeCollege": "College",
+      "typeUniversity": "University",
+      "typeAcademy": "Academy",
+      "typeOther": "Other",
+      "degree": "Degree/Program",
+      "degreePlaceholder": "e.g. BSc",
+      "fieldOfStudy": "Field of Study",
+      "fieldOfStudyPlaceholder": "e.g. Sport Science",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "currentlyAttending": "Currently attending"
+    },
+    "topBar": {
+      "welcome": "Welcome back, {name}",
+      "welcomeNoName": "Welcome back",
+      "verifiedBy": "Verified by {orgs}",
+      "verifiedByCount": "{count, plural, one {Verified by # club} other {Verified by # clubs}}",
+      "viewPublicProfile": "View public profile",
+      "viewPublic": "View public",
+      "shareProfile": "Share profile",
+      "share": "Share",
+      "editProfile": "Edit profile",
+      "edit": "Edit",
+      "moreActions": "More actions"
+    },
+    "feed": {
+      "buckets": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "thisWeek": "This week",
+        "thisMonth": "This month",
+        "earlier": "Earlier"
+      }
+    },
+    "matchCard": {
+      "types": {
+        "goal": "Goal",
+        "assist": "Assist",
+        "save": "Save",
+        "tackle": "Tackle",
+        "skill": "Skill",
+        "custom": "Clip"
+      },
+      "clipCount": "{count, plural, one {# clip} other {# clips}}",
+      "watchAria": "Watch full match: {homeTeam} vs {awayTeam}",
+      "watchAriaNew": "Watch full match: {homeTeam} vs {awayTeam}, {count, plural, one {# new clip} other {# new clips}}",
+      "teamsVs": "{homeTeam} vs {awayTeam}",
+      "teamsVsStyled": "{homeTeam} <muted>vs</muted> {awayTeam}",
+      "clipLabelWithTitle": "{type}: {title}",
+      "chipTitle": "{label} — opens the full match (clip-level deep-link is coming soon)",
+      "chipAria": "{label}, opens full match",
+      "chipAriaNew": "{label}, new, opens full match",
+      "shareClipAria": "Share {label}",
+      "shareClip": "Share clip",
+      "watchFullMatch": "Watch full match",
+      "matchRecording": "Match recording"
+    },
+    "modules": {
+      "title": "Your modules",
+      "empty": "No profiles yet. Set up a player or coach profile to start receiving attributed clips from clubs.",
+      "setUpFirst": "Set up your first profile",
+      "visibility": {
+        "public": "Public",
+        "authenticated": "Signed-in only",
+        "clubOnly": "Club only",
+        "private": "Private"
+      },
+      "viewPublicAria": "View public {label} page",
+      "viewPublicPage": "View public page",
+      "editAria": "Edit {label}",
+      "editTitle": "Edit {label} — opens the global editor (per-module editing coming soon)"
+    },
+    "access": {
+      "title": "Subscriptions & access",
+      "openPlayhub": "Open PLAYHUB",
+      "empty": "No subscriptions or purchased recordings yet. Match recordings you buy or are granted access to will appear here.",
+      "browsePlayhub": "Browse on PLAYHUB →",
+      "recordingsLabel": "Recordings you can watch",
+      "purchasesLabel": "Completed purchases",
+      "lastAccess": "last access {when}",
+      "lastPurchase": "last {when}",
+      "lastPurchaseWithAmount": "last {when} · {amount}",
+      "relative": {
+        "today": "today",
+        "yesterday": "yesterday",
+        "daysAgo": "{count, plural, one {# day ago} other {# days ago}}",
+        "weeksAgo": "{count, plural, one {# week ago} other {# weeks ago}}"
+      }
+    },
+    "verifications": {
+      "title": "Verifications",
+      "empty": "No verifications yet. A club admin can verify you from their roster page — once they do, the badge appears on your public profile and here.",
+      "new": "New",
+      "newAria": "New verification",
+      "seasonAndDate": "{season} · {date}"
+    },
+    "emptyState": {
+      "titleHasVariant": "Waiting for your first match clips",
+      "titleNoVariant": "Set up your profile to start receiving clips",
+      "bodyHasVariant": "Your clips arrive automatically. After your next match, every moment with your shirt number on it lands here — no upload required.",
+      "bodyNoVariant": "Create your player profile first. As soon as your club records a match and tags your number, your clips will land here automatically.",
+      "tip": "If nothing’s shown up after a match, ask your coach to confirm your shirt number for the next one. Footage usually appears within a few hours of full-time."
+    },
+    "settings": {
+      "backToDashboard": "Back to dashboard",
+      "title": "Settings",
+      "subtitle": "Control who sees your profile and how PLAYBACK reaches you.",
+      "moduleVisibilityTitle": "Module visibility",
+      "moduleVisibilityDescription": "Each module on your profile has its own visibility. Public modules appear at <path>/p/{username}</path> for anyone with the link.",
+      "noModules": "You don’t have any modules yet. Create a player or coach module from the dashboard.",
+      "playerWithSport": "{sport} player",
+      "variantPlayer": "Player",
+      "variantCoach": "Coach",
+      "visibilityPublic": "Anyone with the link can view",
+      "visibilityAuthenticated": "Only signed-in PLAYBACK users",
+      "visibilityClubOnly": "Only members of selected clubs",
+      "visibilityPrivate": "Hidden from everyone but you",
+      "notificationsTitle": "Notifications",
+      "notificationsBody": "Email and push alerts when a coach attributes a clip, issues a verification, or invites you to a roster.",
+      "parentalTitle": "Parental controls",
+      "parentalBody": "If you manage a minor’s profile, you’ll be able to require consent for new attributions, set default visibility, and approve verifications from this section."
+    }
+  },
+  "nav": {
+    "skipToContent": "Skip to content",
+    "logoAriaLabel": "PLAYBACK home",
+    "primaryNavLabel": "Primary",
+    "primaryMobileNavLabel": "Primary mobile",
+    "mainMenuLabel": "Main menu",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "accountMenu": "Account menu",
+    "liveNow": "Live now",
+    "signIn": "Sign in",
+    "getStarted": "Get started",
+    "dashboard": "Dashboard",
+    "signOut": "Sign out",
+    "items": {
+      "forClubs": {
+        "label": "For clubs",
+        "description": "How your academy joins the Network."
+      },
+      "academy": {
+        "label": "Academy",
+        "description": "Match footage, AI highlights, player profiles."
+      },
+      "tournaments": {
+        "label": "Tournaments",
+        "description": "AI capture and broadcast for every fixture."
+      },
+      "bookToPlay": {
+        "label": "Book to PLAY",
+        "description": "Courts, pitches, and studios - bookable in minutes."
+      },
+      "playhub": {
+        "label": "PLAYHUB",
+        "description": "Match recordings marketplace - stream, subscribe, own."
+      },
+      "news": {
+        "label": "News",
+        "description": "Partnerships, wins, and company announcements."
+      }
+    },
+    "groups": {
+      "solutions": "Solutions",
+      "platform": "Platform"
+    },
+    "stats": {
+      "players": {
+        "value": "75k+",
+        "label": "Players"
+      },
+      "clubs": {
+        "value": "25+",
+        "label": "Clubs"
+      },
+      "countries": {
+        "value": "10+",
+        "label": "Countries"
+      }
+    },
+    "trustedBy": "Trusted by the PLAYBACK Network.",
+    "tagline": "You PLAY. We BACK.",
+    "announcement": {
+      "regionLabel": "Site announcement",
+      "eyebrow": "New partnership",
+      "title": "PLAYBACK × PlayerData",
+      "description": "Elite GPS tracking, now standard for every Academy player.",
+      "readCta": "Read",
+      "dismiss": "Dismiss announcement"
+    }
+  },
+  "footer": {
+    "product": {
+      "title": "Product",
+      "academy": "Academy",
+      "tournament": "Tournament",
+      "playscanner": "PLAYSCANNER",
+      "playhub": "PLAYHUB"
+    },
+    "audiences": {
+      "title": "Audiences",
+      "forClubs": "For clubs",
+      "forPlayers": "For players",
+      "forCoaches": "For coaches"
+    },
+    "company": {
+      "title": "Company",
+      "network": "Network",
+      "press": "Press",
+      "contact": "Contact"
+    },
+    "legal": {
+      "title": "Legal",
+      "terms": "Terms",
+      "privacy": "Privacy",
+      "cookies": "Cookies"
+    }
+  },
+  "landing": {
+    "header": {
+      "metaDescription": "PLAYBACK is the Operating System for Sports. AI match recordings, highlights, analytics, academy management, and player profiles for 75,000+ players across 25+ clubs in 10+ countries.",
+      "ogDescription": "The Operating System for Sports. AI match recordings, highlights, analytics, academy management, and player profiles.",
+      "eyebrow": "You PLAY. We BACK.",
+      "titleLine1": "The top 1%<br></br> of tools.",
+      "titleLine2": "For the 99%<br></br> who play.",
+      "tagline": "Every match filmed. Every stat tracked. Every player seen.",
+      "subtitle": "PLAYBACK gives all players access to the same tech professionals use - across 25+ clubs in 10+ countries.",
+      "ctaPrimary": "Create your profile",
+      "ctaSecondary": "For clubs - talk to us",
+      "stats": {
+        "players": {
+          "value": "75,000+",
+          "label": "Players powered globally"
+        },
+        "partners": {
+          "value": "25+",
+          "label": "Partners in 10+ countries"
+        },
+        "saved": {
+          "value": "£750k+",
+          "label": "Saved for our partners"
+        },
+        "contracts": {
+          "value": "12",
+          "label": "Pro contracts signed"
+        }
+      },
+      "trustLabel": "Powering the PLAYBACK Network"
+    },
+    "about": {
+      "eyebrow": "Built for",
+      "title": "One Network. Every side.",
+      "audiences": {
+        "clubs": {
+          "eyebrow": "For clubs & academies",
+          "headline": "The last partner you’ll ever need.",
+          "body": "AI, software, media, and cloud - all built in-house. Layered on top of best-in-class hardware from the likes of Veo, Spiideo, and Clutch. One operating system for every team, season, and venue.",
+          "bullet1": "In-house AI, software, and cloud architecture",
+          "bullet2": "Media automations - clips, graphics, distribution",
+          "bullet3": "Elite hardware included - Veo, Spiideo, Clutch, GameCam, Hudl, FairVision, PlayerData",
+          "bullet4": "Performance-based model - we grow together",
+          "cta": "Join the Network"
+        },
+        "players": {
+          "eyebrow": "For players & parents",
+          "headline": "Access the Moment.",
+          "body": "Our AI captures every match, clips every goal, and builds the profile scouts can actually find. The same tech pros rely on, put to work for the 99% who play.",
+          "bullet1": "AI-generated highlights, delivered in minutes",
+          "bullet2": "PLAYBACK Profile - the LinkedIn for Sports",
+          "bullet3": "GPS, analytics, and match graphics built in",
+          "bullet4": "25 trials secured through PLAYBACK profiles",
+          "cta": "Join the Academy"
+        },
+        "coaches": {
+          "eyebrow": "For coaches & staff",
+          "headline": "Video, GPS, Ops - one stack.",
+          "body": "Our software replaces the six tools most coaches stitch together. Tagging, analytics, clip distribution, player data - one interface, built by us to work together.",
+          "bullet1": "AI match tagging and instant video breakdowns",
+          "bullet2": "GPS, events, and benchmarks per player",
+          "bullet3": "AI-native processes for ops automation",
+          "bullet4": "Automated clip delivery to players and parents",
+          "cta": "See the platform"
+        }
+      }
+    },
+    "services": {
+      "eyebrow": "What we do",
+      "title": "Elite tools, within reach.",
+      "academy": {
+        "eyebrow": "PLAYBACK Academy",
+        "title": "Every match, every moment, every player.",
+        "body": "The subscription that turns an academy season into a professional-grade showcase. Match recordings, AI highlights, GPS data, and a player profile scouts can find.",
+        "feature1": "AI-generated match highlights",
+        "feature2": "Player profile - LinkedIn for Sports",
+        "feature3": "PlayerData GPS: distance, speed, accelerations",
+        "feature4": "Match recordings via Veo, Spiideo, Clutch",
+        "feature5": "Parent-friendly sharing and scouting exposure",
+        "cta": "Join the Academy",
+        "imageAlt": "PLAYBACK Player Profile - the LinkedIn for Sports surface"
+      },
+      "tournament": {
+        "eyebrow": "PLAYBACK Tournament",
+        "title": "Run the trophy day everyone remembers.",
+        "body": "AI cameras, automatic match capture, and shareable clips for every fixture - the same tech trusted by Inter Milan, Roma, and Brentford. Charity cups to 11s leagues, covered.",
+        "feature1": "Automated match capture per fixture",
+        "feature2": "AI highlight detection and clip export",
+        "feature3": "Live streaming and broadcast-grade output",
+        "feature4": "Team and player analytics",
+        "feature5": "Tournament branding and media hub",
+        "cta": "Host a tournament",
+        "imageAlt": "PLAYBACK-powered match broadcast from a tournament fixture"
+      }
+    },
+    "network": {
+      "eyebrow": "The PLAYBACK Network",
+      "title": "Powered by PLAYBACK."
+    },
+    "press": {
+      "eyebrow": "Awards & recognition",
+      "title": "Redefining the industry."
+    },
+    "latestNews": {
+      "eyebrow": "Press",
+      "title": "From London to the world.",
+      "viewAll": "View all"
+    },
+    "sports": {
+      "eyebrow": "Sports powered",
+      "title": "For every sport, every pitch.",
+      "items": {
+        "basketball": "Basketball",
+        "football": "Football",
+        "volleyball": "Volleyball",
+        "rugby": "Rugby",
+        "tennis": "Tennis",
+        "lacrosse": "Lacrosse",
+        "padel": "Padel",
+        "more": "& More"
+      }
+    },
+    "contact": {
+      "eyebrow": "Get in touch",
+      "title": "Join the Network.",
+      "honeypotLabel": "Don’t fill this out",
+      "nameLabel": "Full Name",
+      "namePlaceholder": "Tyler Adams",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "projectmayhem@fc.com",
+      "companyLabel": "Club or company (optional)",
+      "companyPlaceholder": "Your club, academy, or organisation",
+      "whoLabel": "I am a...",
+      "whoPlaceholder": "- Select -",
+      "whoOptions": {
+        "player": "Player",
+        "venue": "Venue",
+        "equipmentProvider": "Equipment Provider",
+        "leagueOrganiser": "League Organiser",
+        "ambassador": "Potential Ambassador"
+      },
+      "messageLabel": "Message (optional)",
+      "messagePlaceholder": "Hi...",
+      "send": "Send",
+      "sending": "Loading...",
+      "submitting": "Submitting…",
+      "errorRateLimited": "You're sending too quickly. Try again in a minute.",
+      "errorGeneric": "Something went wrong - please email us directly.",
+      "errorNetwork": "Couldn't reach the server. Please try again.",
+      "errorFallback": "Something went wrong.",
+      "success": "Thanks - we’ll be in touch shortly."
+    }
+  },
+  "media": {
+    "checkingAuth": "Checking authentication…",
+    "couldNotLoadVideo": "Could not load video",
+    "failedToLoadVideo": "Failed to load video",
+    "uploadFailed": "Upload failed",
+    "processingFailed": "Processing failed",
+    "startingUpload": "Starting upload…",
+    "processingVideo": "Processing video…",
+    "uploading": "Uploading…",
+    "videoThumbnail": "Video thumbnail",
+    "failedToUpdateProfile": "Failed to update profile",
+    "dropValidImage": "Please drop a valid image file",
+    "failedToDeleteAvatar": "Failed to delete avatar",
+    "changePhoto": "Change Photo",
+    "uploadPhoto": "Upload Photo"
+  },
+  "playscanner": {
+    "meta": {
+      "title": "PLAYSCANNER — Book Sports Courts & Pitches",
+      "description": "Find and book football pitches, padel courts, basketball courts, and tennis courts across London. Compare prices in real time across providers including Playtomic, MATCHi, and Padel Mates.",
+      "ogTitle": "PLAYSCANNER — Book Sports Courts & Pitches",
+      "ogDescription": "Aggregated court and pitch booking across providers. Compare prices in real time."
+    },
+    "search": {
+      "brandLine": "PLAYSCANNER - {city}",
+      "title": "One search. Every slot.",
+      "subtitle": "Aggregating 10+ providers - Playtomic, MATCHi, PowerLeague, Goals, Footy Addicts and more. Data refreshes every 15 minutes.",
+      "dates": {
+        "today": "Today",
+        "tomorrow": "Tomorrow",
+        "tomorrowShort": "Tmrw"
+      },
+      "sports": {
+        "football": "Football",
+        "padel": "Padel",
+        "basketball": "Basketball",
+        "tennis": "Tennis"
+      },
+      "location": {
+        "london": "London",
+        "comingSoon": "London only - more cities coming"
+      },
+      "errors": {
+        "searchFailed": "Search failed"
+      }
+    },
+    "results": {
+      "tryAgain": "Try again",
+      "empty": {
+        "title": "{sport, select, football {No football pitches for this day} tennis {No tennis courts for this day} padel {No padel courts for this day} basketball {No basketball courts for this day} other {No courts for this day}}",
+        "subtitle": "Try a different date, switch sport, or let us know which provider you’d like to see covered."
+      },
+      "stats": {
+        "venues": "{count, plural, one {# venue} other {# venues}}",
+        "venuesShort": "{count}v",
+        "from": "from {price}",
+        "live": "live",
+        "minutesShort": "{minutes}m"
+      },
+      "showMore": "Show more ({count, plural, one {# remaining} other {# remaining}})",
+      "providerRequest": {
+        "prompt": "Missing a booking provider?",
+        "placeholder": "Which provider would you like us to add? (e.g. Playtomic, MATCHi, LTA Clubspark)"
+      }
+    },
+    "filters": {
+      "title": "Filters",
+      "clearAll": "Clear all",
+      "clear": "Clear",
+      "sheetDescription": "Filter search results by price, provider, and venue",
+      "time": {
+        "morning": "Morning",
+        "afternoon": "Afternoon",
+        "evening": "Evening"
+      },
+      "indoor": "Indoor",
+      "dropIn": "Drop-in",
+      "priceRange": "Price range",
+      "resetPrice": "Reset price",
+      "timeRange": "Time range",
+      "resetTime": "Reset time",
+      "providers": "Providers",
+      "clearProviders": "Clear providers",
+      "venues": "Venues",
+      "venuesWithCount": "Venues ({count})",
+      "searchVenues": "Search venues...",
+      "clearVenues": "Clear venues",
+      "showResults": "{count, plural, one {Show # result} other {Show # results}}",
+      "filterOptions": "Filter Options",
+      "activeFilters": "Active Filters:",
+      "providersCount": "{count, plural, one {# provider} other {# providers}}",
+      "venuesCount": "{count, plural, one {# venue} other {# venues}}",
+      "from": "From",
+      "to": "To",
+      "earliestHint": "(earliest: {time})",
+      "latestHint": "(latest: {time})",
+      "selectStartTime": "Select start time",
+      "selectEndTime": "Select end time",
+      "allVenues": "All Venues",
+      "venuesSelectedCount": "{count} venues selected",
+      "selectedVenues": "Selected: {count, plural, one {# venue} other {# venues}}"
+    },
+    "venue": {
+      "justNow": "just now",
+      "minutesAgo": "{minutes}m ago",
+      "hoursAgo": "{hours}h ago",
+      "perPerson": "/person",
+      "perHour": "/hr",
+      "perDuration": "/{minutes}min",
+      "priceOnSite": "Price on site",
+      "courtsCount": "{count, plural, one {# court} other {# courts}}",
+      "spotsLeft": "{count, plural, one {# spot left} other {# spots left}}",
+      "tags": {
+        "dropIn": "DROP-IN",
+        "aSide": "{count}-a-side",
+        "panoramic": "Panoramic",
+        "indoor": "Indoor",
+        "outdoor": "Outdoor",
+        "surface": "{surface, select, hard {Hard} clay {Clay} grass {Grass} other {{surface}}}",
+        "durations": "{durations} min"
+      },
+      "showLess": "Less",
+      "showMoreCount": "+{count}"
+    },
+    "booking": {
+      "dialogLabel": "Book {venue}",
+      "close": "Close booking dialog",
+      "time": "Time",
+      "durationMin": "{minutes} min",
+      "perPerson": "Per person",
+      "price": "Price",
+      "priceOnSite": "Price on site",
+      "slotUnavailable": "This slot may no longer be available. Try a different time.",
+      "priceChanged": "Price has changed since we last checked",
+      "checking": "Checking availability...",
+      "unavailable": "Unavailable",
+      "bookOn": "Book on {provider}",
+      "joinOn": "Join on {provider}",
+      "redirectNotice": "You’ll be redirected to {provider} to complete your booking"
+    },
+    "map": {
+      "loading": "Loading map",
+      "slotsCount": "{count, plural, one {# slot} other {# slots}}",
+      "from": "From",
+      "next": "Next",
+      "book": "Book",
+      "emptyTitle": "No venues to show on map",
+      "emptySubtitle": "Try a different search or check back later"
+    }
+  },
+  "profile": {
+    "meta": {
+      "notFound": "Profile Not Found",
+      "profileDescription": "{name}'s profile on PLAYBACK Sports",
+      "moduleDescription": "{name}'s {module} profile on PLAYBACK Sports"
+    },
+    "hero": {
+      "featuredHighlight": "Featured Highlight"
+    },
+    "about": {
+      "title": "About"
+    },
+    "keyInfo": {
+      "title": "Key Info",
+      "position": "Position",
+      "foot": "Foot",
+      "height": "Height",
+      "weight": "Weight",
+      "age": "Age",
+      "jersey": "Jersey"
+    },
+    "positions": {
+      "title": "Positions"
+    },
+    "coaching": {
+      "title": "Coaching",
+      "ageGroups": "Age groups",
+      "philosophy": "Philosophy"
+    },
+    "career": {
+      "title": "Career",
+      "present": "Present",
+      "range": "{start} - {end}",
+      "rangeOngoing": "{start} - Present"
+    },
+    "education": {
+      "title": "Education"
+    },
+    "stats": {
+      "title": "Statistics",
+      "empty": "No stats yet",
+      "emptyHint": "Stats from PlayerData and manual entries will appear here.",
+      "vsOpponent": "vs {opponent}"
+    },
+    "highlights": {
+      "title": "Highlights",
+      "empty": "No highlights yet",
+      "views": "{count, plural, one {# view} other {# views}}"
+    },
+    "clips": {
+      "title": "Match clips",
+      "taggedByClubs": "Tagged by clubs",
+      "matchup": "{home} vs {away}"
+    },
+    "moduleSwitcher": {
+      "ariaLabel": "Profile modules"
+    },
+    "verified": {
+      "byOne": "Verified by {name}",
+      "byList": "Verified by {names}",
+      "byCount": "Verified by {count, plural, one {# club} other {# clubs}}"
+    },
+    "share": {
+      "trigger": "Share",
+      "title": "Share profile",
+      "description": "Pick what to share. The link is public — anyone with it can view.",
+      "fullProfile": "Full profile",
+      "fullProfileDescription": "All public modules — the recipient sees everything you've made public.",
+      "noPublicModules": "No public modules yet — turn one on to share a single module.",
+      "moduleOption": "{label} module",
+      "moduleOptionDescription": "Just your {label} surface — nothing else visible at this URL.",
+      "generatedLink": "Generated link",
+      "copyLink": "Copy link",
+      "shareSheet": "Share via system share sheet",
+      "shareTitle": "{username} on PLAYBACK"
+    },
+    "shareClip": {
+      "title": "Share {type}",
+      "description": "{match}. The link is public — anyone with it can watch on PLAYHUB.",
+      "descriptionWithTitle": "{clipTitle} — {match}. The link is public — anyone with it can watch on PLAYHUB.",
+      "shareTitleWithClip": "{type}: {clipTitle} — {match}",
+      "shareTitleFromMatch": "{type} from {match}",
+      "matchup": "{home} vs {away}"
+    },
+    "privacy": {
+      "visibilityAriaLabel": "Module visibility",
+      "visibilityAriaLabelFor": "{label} module visibility",
+      "saved": "Saved",
+      "failed": "Failed",
+      "options": {
+        "public": {
+          "label": "Public",
+          "description": "Anyone can view this module"
+        },
+        "authenticated": {
+          "label": "Signed-in only",
+          "description": "Anyone with a PLAYBACK account"
+        },
+        "clubOnly": {
+          "label": "Club only",
+          "description": "Coming soon — pick which clubs can see this module"
+        },
+        "private": {
+          "label": "Private",
+          "description": "Only you"
+        }
+      }
+    },
+    "edit": {
+      "sections": {
+        "personal": "Personal",
+        "personalEmpty": "Add name, nationality",
+        "about": "About",
+        "aboutEmpty": "Add a bio",
+        "physical": "Physical Info",
+        "physicalEmpty": "Add height, weight, date of birth",
+        "football": "Football Details",
+        "footballEmpty": "Edit football details"
+      },
+      "dialogs": {
+        "personal": "Edit Personal Info",
+        "about": "Edit About",
+        "physical": "Edit Physical Info",
+        "football": "Edit Football Details"
+      },
+      "fields": {
+        "fullName": "Full Name",
+        "fullNamePlaceholder": "Your full name",
+        "nationality": "Nationality",
+        "bio": "Bio",
+        "bioPlaceholder": "Tell people about yourself...",
+        "location": "Location",
+        "locationPlaceholder": "e.g. London, UK",
+        "socialLinks": "Social Links",
+        "instagramPlaceholder": "Instagram username",
+        "twitterPlaceholder": "Twitter/X username",
+        "linkedinPlaceholder": "LinkedIn username",
+        "height": "Height (cm)",
+        "weight": "Weight (kg)",
+        "dateOfBirth": "Date of Birth",
+        "dateOfBirthPlaceholder": "Select your date of birth",
+        "experienceLevel": "Experience Level",
+        "experiencePlaceholder": "Select level",
+        "preferredFoot": "Preferred Foot",
+        "primaryPosition": "Primary Position",
+        "positionPlaceholder": "Select position",
+        "secondaryPositions": "Secondary Positions",
+        "jerseyNumber": "Jersey Number",
+        "jerseyPlaceholder": "e.g. 10"
+      },
+      "nationality": {
+        "select": "Select nationality",
+        "search": "Search country...",
+        "empty": "No country found."
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "save": "Save"
+      },
+      "errors": {
+        "saveFailed": "Failed to save"
+      }
+    },
+    "form": {
+      "steps": {
+        "basicTitle": "Basic Information",
+        "basicDescription": "Tell us about your playing background.",
+        "positionsTitle": "Playing Positions",
+        "positionsDescription": "Select your primary position and any secondary ones.",
+        "reviewTitle": "Review & Create",
+        "reviewDescription": "Check your details before creating your player profile."
+      },
+      "fields": {
+        "experienceLevel": "Experience Level",
+        "experiencePlaceholder": "Select your level",
+        "preferredFoot": "Preferred Foot",
+        "jerseyNumber": "Jersey Number",
+        "jerseyPlaceholder": "e.g. 10",
+        "primaryPosition": "Primary Position",
+        "positionPlaceholder": "Select position",
+        "secondaryPositions": "Secondary Positions",
+        "optional": "(optional)"
+      },
+      "summary": {
+        "experience": "Experience",
+        "preferredFoot": "Preferred Foot",
+        "primaryPosition": "Primary Position",
+        "secondary": "Secondary",
+        "jerseyNumber": "Jersey Number"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "back": "Back",
+        "next": "Next",
+        "create": "Create Profile"
+      },
+      "errors": {
+        "generic": "Something went wrong"
+      }
+    }
+  },
+  "profileLabels": {
+    "positions": {
+      "goalkeeper": "Goalkeeper",
+      "centreBack": "Centre Back",
+      "leftBack": "Left Back",
+      "rightBack": "Right Back",
+      "leftWingBack": "Left Wing Back",
+      "rightWingBack": "Right Wing Back",
+      "defensiveMidfielder": "Defensive Midfielder",
+      "centralMidfielder": "Central Midfielder",
+      "attackingMidfielder": "Attacking Midfielder",
+      "leftMidfielder": "Left Midfielder",
+      "rightMidfielder": "Right Midfielder",
+      "leftWinger": "Left Winger",
+      "rightWinger": "Right Winger",
+      "striker": "Striker",
+      "centreForward": "Centre Forward"
+    },
+    "experience": {
+      "recreational": "Recreational",
+      "schoolTeam": "School Team",
+      "sundayLeague": "Sunday League",
+      "clubYouth": "Club Youth",
+      "academy": "Academy",
+      "amateurClub": "Amateur Club",
+      "nonLeague": "Non-League",
+      "collegeUniversity": "College / University",
+      "semiProfessional": "Semi-Professional",
+      "professional": "Professional",
+      "formerProfessional": "Former Professional"
+    },
+    "foot": {
+      "left": "Left",
+      "right": "Right",
+      "both": "Both"
+    },
+    "variants": {
+      "player": "Player",
+      "coach": "Coach",
+      "scout": "Scout",
+      "agent": "Agent",
+      "referee": "Referee",
+      "trainer": "Trainer",
+      "physio": "Physio"
+    },
+    "clipTypes": {
+      "goal": "Goal",
+      "assist": "Assist",
+      "save": "Save",
+      "tackle": "Tackle",
+      "skill": "Skill",
+      "custom": "Clip"
+    }
   }
 }

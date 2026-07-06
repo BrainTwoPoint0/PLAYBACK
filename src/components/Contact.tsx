@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button, Label, Input } from '@braintwopoint0/playback-commons/ui';
 import { cn } from '@/lib/utils';
 import { Textarea } from './ui/textarea';
@@ -16,6 +17,7 @@ import {
 type Status = 'pending' | 'ok' | 'error';
 
 export function ContactForm() {
+  const t = useTranslations('landing.contact');
   const [status, setStatus] = useState<Status | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [who, setWho] = useState<string>('');
@@ -43,35 +45,32 @@ export function ContactForm() {
         setStatus('ok');
       } else if (res.status === 429) {
         setStatus('error');
-        setError("You're sending too quickly. Try again in a minute.");
+        setError(t('errorRateLimited'));
       } else {
         setStatus('error');
-        setError('Something went wrong - please email us directly.');
+        setError(t('errorGeneric'));
       }
     } catch {
       setStatus('error');
-      setError("Couldn't reach the server. Please try again.");
+      setError(t('errorNetwork'));
     }
   };
 
   return (
     <section id="contact" className="relative mt-32 md:mt-40 scroll-mt-24">
       <div className="mx-auto max-w-[1400px] px-6 sm:px-10">
-        <SectionTitle eyebrow="Get in touch" title="Join the Network." />
+        <SectionTitle eyebrow={t('eyebrow')} title={t('title')} />
         <div className="p-0 md:p-0">
           <form
             className="flex flex-col items-start space-y-6"
             name="contact"
             onSubmit={handleFormSubmit}
           >
-            {/* Honeypot - hidden from humans, attractive to bots. */}
-            <div
-              aria-hidden
-              className="absolute left-[-10000px] top-auto h-px w-px overflow-hidden"
-            >
-              <label htmlFor="contact-botfield">
-                Don&rsquo;t fill this out
-              </label>
+            {/* Honeypot - hidden from humans, attractive to bots. Uses the
+                sr-only clip pattern: offscreen left-[-10000px] positioning
+                widens the document in RTL and causes an endless zoom-out. */}
+            <div aria-hidden className="sr-only">
+              <label htmlFor="contact-botfield">{t('honeypotLabel')}</label>
               <input
                 id="contact-botfield"
                 name="bot-field"
@@ -80,12 +79,12 @@ export function ContactForm() {
                 autoComplete="off"
               />
             </div>
-            <div className="flex flex-col md:flex-row md:space-x-4 space-y-6 md:space-y-0 w-full">
+            <div className="flex flex-col md:flex-row gap-6 md:gap-4 w-full">
               <LabelInputContainer>
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name">{t('nameLabel')}</Label>
                 <Input
                   id="name"
-                  placeholder="Tyler Adams"
+                  placeholder={t('namePlaceholder')}
                   type="text"
                   name="name"
                   autoComplete="name"
@@ -93,53 +92,62 @@ export function ContactForm() {
                 />
               </LabelInputContainer>
               <LabelInputContainer>
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email">{t('emailLabel')}</Label>
                 <Input
                   id="email"
-                  placeholder="projectmayhem@fc.com"
+                  placeholder={t('emailPlaceholder')}
                   type="email"
                   name="email"
                   autoComplete="email"
+                  dir="ltr"
                   required
                 />
               </LabelInputContainer>
             </div>
-            <div className="flex flex-col md:flex-row md:space-x-4 space-y-6 md:space-y-0 w-full">
+            <div className="flex flex-col md:flex-row gap-6 md:gap-4 w-full">
               <LabelInputContainer>
-                <Label htmlFor="company">Club or company (optional)</Label>
+                <Label htmlFor="company">{t('companyLabel')}</Label>
                 <Input
                   id="company"
-                  placeholder="Your club, academy, or organisation"
+                  placeholder={t('companyPlaceholder')}
                   type="text"
                   name="company"
                   autoComplete="organization"
                 />
               </LabelInputContainer>
               <LabelInputContainer>
-                <Label htmlFor="who">I am a...</Label>
+                <Label htmlFor="who">{t('whoLabel')}</Label>
                 <Select value={who} onValueChange={setWho}>
                   <SelectTrigger id="who" className="w-full">
-                    <SelectValue placeholder="- Select -" />
+                    <SelectValue placeholder={t('whoPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="player">Player</SelectItem>
-                    <SelectItem value="venue">Venue</SelectItem>
+                    <SelectItem value="player">
+                      {t('whoOptions.player')}
+                    </SelectItem>
+                    <SelectItem value="venue">
+                      {t('whoOptions.venue')}
+                    </SelectItem>
                     <SelectItem value="equipment_provider">
-                      Equipment Provider
+                      {t('whoOptions.equipmentProvider')}
                     </SelectItem>
                     <SelectItem value="league_organiser">
-                      League Organiser
+                      {t('whoOptions.leagueOrganiser')}
                     </SelectItem>
                     <SelectItem value="ambassador">
-                      Potential Ambassador
+                      {t('whoOptions.ambassador')}
                     </SelectItem>
                   </SelectContent>
                 </Select>
               </LabelInputContainer>
             </div>
             <LabelInputContainer>
-              <Label htmlFor="message">Message (optional)</Label>
-              <Textarea id="message" placeholder="Hi..." name="message" />
+              <Label htmlFor="message">{t('messageLabel')}</Label>
+              <Textarea
+                id="message"
+                placeholder={t('messagePlaceholder')}
+                name="message"
+              />
             </LabelInputContainer>
             {status !== 'ok' && (
               <Button
@@ -149,13 +157,13 @@ export function ContactForm() {
                 type="submit"
               >
                 {status === 'pending' ? (
-                  'Loading...'
+                  t('sending')
                 ) : (
                   <>
-                    Send
+                    {t('send')}
                     <span
                       aria-hidden
-                      className="ml-2 inline-block transition-transform duration-300 motion-reduce:transition-none group-hover:translate-x-0.5"
+                      className="ms-2 inline-block transition-transform duration-300 motion-reduce:transition-none group-hover:translate-x-0.5 rtl:rotate-180"
                     >
                       →
                     </span>
@@ -181,13 +189,11 @@ export function ContactForm() {
                   status === 'pending' && 'text-ink-muted'
                 )}
               >
-                {status === 'pending' && <span>Submitting&hellip;</span>}
+                {status === 'pending' && <span>{t('submitting')}</span>}
                 {status === 'error' && (
-                  <span>{error ?? 'Something went wrong.'}</span>
+                  <span>{error ?? t('errorFallback')}</span>
                 )}
-                {status === 'ok' && (
-                  <span>Thanks - we&rsquo;ll be in touch shortly.</span>
-                )}
+                {status === 'ok' && <span>{t('success')}</span>}
               </div>
             )}
           </form>

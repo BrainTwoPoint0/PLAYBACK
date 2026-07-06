@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { ProfileHero } from '@/components/profile/profile-hero';
 import { ProfileAbout } from '@/components/profile/profile-about';
 import { ProfileKeyInfo } from '@/components/profile/profile-key-info';
@@ -191,15 +192,16 @@ function CoachSummary({
   ageGroups: string[];
   philosophy: string | null;
 }) {
+  const t = useTranslations('profile.coaching');
   return (
     <div className="rounded-xl border border-[var(--timberwolf)]/20 p-6 space-y-4">
       <h2 className="text-lg font-semibold text-[var(--timberwolf)]">
-        Coaching
+        {t('title')}
       </h2>
       {ageGroups.length > 0 && (
         <div>
           <div className="text-xs uppercase tracking-wide text-[var(--ash-grey)] mb-2">
-            Age groups
+            {t('ageGroups')}
           </div>
           <div className="flex flex-wrap gap-1.5">
             {ageGroups.map((g) => (
@@ -216,7 +218,7 @@ function CoachSummary({
       {philosophy && (
         <div>
           <div className="text-xs uppercase tracking-wide text-[var(--ash-grey)] mb-2">
-            Philosophy
+            {t('philosophy')}
           </div>
           <p className="text-sm text-[var(--timberwolf)]/90 whitespace-pre-line">
             {philosophy}

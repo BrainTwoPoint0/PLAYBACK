@@ -1,11 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { AvatarDisplay } from '@/components/avatar/avatar-upload';
-import {
-  FOOTBALL_EXPERIENCE_LABELS,
-  type FootballExperienceLevel,
-} from '@/lib/profile/constants';
+import { type FootballExperienceLevel } from '@/lib/profile/constants';
+import { useFootballExperienceLabels } from '@/lib/profile/use-profile-labels';
 import { MapPin, Play } from 'lucide-react';
 import { HighlightVideoDialog } from '@/components/video/highlight-video-dialog';
 
@@ -41,9 +40,11 @@ export function ProfileHero({
   featuredHighlight,
 }: ProfileHeroProps) {
   const [showVideoDialog, setShowVideoDialog] = useState(false);
+  const t = useTranslations('profile.hero');
+  const experienceLabels = useFootballExperienceLabels();
 
   const expLabel =
-    FOOTBALL_EXPERIENCE_LABELS[experienceLevel as FootballExperienceLevel] ||
+    experienceLabels[experienceLevel as FootballExperienceLevel] ||
     experienceLevel;
 
   const hasFeatured = !!featuredHighlight;
@@ -79,14 +80,14 @@ export function ProfileHero({
               </div>
             </div>
             <span
-              className="absolute top-3 right-3 backdrop-blur-md text-[10px] font-semibold px-2.5 py-1 rounded-full"
+              className="absolute top-3 end-3 backdrop-blur-md text-[10px] font-semibold px-2.5 py-1 rounded-full"
               style={{
                 backgroundColor: 'rgba(10,16,13,0.55)',
                 color: 'var(--timberwolf)',
                 boxShadow: 'inset 0 0 0 1px rgba(214,213,201,0.12)',
               }}
             >
-              Featured Highlight
+              {t('featuredHighlight')}
             </span>
           </button>
         ) : coverImageUrl ? (
@@ -103,7 +104,7 @@ export function ProfileHero({
 
         {/* Jersey number watermark */}
         {jerseyNumber && (
-          <div className="absolute top-4 right-6 select-none pointer-events-none">
+          <div className="absolute top-4 end-6 select-none pointer-events-none">
             <span className="text-[120px] sm:text-[160px] font-black leading-none text-white/[0.04] tracking-tighter">
               {jerseyNumber}
             </span>
@@ -136,7 +137,9 @@ export function ProfileHero({
               className="text-sm font-medium"
               style={{ color: 'var(--ash-grey)' }}
             >
-              @{username}
+              {/* Username is an LTR identifier — keep the @handle from
+                  flipping in RTL locales. */}
+              <span dir="ltr">@{username}</span>
             </p>
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-400/10 text-green-400 border border-green-400/20">

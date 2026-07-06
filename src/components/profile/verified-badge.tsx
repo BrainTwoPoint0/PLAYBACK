@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { ShieldCheck } from 'lucide-react';
 import type { VerifierOrg } from '@/lib/profile/get-public-profile';
 
@@ -10,12 +11,9 @@ interface VerifiedBadgeProps {
  * stack — a player verified by both CFA and SEFA shows both names.
  */
 export function VerifiedBadge({ verifications }: VerifiedBadgeProps) {
-  if (verifications.length === 0) return null;
+  const t = useTranslations('profile.verified');
 
-  const summary =
-    verifications.length === 1
-      ? `Verified by ${verifications[0].name}`
-      : `Verified by ${verifications.length} clubs`;
+  if (verifications.length === 0) return null;
 
   const tooltip = verifications
     .map((v) => (v.season_label ? `${v.name} · ${v.season_label}` : v.name))
@@ -24,9 +22,11 @@ export function VerifiedBadge({ verifications }: VerifiedBadgeProps) {
   // Shows full club names inline up to 3 verifications; collapses to a count
   // beyond that. Title attribute lists each verification with season label.
   const inline =
-    verifications.length <= 3
-      ? `Verified by ${verifications.map((v) => v.name).join(' + ')}`
-      : summary;
+    verifications.length === 1
+      ? t('byOne', { name: verifications[0].name })
+      : verifications.length <= 3
+        ? t('byList', { names: verifications.map((v) => v.name).join(' + ') })
+        : t('byCount', { count: verifications.length });
 
   // Trust signal — deliberately heavier than ambient UI. Filled shield
   // (not outline) and a slight ring carry weight; the inset highlight gives

@@ -1,4 +1,5 @@
 import { Link } from '@/i18n/navigation';
+import { useFormatter, useTranslations } from 'next-intl';
 import {
   Play,
   Trophy,
@@ -22,29 +23,19 @@ interface AttributedClipsProps {
   playhubBaseUrl?: string;
 }
 
-const TYPE_CONFIG: Record<
+// Display labels live under `profileLabels.clipTypes.*`; unknown types fall
+// back to `custom`.
+const TYPE_ICONS: Record<
   string,
-  { label: string; Icon: React.ComponentType<{ className?: string }> }
+  React.ComponentType<{ className?: string }>
 > = {
-  goal: { label: 'Goal', Icon: Trophy },
-  assist: { label: 'Assist', Icon: Sparkles },
-  save: { label: 'Save', Icon: Shield },
-  tackle: { label: 'Tackle', Icon: Wrench },
-  skill: { label: 'Skill', Icon: Dumbbell },
-  custom: { label: 'Clip', Icon: Film },
+  goal: Trophy,
+  assist: Sparkles,
+  save: Shield,
+  tackle: Wrench,
+  skill: Dumbbell,
+  custom: Film,
 };
-
-function formatMatchDate(iso: string): string {
-  try {
-    return new Date(iso).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  } catch {
-    return iso;
-  }
-}
 
 function formatDuration(ms: number): string {
   const total = Math.max(0, Math.round(ms / 1000));
@@ -57,9 +48,19 @@ export function AttributedClips({
   clips,
   playhubBaseUrl,
 }: AttributedClipsProps) {
+  const t = useTranslations('profile.clips');
+  const tClipTypes = useTranslations('profileLabels.clipTypes');
+  const format = useFormatter();
+
   if (clips.length === 0) return null;
 
   const playhub = playhubBaseUrl ?? 'https://playhub.playbacksports.ai';
+
+  const formatMatchDate = (iso: string): string => {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return iso;
+    return format.dateTime(date, 'short');
+  };
 
   return (
     <section aria-labelledby="attributed-clips-heading">
@@ -69,17 +70,18 @@ export function AttributedClips({
           className="text-lg font-semibold tracking-tight"
           style={{ color: 'var(--timberwolf)' }}
         >
-          Match clips
+          {t('title')}
         </h2>
         <span className="text-xs" style={{ color: 'var(--ash-grey)' }}>
-          Tagged by clubs
+          {t('taggedByClubs')}
         </span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {clips.map((clip) => {
-          const cfg = TYPE_CONFIG[clip.type] ?? TYPE_CONFIG.custom;
-          const Icon = cfg.Icon;
+          const typeKey = clip.type in TYPE_ICONS ? clip.type : 'custom';
+          const Icon = TYPE_ICONS[typeKey];
+          const typeLabel = tClipTypes(typeKey);
           // PLAYHUB /watch/[id] takes ?from for analytics; in-clip seek
           // (?start=N) is a v1.1 deep-link feature once the player supports
           // it. For now the link lands on the parent recording.
@@ -124,7 +126,7 @@ export function AttributedClips({
                 <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[rgba(10,16,13,0.85)] to-transparent pointer-events-none" />
 
                 <div
-                  className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-wider backdrop-blur-md"
+                  className="absolute top-2 start-2 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-wider backdrop-blur-md"
                   style={{
                     backgroundColor: 'rgba(10,16,13,0.55)',
                     color: 'var(--timberwolf)',
@@ -132,12 +134,12 @@ export function AttributedClips({
                   }}
                 >
                   <Icon className="h-3 w-3" />
-                  {cfg.label}
+                  {typeLabel}
                 </div>
 
                 {duration > 0 && (
                   <div
-                    className="absolute top-2 right-2 text-[11px] font-mono tabular-nums"
+                    className="absolute top-2 end-2 text-[11px] font-mono tabular-nums"
                     style={{ color: 'rgba(214,213,201,0.85)' }}
                   >
                     {formatDuration(duration)}
@@ -162,7 +164,11 @@ export function AttributedClips({
                   className="text-sm font-medium truncate"
                   style={{ color: 'var(--timberwolf)' }}
                 >
-                  {clip.title ?? `${clip.homeTeam} vs ${clip.awayTeam}`}
+                  {clip.title ??
+                    t('matchup', {
+                      home: clip.homeTeam,
+                      away: clip.awayTeam,
+                    })}
                 </div>
                 <div
                   className="text-xs truncate tabular-nums"

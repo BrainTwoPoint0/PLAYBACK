@@ -1,8 +1,10 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Gotcha } from 'gotcha-feedback';
 
 export function ProviderRequestGotcha() {
+  const t = useTranslations('playscanner.results.providerRequest');
   return (
     <Gotcha
       elementId="playscanner-provider-request"
@@ -11,8 +13,8 @@ export function ProviderRequestGotcha() {
       theme="dark"
       showRating={false}
       showOnHover={false}
-      promptText="Missing a booking provider?"
-      placeholder="Which provider would you like us to add? (e.g. Playtomic, MATCHi, LTA Clubspark)"
+      promptText={t('prompt')}
+      placeholder={t('placeholder')}
     />
   );
 }

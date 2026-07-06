@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 interface SportIconProps {
   sport: 'padel' | 'football' | 'tennis' | 'basketball';
@@ -13,18 +14,19 @@ export default function SportIcon({
   size = 16,
   className = '',
 }: SportIconProps) {
-  const sportAssets: Record<string, { src: string; alt: string }> = {
-    padel: { src: '/assets/tennis.svg', alt: 'Padel' },
-    tennis: { src: '/assets/tennis.svg', alt: 'Tennis' },
-    football: { src: '/assets/football.svg', alt: 'Football' },
-    basketball: { src: '/assets/basketball.svg', alt: 'Basketball' },
+  const t = useTranslations('playscanner.search');
+  const sportAssets: Record<string, string> = {
+    padel: '/assets/tennis.svg',
+    tennis: '/assets/tennis.svg',
+    football: '/assets/football.svg',
+    basketball: '/assets/basketball.svg',
   };
-  const { src, alt } = sportAssets[sport] || sportAssets.padel;
+  const src = sportAssets[sport] || sportAssets.padel;
 
   return (
     <Image
       src={src}
-      alt={alt}
+      alt={t(`sports.${sport}`)}
       width={size}
       height={size}
       className={className}

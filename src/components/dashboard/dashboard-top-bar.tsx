@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useState } from 'react';
 import {
@@ -64,14 +65,18 @@ export function DashboardTopBar({
   onEditProfile,
   onSignOut,
 }: DashboardTopBarProps) {
+  const t = useTranslations('dashboard.topBar');
+  const tc = useTranslations('dashboard.common');
   const [menuOpen, setMenuOpen] = useState(false);
 
   const verificationLabel =
     verifications.length === 0
       ? null
       : verifications.length <= 2
-        ? `Verified by ${verifications.map((v) => v.organizationName).join(' + ')}`
-        : `Verified by ${verifications.length} clubs`;
+        ? t('verifiedBy', {
+            orgs: verifications.map((v) => v.organizationName).join(' + '),
+          })
+        : t('verifiedByCount', { count: verifications.length });
 
   return (
     <header className="px-1">
@@ -93,10 +98,13 @@ export function DashboardTopBar({
               className="text-lg sm:text-2xl font-bold tracking-tight truncate"
               style={{ color: 'var(--timberwolf)' }}
             >
-              Welcome back, {firstName}
+              {firstName
+                ? t('welcome', { name: firstName })
+                : t('welcomeNoName')}
             </h1>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-1">
               <span
+                dir="ltr"
                 className="text-xs sm:text-sm truncate"
                 style={{ color: 'var(--text-muted)' }}
               >
@@ -140,16 +148,16 @@ export function DashboardTopBar({
               variant="ghost"
               size="sm"
               className="hidden sm:inline-flex hover:bg-[var(--surface-2)]"
-              title="View public profile"
+              title={t('viewPublicProfile')}
             >
               <Link
                 href={`/p/${username}`}
                 target="_blank"
                 rel="noopener"
-                aria-label="View public profile"
+                aria-label={t('viewPublicProfile')}
               >
-                <Eye className="h-4 w-4 sm:mr-1.5" aria-hidden />
-                <span className="hidden lg:inline">View public</span>
+                <Eye className="h-4 w-4 sm:me-1.5" aria-hidden />
+                <span className="hidden lg:inline">{t('viewPublic')}</span>
               </Link>
             </Button>
           )}
@@ -165,11 +173,11 @@ export function DashboardTopBar({
                 <Button
                   size="sm"
                   className="bg-[var(--timberwolf)] hover:bg-[var(--timberwolf)]/90 text-[var(--night)]"
-                  title="Share profile"
-                  aria-label="Share profile"
+                  title={t('shareProfile')}
+                  aria-label={t('shareProfile')}
                 >
-                  <Share2 className="h-4 w-4 sm:mr-1.5" aria-hidden />
-                  <span className="hidden sm:inline">Share</span>
+                  <Share2 className="h-4 w-4 sm:me-1.5" aria-hidden />
+                  <span className="hidden sm:inline">{t('share')}</span>
                 </Button>
               }
             />
@@ -178,11 +186,11 @@ export function DashboardTopBar({
               size="sm"
               onClick={onEditProfile}
               className="bg-[var(--timberwolf)] hover:bg-[var(--timberwolf)]/90 text-[var(--night)]"
-              title="Edit profile"
-              aria-label="Edit profile"
+              title={t('editProfile')}
+              aria-label={t('editProfile')}
             >
-              <Pencil className="h-4 w-4 sm:mr-1.5" aria-hidden />
-              <span className="hidden sm:inline">Edit</span>
+              <Pencil className="h-4 w-4 sm:me-1.5" aria-hidden />
+              <span className="hidden sm:inline">{t('edit')}</span>
             </Button>
           )}
           <Popover open={menuOpen} onOpenChange={setMenuOpen}>
@@ -191,7 +199,7 @@ export function DashboardTopBar({
                 variant="ghost"
                 size="icon"
                 className="h-9 w-9 hover:bg-[var(--surface-2)]"
-                aria-label="More actions"
+                aria-label={t('moreActions')}
               >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
@@ -214,7 +222,7 @@ export function DashboardTopBar({
                   style={{ color: 'var(--timberwolf)' }}
                 >
                   <Eye className="h-4 w-4" />
-                  View public profile
+                  {t('viewPublicProfile')}
                 </Link>
               )}
               {/* Edit profile lives in the kebab when Share is the visible
@@ -227,11 +235,11 @@ export function DashboardTopBar({
                     setMenuOpen(false);
                     onEditProfile();
                   }}
-                  className="w-full flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-[var(--surface-2)] text-left"
+                  className="w-full flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-[var(--surface-2)] text-start"
                   style={{ color: 'var(--timberwolf)' }}
                 >
                   <Pencil className="h-4 w-4" />
-                  Edit profile
+                  {t('editProfile')}
                 </button>
               )}
               <Link
@@ -241,18 +249,18 @@ export function DashboardTopBar({
                 style={{ color: 'var(--timberwolf)' }}
               >
                 <Settings className="h-4 w-4" />
-                Settings
+                {tc('settings')}
               </Link>
               <button
                 onClick={() => {
                   setMenuOpen(false);
                   onSignOut();
                 }}
-                className="w-full flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-[var(--surface-2)] text-left"
+                className="w-full flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-[var(--surface-2)] text-start"
                 style={{ color: 'var(--text-muted)' }}
               >
                 <LogOut className="h-4 w-4" />
-                Sign out
+                {tc('signOut')}
               </button>
             </PopoverContent>
           </Popover>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   Sheet,
   SheetContent,
@@ -28,22 +29,25 @@ interface EditProfileSheetProps {
 export function EditProfileSheet({
   open,
   onOpenChange,
-  title = 'Edit profile',
+  title,
   description,
   children,
 }: EditProfileSheetProps) {
+  const t = useTranslations('dashboard.page');
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-xl bg-[var(--night)] flex flex-col p-0 border-l"
+        className="w-full sm:max-w-xl bg-[var(--night)] flex flex-col p-0 border-s"
         style={{ borderColor: 'var(--line-strong)' }}
       >
         <SheetHeader
           className="px-6 pt-6 pb-4 shrink-0 border-b"
           style={{ borderColor: 'var(--line)' }}
         >
-          <SheetTitle className="text-[var(--timberwolf)]">{title}</SheetTitle>
+          <SheetTitle className="text-[var(--timberwolf)]">
+            {title ?? t('editProfileTitle')}
+          </SheetTitle>
           {description ? (
             <SheetDescription className="text-[var(--ash-grey)]">
               {description}

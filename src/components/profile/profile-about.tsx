@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { Instagram, Twitter, Linkedin, ExternalLink } from 'lucide-react';
 
 interface ProfileAboutProps {
@@ -6,6 +7,7 @@ interface ProfileAboutProps {
 }
 
 export function ProfileAbout({ bio, socialLinks }: ProfileAboutProps) {
+  const t = useTranslations('profile.about');
   const hasSocials = socialLinks && Object.values(socialLinks).some((v) => v);
 
   if (!bio && !hasSocials) return null;
@@ -16,7 +18,7 @@ export function ProfileAbout({ bio, socialLinks }: ProfileAboutProps) {
         className="text-xs font-semibold uppercase tracking-widest"
         style={{ color: 'var(--ash-grey)' }}
       >
-        About
+        {t('title')}
       </h2>
 
       {bio && (
@@ -80,7 +82,9 @@ function SocialBadge({
       style={{ color: 'var(--ash-grey)' }}
     >
       {icon}
-      <span>@{username}</span>
+      {/* Handles are LTR identifiers — pin direction so they don't flip in
+          RTL locales. */}
+      <span dir="ltr">@{username}</span>
       <ExternalLink className="h-3 w-3 opacity-50" />
     </a>
   );

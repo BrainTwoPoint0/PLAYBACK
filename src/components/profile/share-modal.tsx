@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -51,6 +52,7 @@ function urlForScope(username: string, scope: Scope): string {
  * meant to send one clip's parent module.
  */
 export function ShareModal({ username, modules, trigger }: ShareModalProps) {
+  const t = useTranslations('profile.share');
   const [open, setOpen] = useState(false);
   const [scopeKey, setScopeKey] = useState<string>('profile');
   const [copied, setCopied] = useState(false);
@@ -90,9 +92,11 @@ export function ShareModal({ username, modules, trigger }: ShareModalProps) {
 
   function nativeShare() {
     if (typeof navigator !== 'undefined' && 'share' in navigator) {
-      navigator.share({ url, title: `${username} on PLAYBACK` }).catch(() => {
-        // User cancelled or permission denied — silently no-op.
-      });
+      navigator
+        .share({ url, title: t('shareTitle', { username }) })
+        .catch(() => {
+          // User cancelled or permission denied — silently no-op.
+        });
     }
   }
 
@@ -104,17 +108,15 @@ export function ShareModal({ username, modules, trigger }: ShareModalProps) {
       <DialogTrigger asChild>
         {trigger ?? (
           <Button variant="outline" size="sm">
-            <Share2 className="mr-1.5 h-3.5 w-3.5" />
-            Share
+            <Share2 className="me-1.5 h-3.5 w-3.5" />
+            {t('trigger')}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Share profile</DialogTitle>
-          <DialogDescription>
-            Pick what to share. The link is public — anyone with it can view.
-          </DialogDescription>
+          <DialogTitle>{t('title')}</DialogTitle>
+          <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
 
         <RadioGroup
@@ -134,18 +136,17 @@ export function ShareModal({ username, modules, trigger }: ShareModalProps) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <User2 className="h-3.5 w-3.5" />
-                Full profile
+                {t('fullProfile')}
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                All public modules — the recipient sees everything you&apos;ve
-                made public.
+                {t('fullProfileDescription')}
               </p>
             </div>
           </label>
 
           {modules.length === 0 && (
             <p className="text-xs text-muted-foreground italic px-1">
-              No public modules yet — turn one on to share a single module.
+              {t('noPublicModules')}
             </p>
           )}
 
@@ -163,11 +164,12 @@ export function ShareModal({ username, modules, trigger }: ShareModalProps) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 text-sm font-medium">
                   <Globe className="h-3.5 w-3.5" />
-                  {m.label} module
+                  {t('moduleOption', { label: m.label })}
                 </div>
                 <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                  Just your {m.label.toLowerCase()} surface — nothing else
-                  visible at this URL.
+                  {t('moduleOptionDescription', {
+                    label: m.label.toLowerCase(),
+                  })}
                 </p>
               </div>
             </label>
@@ -179,10 +181,12 @@ export function ShareModal({ username, modules, trigger }: ShareModalProps) {
             className="text-[10px] uppercase tracking-wider"
             style={{ color: 'var(--ash-grey)' }}
           >
-            Generated link
+            {t('generatedLink')}
           </div>
           <div className="flex items-center gap-2">
+            {/* URLs are LTR — pin direction so they render correctly in RTL. */}
             <code
+              dir="ltr"
               className="flex-1 min-w-0 truncate text-xs px-3 py-2 rounded-md font-mono border"
               style={{
                 backgroundColor: 'var(--surface-2)',
@@ -196,7 +200,7 @@ export function ShareModal({ username, modules, trigger }: ShareModalProps) {
               size="sm"
               variant={copied ? 'default' : 'outline'}
               onClick={copy}
-              aria-label="Copy link"
+              aria-label={t('copyLink')}
             >
               {copied ? (
                 <Check className="h-3.5 w-3.5" />
@@ -209,7 +213,7 @@ export function ShareModal({ username, modules, trigger }: ShareModalProps) {
                 size="sm"
                 variant="outline"
                 onClick={nativeShare}
-                aria-label="Share via system share sheet"
+                aria-label={t('shareSheet')}
               >
                 <ExternalLink className="h-3.5 w-3.5" />
               </Button>

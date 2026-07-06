@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -23,15 +24,7 @@ import {
 
 type ClipType = 'goal' | 'assist' | 'save' | 'tackle' | 'skill' | 'custom';
 
-const TYPE_LABEL: Record<ClipType, string> = {
-  goal: 'Goal',
-  assist: 'Assist',
-  save: 'Save',
-  tackle: 'Tackle',
-  skill: 'Skill',
-  custom: 'Clip',
-};
-
+// Display labels live under `profileLabels.clipTypes.*`.
 const TYPE_ICON: Record<
   ClipType,
   React.ComponentType<{ className?: string }>
@@ -74,6 +67,9 @@ export function ShareClipModal({
   awayTeam,
   playhubBaseUrl,
 }: ShareClipModalProps) {
+  const t = useTranslations('profile.shareClip');
+  const tShare = useTranslations('profile.share');
+  const tClipTypes = useTranslations('profileLabels.clipTypes');
   const [copied, setCopied] = useState(false);
 
   const playhub =
@@ -86,11 +82,12 @@ export function ShareClipModal({
   )}?clip=${encodeURIComponent(attributionId)}&from=dashboard-share`;
 
   const Icon = TYPE_ICON[clipType] ?? Film;
-  const typeLabel = TYPE_LABEL[clipType] ?? 'Clip';
-  const matchLabel = `${homeTeam} vs ${awayTeam}`;
+  const typeKey = clipType in TYPE_ICON ? clipType : 'custom';
+  const typeLabel = tClipTypes(typeKey);
+  const matchLabel = t('matchup', { home: homeTeam, away: awayTeam });
   const shareTitle = clipTitle
-    ? `${typeLabel}: ${clipTitle} — ${matchLabel}`
-    : `${typeLabel} from ${matchLabel}`;
+    ? t('shareTitleWithClip', { type: typeLabel, clipTitle, match: matchLabel })
+    : t('shareTitleFromMatch', { type: typeLabel, match: matchLabel });
 
   async function copy() {
     try {
@@ -147,12 +144,12 @@ export function ShareClipModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Icon className="h-4 w-4" aria-hidden />
-            Share {typeLabel.toLowerCase()}
+            {t('title', { type: typeLabel.toLowerCase() })}
           </DialogTitle>
           <DialogDescription>
-            {clipTitle ? `${clipTitle} — ` : ''}
-            {matchLabel}. The link is public — anyone with it can watch on
-            PLAYHUB.
+            {clipTitle
+              ? t('descriptionWithTitle', { clipTitle, match: matchLabel })
+              : t('description', { match: matchLabel })}
           </DialogDescription>
         </DialogHeader>
 
@@ -161,10 +158,12 @@ export function ShareClipModal({
             className="text-[10px] uppercase tracking-wider"
             style={{ color: 'var(--ash-grey)' }}
           >
-            Generated link
+            {tShare('generatedLink')}
           </div>
           <div className="flex items-center gap-2">
+            {/* URLs are LTR — pin direction so they render correctly in RTL. */}
             <code
+              dir="ltr"
               className="flex-1 min-w-0 truncate text-xs px-3 py-2 rounded-md font-mono border"
               style={{
                 backgroundColor: 'var(--surface-2)',
@@ -178,7 +177,7 @@ export function ShareClipModal({
               size="sm"
               variant={copied ? 'default' : 'outline'}
               onClick={copy}
-              aria-label="Copy link"
+              aria-label={tShare('copyLink')}
             >
               {copied ? (
                 <Check className="h-3.5 w-3.5" />
@@ -191,7 +190,7 @@ export function ShareClipModal({
                 size="sm"
                 variant="outline"
                 onClick={nativeShare}
-                aria-label="Share via system share sheet"
+                aria-label={tShare('shareSheet')}
               >
                 <Share2 className="h-3.5 w-3.5" />
               </Button>

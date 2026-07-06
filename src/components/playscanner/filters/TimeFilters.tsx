@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button, Label } from '@braintwopoint0/playback-commons/ui';
 import { TimePicker } from '@/components/ui/time-picker';
 import { ClockIcon } from 'lucide-react';
@@ -22,6 +23,7 @@ export default function TimeFilters({
   onTimeRangeChange,
   searchResults,
 }: TimeFiltersProps) {
+  const t = useTranslations('playscanner.filters');
   // Calculate dynamic time bounds from search results
   const { dynamicStart, dynamicEnd } = useMemo(() => {
     if (searchResults.length === 0) {
@@ -72,9 +74,9 @@ export default function TimeFilters({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <ClockIcon className="h-4 w-4" />
-          <Label className="text-sm font-medium">Time Range</Label>
+          <Label className="text-sm font-medium">{t('timeRange')}</Label>
         </div>
         {timeRange && (
           <Button
@@ -83,7 +85,7 @@ export default function TimeFilters({
             onClick={clearTimeRange}
             className="text-xs"
           >
-            Clear
+            {t('clear')}
           </Button>
         )}
       </div>
@@ -92,30 +94,30 @@ export default function TimeFilters({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
           <Label className="text-xs">
-            From
-            <span className="text-muted-foreground ml-1">
-              (earliest: {dynamicStart})
+            {t('from')}
+            <span className="text-muted-foreground ms-1">
+              {t('earliestHint', { time: dynamicStart })}
             </span>
           </Label>
           <TimePicker
             value={currentStart}
             onChange={handleStartTimeChange}
-            placeholder="Select start time"
+            placeholder={t('selectStartTime')}
             min={dynamicStart}
             max={dynamicEnd}
           />
         </div>
         <div className="space-y-2">
           <Label className="text-xs">
-            To
-            <span className="text-muted-foreground ml-1">
-              (latest: {dynamicEnd})
+            {t('to')}
+            <span className="text-muted-foreground ms-1">
+              {t('latestHint', { time: dynamicEnd })}
             </span>
           </Label>
           <TimePicker
             value={currentEnd}
             onChange={handleEndTimeChange}
-            placeholder="Select end time"
+            placeholder={t('selectEndTime')}
             min={dynamicStart}
             max={dynamicEnd}
           />

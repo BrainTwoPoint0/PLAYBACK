@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Play } from 'lucide-react';
 import { HighlightVideoDialog } from '@/components/video/highlight-video-dialog';
 
@@ -19,6 +20,7 @@ interface ProfileHighlightsProps {
 }
 
 export function ProfileHighlights({ highlights }: ProfileHighlightsProps) {
+  const t = useTranslations('profile.highlights');
   const [activeHighlight, setActiveHighlight] = useState<Highlight | null>(
     null
   );
@@ -29,7 +31,7 @@ export function ProfileHighlights({ highlights }: ProfileHighlightsProps) {
         className="text-xs font-semibold uppercase tracking-widest"
         style={{ color: 'var(--ash-grey)' }}
       >
-        Highlights
+        {t('title')}
       </h2>
 
       {highlights.length === 0 ? (
@@ -42,7 +44,7 @@ export function ProfileHighlights({ highlights }: ProfileHighlightsProps) {
             className="text-sm opacity-50"
             style={{ color: 'var(--ash-grey)' }}
           >
-            No highlights yet
+            {t('empty')}
           </p>
         </div>
       ) : (
@@ -51,7 +53,7 @@ export function ProfileHighlights({ highlights }: ProfileHighlightsProps) {
             <button
               key={highlight.id}
               onClick={() => setActiveHighlight(highlight)}
-              className="group rounded-xl overflow-hidden bg-neutral-900/50 border border-neutral-800/50 hover:border-neutral-600/50 transition-all duration-300 text-left"
+              className="group rounded-xl overflow-hidden bg-neutral-900/50 border border-neutral-800/50 hover:border-neutral-600/50 transition-all duration-300 text-start"
             >
               <div className="relative aspect-video bg-neutral-900">
                 {highlight.thumbnail_url ? (
@@ -72,12 +74,12 @@ export function ProfileHighlights({ highlights }: ProfileHighlightsProps) {
                   </div>
                 </div>
                 {highlight.metadata?.source === 'playhub' && (
-                  <span className="absolute top-2 left-2 bg-blue-500/90 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                  <span className="absolute top-2 start-2 bg-blue-500/90 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
                     PLAYHUB
                   </span>
                 )}
                 {highlight.duration && (
-                  <span className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded tabular-nums">
+                  <span className="absolute bottom-2 end-2 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded tabular-nums">
                     {formatDuration(highlight.duration)}
                   </span>
                 )}
@@ -94,7 +96,7 @@ export function ProfileHighlights({ highlights }: ProfileHighlightsProps) {
                     className="text-xs mt-0.5 opacity-60"
                     style={{ color: 'var(--ash-grey)' }}
                   >
-                    {highlight.view_count.toLocaleString()} views
+                    {t('views', { count: highlight.view_count })}
                   </p>
                 )}
               </div>

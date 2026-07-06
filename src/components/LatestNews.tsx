@@ -3,6 +3,7 @@
 import { BlogPostGrid } from './ui/blog-post-grid';
 import SectionTitle from './ui/section-title';
 import { Link } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 
 interface LatestNewsProps {
   posts: Array<{
@@ -44,6 +45,8 @@ function SkeletonCard({ index }: { index: number }) {
 }
 
 export default function LatestNews({ posts, loading }: LatestNewsProps) {
+  const t = useTranslations('landing.latestNews');
+
   if (!loading && (!posts || posts.length === 0)) {
     return null;
   }
@@ -51,7 +54,7 @@ export default function LatestNews({ posts, loading }: LatestNewsProps) {
   return (
     <section id="news" className="relative mt-32 md:mt-40">
       <div className="mx-auto max-w-[1400px] px-6 sm:px-10">
-        <SectionTitle eyebrow="Press" title="From London to the world." />
+        <SectionTitle eyebrow={t('eyebrow')} title={t('title')} />
         {loading ? (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -66,10 +69,10 @@ export default function LatestNews({ posts, loading }: LatestNewsProps) {
             href="/press"
             className="group inline-flex items-center justify-center gap-2 h-11 px-6 rounded-full bg-timberwolf text-night text-[14px] font-medium transition-colors hover:bg-ash-grey focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-timberwolf focus-visible:ring-offset-2 focus-visible:ring-offset-night shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_1px_2px_rgba(0,0,0,0.35)]"
           >
-            View all
+            {t('viewAll')}
             <span
               aria-hidden
-              className="inline-block transition-transform duration-300 motion-reduce:transition-none group-hover:translate-x-0.5"
+              className="inline-block transition-transform duration-300 motion-reduce:transition-none group-hover:translate-x-0.5 rtl:rotate-180"
             >
               →
             </span>

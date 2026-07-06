@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useFormatter, useTranslations } from 'next-intl';
 import { Button } from '@braintwopoint0/playback-commons/ui';
 import { LumaSpin } from '@braintwopoint0/playback-commons/ui';
 import {
@@ -33,6 +34,8 @@ export function StatsDashboard({
   userSports = [],
   onAddStat,
 }: StatsDashboardProps) {
+  const t = useTranslations('stats.dashboard');
+  const format = useFormatter();
   const [statistics, setStatistics] = useState<Statistic[]>([]);
   const [personalBests, setPersonalBests] = useState<Statistic[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,7 +74,7 @@ export function StatsDashboard({
 
   // Handle delete statistic
   const handleDelete = async (statId: string) => {
-    if (!confirm('Are you sure you want to delete this statistic?')) {
+    if (!confirm(t('confirmDelete'))) {
       return;
     }
 
@@ -81,11 +84,11 @@ export function StatsDashboard({
         setStatistics((prev) => prev.filter((s) => s.id !== statId));
         setPersonalBests((prev) => prev.filter((s) => s.id !== statId));
       } else {
-        alert('Failed to delete statistic');
+        alert(t('deleteFailed'));
       }
     } catch (error) {
       console.error('Failed to delete statistic:', error);
-      alert('Failed to delete statistic');
+      alert(t('deleteFailed'));
     }
   };
 
@@ -125,10 +128,10 @@ export function StatsDashboard({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent">
-            Statistics Dashboard
+            {t('title')}
           </h2>
           <p className="text-sm mt-1" style={{ color: 'var(--ash-grey)' }}>
-            Track your athletic performance and progress
+            {t('subtitle')}
           </p>
         </div>
 
@@ -137,8 +140,8 @@ export function StatsDashboard({
             onClick={onAddStat}
             className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Statistic
+            <Plus className="h-4 w-4 me-2" />
+            {t('addStatistic')}
           </Button>
         )}
       </div>
@@ -158,7 +161,7 @@ export function StatsDashboard({
                 {summaryStats.totalStats}
               </p>
               <p className="text-xs" style={{ color: 'var(--ash-grey)' }}>
-                Total Statistics
+                {t('totalStatistics')}
               </p>
             </div>
           </div>
@@ -177,7 +180,7 @@ export function StatsDashboard({
                 {summaryStats.personalBests}
               </p>
               <p className="text-xs" style={{ color: 'var(--ash-grey)' }}>
-                Personal Bests
+                {t('personalBests')}
               </p>
             </div>
           </div>
@@ -196,7 +199,7 @@ export function StatsDashboard({
                 {summaryStats.sportsTracked}
               </p>
               <p className="text-xs" style={{ color: 'var(--ash-grey)' }}>
-                Sports Tracked
+                {t('sportsTracked')}
               </p>
             </div>
           </div>
@@ -215,7 +218,7 @@ export function StatsDashboard({
                 {summaryStats.recentStats.length}
               </p>
               <p className="text-xs" style={{ color: 'var(--ash-grey)' }}>
-                Recent Stats
+                {t('recentStats')}
               </p>
             </div>
           </div>
@@ -232,7 +235,7 @@ export function StatsDashboard({
           className="px-3 py-2 bg-neutral-800/50 border border-neutral-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
           style={{ color: 'var(--timberwolf)' }}
         >
-          <option value="">All Sports</option>
+          <option value="">{t('allSports')}</option>
           {userSports.map((userSport) => (
             <option key={userSport.sport?.id} value={userSport.sport?.id}>
               {userSport.sport?.name}
@@ -248,7 +251,7 @@ export function StatsDashboard({
           className="px-3 py-2 bg-neutral-800/50 border border-neutral-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
           style={{ color: 'var(--timberwolf)' }}
         >
-          <option value="">All Categories</option>
+          <option value="">{t('allCategories')}</option>
           {Object.keys(groupedStats).map((type) => (
             <option key={type} value={type}>
               {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -258,7 +261,7 @@ export function StatsDashboard({
 
         <input
           type="text"
-          placeholder="Season (e.g., 2024)"
+          placeholder={t('seasonPlaceholder')}
           value={filters.season}
           onChange={(e) =>
             setFilters((prev) => ({ ...prev, season: e.target.value }))
@@ -279,7 +282,7 @@ export function StatsDashboard({
               className="text-lg font-semibold"
               style={{ color: 'var(--timberwolf)' }}
             >
-              Personal Bests
+              {t('personalBests')}
             </h3>
           </div>
 
@@ -308,7 +311,7 @@ export function StatsDashboard({
                   className="text-xs space-y-1"
                   style={{ color: 'var(--ash-grey)' }}
                 >
-                  <p>{new Date(stat.stat_date).toLocaleDateString()}</p>
+                  <p>{format.dateTime(new Date(stat.stat_date), 'short')}</p>
                 </div>
               </div>
             ))}
@@ -328,7 +331,7 @@ export function StatsDashboard({
                 className="text-lg font-semibold mb-4 capitalize"
                 style={{ color: 'var(--timberwolf)' }}
               >
-                {type} Statistics
+                {t('categoryStatistics', { type })}
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -367,7 +370,9 @@ export function StatsDashboard({
                       className="text-xs space-y-1"
                       style={{ color: 'var(--ash-grey)' }}
                     >
-                      <p>{new Date(stat.stat_date).toLocaleDateString()}</p>
+                      <p>
+                        {format.dateTime(new Date(stat.stat_date), 'short')}
+                      </p>
                       {stat.metrics?.description && (
                         <p className="line-clamp-2 mt-2">
                           {stat.metrics.description}
@@ -392,19 +397,18 @@ export function StatsDashboard({
             className="text-lg font-semibold mb-2"
             style={{ color: 'var(--timberwolf)' }}
           >
-            No statistics yet
+            {t('noStatsTitle')}
           </h3>
           <p className="text-sm mb-4" style={{ color: 'var(--ash-grey)' }}>
-            Start tracking your athletic performance by adding your first
-            statistic
+            {t('noStatsHint')}
           </p>
           {onAddStat && (
             <Button
               onClick={onAddStat}
               className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white"
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Your First Statistic
+              <Plus className="h-4 w-4 me-2" />
+              {t('addFirstStatistic')}
             </Button>
           )}
         </div>

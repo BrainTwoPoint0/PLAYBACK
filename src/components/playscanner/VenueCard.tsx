@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations, useFormatter } from 'next-intl';
 import { CourtSlot, PROVIDER_CONFIG } from '@/lib/playscanner/types';
 import SlotPills from './SlotPills';
 
@@ -24,21 +25,38 @@ interface VenueCardProps {
   onBook: (slot: CourtSlot) => void;
 }
 
-function timeAgo(iso: string | null): string {
-  if (!iso) return '';
-  const diff = Date.now() - new Date(iso).getTime();
-  const min = Math.floor(diff / 60000);
-  if (min < 1) return 'just now';
-  if (min < 60) return `${min}m ago`;
-  const hrs = Math.floor(min / 60);
-  return `${hrs}h ago`;
+interface Tag {
+  /** Stable semantic id — used for keys, styling and dedup, never shown. */
+  id: string;
+  label: string;
 }
 
 export default function VenueCard({ group, onBook }: VenueCardProps) {
+  const t = useTranslations('playscanner.venue');
+  const format = useFormatter();
+
   const providerConfig = PROVIDER_CONFIG[group.provider] || {
     displayName: group.provider,
     color: '#888',
   };
+
+  const timeAgo = (iso: string | null): string => {
+    if (!iso) return '';
+    const diff = Date.now() - new Date(iso).getTime();
+    const min = Math.floor(diff / 60000);
+    if (min < 1) return t('justNow');
+    if (min < 60) return t('minutesAgo', { minutes: min });
+    return t('hoursAgo', { hours: Math.floor(min / 60) });
+  };
+
+  const currency = group.slots[0]?.currency ?? 'GBP';
+  const formatPrice = (pence: number) =>
+    format.number(pence / 100, {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 0,
+      numberingSystem: 'latn',
+    });
 
   const isDropIn = group.listingType === 'drop_in';
   // Use the cheapest slot's duration for the price label (not an average)
@@ -49,63 +67,70 @@ export default function VenueCard({ group, onBook }: VenueCardProps) {
   );
   const displayDuration = cheapestSlot?.duration || 60;
   const priceLabel = isDropIn
-    ? '/person'
+    ? t('perPerson')
     : displayDuration === 60
-      ? '/hr'
-      : `/${displayDuration}min`;
+      ? t('perHour')
+      : t('perDuration', { minutes: displayDuration });
 
   // Features tags - sport-specific metadata first
-  const tags: string[] = [];
-  if (isDropIn) tags.push('DROP-IN');
+  const tags: Tag[] = [];
+  if (isDropIn) tags.push({ id: 'drop_in', label: t('tags.dropIn') });
 
   // Sport-specific metadata
   const firstSlot = group.slots[0];
   if (firstSlot?.sportMeta) {
     const meta = firstSlot.sportMeta;
     if ('format' in meta && meta.format && group.sport === 'football') {
-      // Football format: 5v5, 7v7, etc.
-      const formatMap: Record<string, string> = {
-        '5v5': '5-a-side',
-        '6v6': '6-a-side',
-        '7v7': '7-a-side',
-        '8v8': '8-a-side',
-        '11v11': '11-a-side',
-      };
-      tags.push(formatMap[meta.format] || meta.format);
+      // Football format: 5v5, 7v7, etc. → "5-a-side" (raw value if unknown)
+      const aSide = /^(\d+)v\d+$/.exec(meta.format);
+      tags.push({
+        id: meta.format,
+        label: aSide
+          ? t('tags.aSide', { count: Number(aSide[1]) })
+          : meta.format,
+      });
     }
     if ('courtType' in meta && meta.courtType) {
       // Padel: indoor/outdoor/panoramic
-      if (meta.courtType === 'panoramic') tags.push('Panoramic');
-      else if (meta.courtType === 'indoor') tags.push('Indoor');
-      else tags.push('Outdoor');
+      if (meta.courtType === 'panoramic')
+        tags.push({ id: 'panoramic', label: t('tags.panoramic') });
+      else if (meta.courtType === 'indoor')
+        tags.push({ id: 'indoor', label: t('tags.indoor') });
+      else tags.push({ id: 'outdoor', label: t('tags.outdoor') });
     }
     if ('surface' in meta && meta.surface && group.sport === 'tennis') {
-      // Tennis surface: hard/clay/grass
-      tags.push(meta.surface.charAt(0).toUpperCase() + meta.surface.slice(1));
+      // Tennis surface: hard/clay/grass (raw data value falls through)
+      tags.push({
+        id: meta.surface,
+        label: t('tags.surface', { surface: meta.surface }),
+      });
     }
   } else {
-    if (group.indoor) tags.push('Indoor');
+    if (group.indoor) tags.push({ id: 'indoor', label: t('tags.indoor') });
   }
 
   if (
     group.surface &&
     group.surface !== 'artificial' &&
     group.surface !== 'unknown' &&
-    !tags.some((t) => t.toLowerCase() === group.surface.toLowerCase())
+    !tags.some((tg) => tg.id.toLowerCase() === group.surface.toLowerCase())
   )
-    tags.push(group.surface.toUpperCase());
+    tags.push({ id: group.surface, label: group.surface.toUpperCase() });
   if (firstSlot?.durationOptions && firstSlot.durationOptions.length > 1) {
     const durations = firstSlot.durationOptions
       .map((d) => `${d.duration}`)
       .join('/');
-    tags.push(`${durations} min`);
+    tags.push({
+      id: `durations-${durations}`,
+      label: t('tags.durations', { durations }),
+    });
   }
 
   // Court names summary
   const uniqueCourts = [...new Set(group.courtNames.filter(Boolean))];
   const courtSummary =
     uniqueCourts.length > 3
-      ? `${uniqueCourts.length} courts`
+      ? t('courtsCount', { count: uniqueCourts.length })
       : uniqueCourts.length > 0
         ? uniqueCourts.slice(0, 2).join(', ')
         : '';
@@ -161,23 +186,23 @@ export default function VenueCard({ group, onBook }: VenueCardProps) {
           </div>
         </div>
 
-        <div className="shrink-0 text-right">
+        <div className="shrink-0 text-end">
           {group.cheapest > 0 ? (
             <>
               <span className="text-lg font-bold text-timberwolf">
-                £{(group.cheapest / 100).toFixed(0)}
+                {formatPrice(group.cheapest)}
                 {group.mostExpensive > group.cheapest && (
                   <span className="text-sm font-medium text-ink-muted">
-                    –£{(group.mostExpensive / 100).toFixed(0)}
+                    –{formatPrice(group.mostExpensive)}
                   </span>
                 )}
               </span>
-              <span className="ml-0.5 text-xs text-ink-muted">
+              <span className="ms-0.5 text-xs text-ink-muted">
                 {priceLabel}
               </span>
             </>
           ) : (
-            <span className="text-xs text-ink-muted">Price on site</span>
+            <span className="text-xs text-ink-muted">{t('priceOnSite')}</span>
           )}
         </div>
       </div>
@@ -187,19 +212,19 @@ export default function VenueCard({ group, onBook }: VenueCardProps) {
         <div className="mt-1.5 flex flex-wrap items-center gap-1">
           {tags.map((tag) => (
             <span
-              key={tag}
+              key={tag.id}
               className={`rounded-md px-2 py-0.5 text-[11px] font-medium ${
-                tag === 'DROP-IN'
+                tag.id === 'drop_in'
                   ? 'bg-[rgba(224,173,98,0.15)] text-[rgb(224,173,98)]'
                   : 'bg-[rgba(214,213,201,0.06)] text-ink-muted'
               }`}
             >
-              {tag}
+              {tag.label}
             </span>
           ))}
           {spotsLeft !== null && spotsLeft > 0 && (
             <span className="rounded-md bg-[rgba(224,173,98,0.15)] px-2 py-0.5 text-[11px] font-medium text-[rgb(224,173,98)]">
-              {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} left
+              {t('spotsLeft', { count: spotsLeft })}
             </span>
           )}
         </div>

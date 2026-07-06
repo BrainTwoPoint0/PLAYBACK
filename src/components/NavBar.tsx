@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Link } from '@/i18n/navigation';
 import Image from 'next/image';
 import { usePathname } from '@/i18n/navigation';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import {
   AnimatePresence,
   LayoutGroup,
@@ -11,57 +12,49 @@ import {
   useReducedMotion,
 } from 'motion/react';
 import { ArrowUpRight, LogOut, Menu, UserRound, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@braintwopoint0/playback-commons/auth';
 import { cn } from '@/lib/utils';
 
-type NavItem = {
+type NavItemConfig = {
+  key: string;
   href: string;
-  label: string;
-  description?: string;
   match?: string;
   external?: boolean;
   badge?: 'live' | 'new';
 };
 
-const navItems: NavItem[] = [
+type NavItem = NavItemConfig & {
+  label: string;
+  description: string;
+};
+
+const NAV_ITEM_CONFIG: NavItemConfig[] = [
+  { key: 'forClubs', href: '/#audiences', match: '/#audiences' },
+  { key: 'academy', href: '/academy', match: '/academy' },
+  { key: 'tournaments', href: '/tournament', match: '/tournament' },
   {
-    href: '/#audiences',
-    label: 'For clubs',
-    description: 'How your academy joins the Network.',
-    match: '/#audiences',
-  },
-  {
-    href: '/academy',
-    label: 'Academy',
-    description: 'Match footage, AI highlights, player profiles.',
-    match: '/academy',
-  },
-  {
-    href: '/tournament',
-    label: 'Tournaments',
-    description: 'AI capture and broadcast for every fixture.',
-    match: '/tournament',
-  },
-  {
+    key: 'bookToPlay',
     href: '/playscanner',
-    label: 'Book to PLAY',
-    description: 'Courts, pitches, and studios - bookable in minutes.',
     match: '/playscanner',
     badge: 'live',
   },
-  {
-    href: 'https://playhub.playbacksports.ai',
-    label: 'PLAYHUB',
-    description: 'Match recordings marketplace - stream, subscribe, own.',
-    external: true,
-  },
-  {
-    href: '/press',
-    label: 'News',
-    description: 'Partnerships, wins, and company announcements.',
-    match: '/press',
-  },
+  { key: 'playhub', href: 'https://playhub.playbacksports.ai', external: true },
+  { key: 'news', href: '/press', match: '/press' },
 ];
+
+function useNavItems(): NavItem[] {
+  const t = useTranslations('nav');
+  return React.useMemo(
+    () =>
+      NAV_ITEM_CONFIG.map((config) => ({
+        ...config,
+        label: t(`items.${config.key}.label`),
+        description: t(`items.${config.key}.description`),
+      })),
+    [t]
+  );
+}
 
 const ANNOUNCE_KEY = 'pb_announce_playerdata_2026';
 const ANNOUNCE_HREF = '/press/playback-x-playerdata';
@@ -92,10 +85,11 @@ function useIsActive() {
 }
 
 function Logo({ className }: { className?: string }) {
+  const t = useTranslations('nav');
   return (
     <Link
       href="/"
-      aria-label="PLAYBACK home"
+      aria-label={t('logoAriaLabel')}
       className={cn(
         'inline-flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-timberwolf/60 focus-visible:ring-offset-2 focus-visible:ring-offset-night',
         className
@@ -159,10 +153,13 @@ function NavLink({
     <>
       {item.label}
       {item.external ? (
-        <ArrowUpRight className="h-3 w-3 opacity-70" aria-hidden />
+        <ArrowUpRight
+          className="h-3 w-3 opacity-70 rtl:-scale-x-100"
+          aria-hidden
+        />
       ) : null}
       {item.badge === 'live' ? (
-        <span aria-hidden className="relative ml-1 inline-flex h-1.5 w-1.5">
+        <span aria-hidden className="relative ms-1 inline-flex h-1.5 w-1.5">
           <span className="absolute inline-flex h-full w-full rounded-full bg-[rgb(224,173,98)] opacity-60 animate-ping" />
           <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[rgb(224,173,98)]" />
         </span>
@@ -206,6 +203,7 @@ function AuthActions({
   variant: 'desktop' | 'mobile';
   onNavigate?: () => void;
 }) {
+  const t = useTranslations('nav');
   const { user, loading, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement | null>(null);
@@ -247,7 +245,7 @@ function AuthActions({
             isMobile ? 'w-full h-11' : 'h-9 px-2'
           )}
         >
-          Sign in
+          {t('signIn')}
         </Link>
         <Link
           href="/auth/register"
@@ -260,10 +258,10 @@ function AuthActions({
             isMobile ? 'w-full h-12 px-5 text-[14px]' : 'h-9 px-4'
           )}
         >
-          Get started
+          {t('getStarted')}
           <span
             aria-hidden
-            className="inline-block transition-transform duration-300 motion-reduce:transition-none group-hover:translate-x-0.5"
+            className="inline-block transition-transform duration-300 motion-reduce:transition-none group-hover:translate-x-0.5 rtl:rotate-180"
           >
             →
           </span>
@@ -280,7 +278,7 @@ function AuthActions({
           onClick={onNavigate}
           className="inline-flex items-center justify-center rounded-full h-12 px-5 text-[14px] font-semibold bg-timberwolf text-night w-full shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_1px_2px_rgba(0,0,0,0.35)]"
         >
-          Dashboard
+          {t('dashboard')}
         </Link>
         <button
           type="button"
@@ -290,8 +288,8 @@ function AuthActions({
           }}
           className="inline-flex items-center justify-center gap-2 rounded-full h-11 px-5 text-[14px] text-[rgba(214,213,201,0.72)] border border-line-strong hover:text-timberwolf w-full"
         >
-          <LogOut className="h-4 w-4" aria-hidden />
-          Sign out
+          <LogOut className="h-4 w-4 rtl:-scale-x-100" aria-hidden />
+          {t('signOut')}
         </button>
       </div>
     );
@@ -304,7 +302,7 @@ function AuthActions({
           type="button"
           aria-haspopup="menu"
           aria-expanded={menuOpen}
-          aria-label="Account menu"
+          aria-label={t('accountMenu')}
           onClick={() => setMenuOpen((v) => !v)}
           className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-[rgba(214,213,201,0.2)] text-[rgba(214,213,201,0.72)] hover:text-timberwolf hover:border-timberwolf/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-timberwolf/60 focus-visible:ring-offset-2 focus-visible:ring-offset-night transition-colors"
         >
@@ -318,7 +316,7 @@ function AuthActions({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 4 }}
               transition={{ duration: 0.15, ease: 'easeOut' }}
-              className="absolute right-0 mt-2 w-48 rounded-xl border border-line bg-[rgba(15,21,18,0.95)] backdrop-blur-xl py-1 shadow-[0_1px_0_rgba(255,255,255,0.04)_inset,0_16px_40px_rgba(0,0,0,0.55)]"
+              className="absolute end-0 mt-2 w-48 rounded-xl border border-line bg-[rgba(15,21,18,0.95)] backdrop-blur-xl py-1 shadow-[0_1px_0_rgba(255,255,255,0.04)_inset,0_16px_40px_rgba(0,0,0,0.55)]"
             >
               <Link
                 href="/dashboard"
@@ -326,7 +324,7 @@ function AuthActions({
                 onClick={() => setMenuOpen(false)}
                 className="flex items-center gap-2 px-3 py-2 text-[13px] text-[rgba(214,213,201,0.72)] hover:text-timberwolf hover:bg-surface-2 rounded-md mx-1"
               >
-                Dashboard
+                {t('dashboard')}
               </Link>
               <button
                 type="button"
@@ -335,10 +333,10 @@ function AuthActions({
                   setMenuOpen(false);
                   signOut();
                 }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-[rgba(214,213,201,0.72)] hover:text-timberwolf hover:bg-surface-2 rounded-md mx-1 text-left"
+                className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-[rgba(214,213,201,0.72)] hover:text-timberwolf hover:bg-surface-2 rounded-md mx-1 text-start"
               >
-                <LogOut className="h-4 w-4" aria-hidden />
-                Sign out
+                <LogOut className="h-4 w-4 rtl:-scale-x-100" aria-hidden />
+                {t('signOut')}
               </button>
             </motion.div>
           )}
@@ -348,26 +346,12 @@ function AuthActions({
   );
 }
 
-const MOBILE_GROUPS: { label: string; items: NavItem[] }[] = [
-  {
-    label: 'Solutions',
-    items: navItems.filter((i) =>
-      ['For clubs', 'Academy', 'Tournaments'].includes(i.label)
-    ),
-  },
-  {
-    label: 'Platform',
-    items: navItems.filter((i) =>
-      ['Book to PLAY', 'PLAYHUB', 'News'].includes(i.label)
-    ),
-  },
+const MOBILE_GROUP_CONFIG: { key: string; itemKeys: string[] }[] = [
+  { key: 'solutions', itemKeys: ['forClubs', 'academy', 'tournaments'] },
+  { key: 'platform', itemKeys: ['bookToPlay', 'playhub', 'news'] },
 ];
 
-const TRUST_STATS = [
-  { value: '75k+', label: 'Players' },
-  { value: '25+', label: 'Clubs' },
-  { value: '10+', label: 'Countries' },
-];
+const TRUST_STAT_KEYS = ['players', 'clubs', 'countries'] as const;
 
 function MobileRow({
   item,
@@ -378,6 +362,7 @@ function MobileRow({
   active: boolean;
   onClose: () => void;
 }) {
+  const t = useTranslations('nav');
   return (
     <Link
       href={item.href}
@@ -404,12 +389,12 @@ function MobileRow({
             <>
               <span
                 aria-hidden
-                className="relative inline-flex h-1.5 w-1.5 ml-0.5"
+                className="relative inline-flex h-1.5 w-1.5 ms-0.5"
               >
                 <span className="absolute inline-flex h-full w-full rounded-full bg-[rgb(224,173,98)] opacity-60 animate-ping" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[rgb(224,173,98)] shadow-[0_0_6px_rgba(224,173,98,0.55)]" />
               </span>
-              <span className="sr-only">Live now</span>
+              <span className="sr-only">{t('liveNow')}</span>
             </>
           ) : null}
         </span>
@@ -430,9 +415,9 @@ function MobileRow({
         )}
       >
         {item.external ? (
-          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+          <ArrowUpRight className="h-3.5 w-3.5 rtl:-scale-x-100" aria-hidden />
         ) : (
-          <span>→</span>
+          <span className="inline-block rtl:rotate-180">→</span>
         )}
       </span>
     </Link>
@@ -450,6 +435,8 @@ function MobileTakeover({
   isActive: (item: NavItem) => boolean;
   scrolled: boolean;
 }) {
+  const t = useTranslations('nav');
+  const navItems = useNavItems();
   const reducedMotion = useReducedMotion();
   const dialogRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -485,7 +472,7 @@ function MobileTakeover({
           transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
           role="dialog"
           aria-modal="true"
-          aria-label="Main menu"
+          aria-label={t('mainMenuLabel')}
         >
           <div
             aria-hidden
@@ -505,9 +492,9 @@ function MobileTakeover({
             <Logo />
             <button
               type="button"
-              aria-label="Close menu"
+              aria-label={t('closeMenu')}
               onClick={onClose}
-              className="inline-flex items-center justify-center h-10 w-10 -mr-2 rounded-full text-[rgba(214,213,201,0.72)] hover:text-timberwolf focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-timberwolf/60 focus-visible:ring-offset-2 focus-visible:ring-offset-night transition-colors"
+              className="inline-flex items-center justify-center h-10 w-10 -me-2 rounded-full text-[rgba(214,213,201,0.72)] hover:text-timberwolf focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-timberwolf/60 focus-visible:ring-offset-2 focus-visible:ring-offset-night transition-colors"
             >
               <X className="h-5 w-5" aria-hidden />
             </button>
@@ -523,38 +510,43 @@ function MobileTakeover({
           />
 
           <nav
-            aria-label="Primary mobile"
+            aria-label={t('primaryMobileNavLabel')}
             className="relative flex-1 px-6 pt-4 pb-6 overflow-y-auto"
           >
-            {MOBILE_GROUPS.map((group, groupIdx) => (
-              <motion.section
-                key={group.label}
-                aria-label={group.label}
-                initial={itemInitial}
-                animate={itemAnimate}
-                transition={{
-                  duration: reducedMotion ? 0 : 0.35,
-                  delay: reducedMotion ? 0 : 0.05 + groupIdx * 0.06,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                className={cn(groupIdx > 0 && 'mt-6')}
-              >
-                <h2 className="text-[10px] uppercase tracking-[0.22em] font-semibold text-[rgba(214,213,201,0.42)] mb-1 px-0.5">
-                  {group.label}
-                </h2>
-                <ul className="flex flex-col">
-                  {group.items.map((item) => (
-                    <li key={item.label}>
-                      <MobileRow
-                        item={item}
-                        active={isActive(item)}
-                        onClose={onClose}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </motion.section>
-            ))}
+            {MOBILE_GROUP_CONFIG.map((group, groupIdx) => {
+              const groupLabel = t(`groups.${group.key}`);
+              return (
+                <motion.section
+                  key={group.key}
+                  aria-label={groupLabel}
+                  initial={itemInitial}
+                  animate={itemAnimate}
+                  transition={{
+                    duration: reducedMotion ? 0 : 0.35,
+                    delay: reducedMotion ? 0 : 0.05 + groupIdx * 0.06,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  className={cn(groupIdx > 0 && 'mt-6')}
+                >
+                  <h2 className="text-[10px] uppercase tracking-[0.22em] font-semibold text-[rgba(214,213,201,0.42)] mb-1 px-0.5">
+                    {groupLabel}
+                  </h2>
+                  <ul className="flex flex-col">
+                    {navItems
+                      .filter((item) => group.itemKeys.includes(item.key))
+                      .map((item) => (
+                        <li key={item.key}>
+                          <MobileRow
+                            item={item}
+                            active={isActive(item)}
+                            onClose={onClose}
+                          />
+                        </li>
+                      ))}
+                  </ul>
+                </motion.section>
+              );
+            })}
 
             <motion.div
               initial={itemInitial}
@@ -567,26 +559,26 @@ function MobileTakeover({
               className="mt-7 pt-6 border-t border-[rgba(214,213,201,0.06)]"
             >
               <dl className="grid grid-cols-3">
-                {TRUST_STATS.map((stat, i) => (
+                {TRUST_STAT_KEYS.map((key, i) => (
                   <div
-                    key={stat.label}
+                    key={key}
                     className={cn(
                       'flex flex-col items-start',
-                      i > 0 && 'pl-4 border-l border-[rgba(214,213,201,0.08)]',
-                      i < TRUST_STATS.length - 1 && 'pr-4'
+                      i > 0 && 'ps-4 border-s border-[rgba(214,213,201,0.08)]',
+                      i < TRUST_STAT_KEYS.length - 1 && 'pe-4'
                     )}
                   >
                     <dd className="text-[20px] font-semibold text-timberwolf tabular-nums tracking-[-0.015em] leading-none">
-                      {stat.value}
+                      {t(`stats.${key}.value`)}
                     </dd>
                     <dt className="text-[10px] uppercase tracking-[0.18em] text-[rgba(214,213,201,0.5)] mt-2">
-                      {stat.label}
+                      {t(`stats.${key}.label`)}
                     </dt>
                   </div>
                 ))}
               </dl>
               <p className="mt-3 text-[11px] text-[rgba(214,213,201,0.4)] tracking-[-0.005em]">
-                Trusted by the PLAYBACK Network.
+                {t('trustedBy')}
               </p>
             </motion.div>
           </nav>
@@ -608,7 +600,7 @@ function MobileTakeover({
           >
             <AuthActions variant="mobile" onNavigate={onClose} />
             <p className="mt-5 text-center text-[10px] uppercase tracking-[0.3em] text-[rgba(214,213,201,0.3)]">
-              You PLAY. We BACK.
+              {t('tagline')}
             </p>
           </motion.div>
         </motion.div>
@@ -618,6 +610,7 @@ function MobileTakeover({
 }
 
 function AnnouncementBar() {
+  const t = useTranslations('nav');
   const [mounted, setMounted] = React.useState(false);
   const [dismissed, setDismissed] = React.useState(false);
 
@@ -660,7 +653,7 @@ function AnnouncementBar() {
   return (
     <div
       role="region"
-      aria-label="Site announcement"
+      aria-label={t('announcement.regionLabel')}
       className="sticky top-0 z-[70] overflow-hidden isolate"
     >
       <div
@@ -705,7 +698,7 @@ function AnnouncementBar() {
           </span>
 
           <span className="hidden md:inline text-[10px] uppercase tracking-[0.22em] font-semibold text-timberwolf flex-shrink-0">
-            New partnership
+            {t('announcement.eyebrow')}
           </span>
 
           <span
@@ -715,7 +708,7 @@ function AnnouncementBar() {
 
           <span className="min-w-0 flex items-baseline gap-1.5 text-[12px] md:text-[12.5px] leading-none text-[rgba(214,213,201,0.78)] group-hover/announce:text-timberwolf transition-colors">
             <span className="font-semibold text-timberwolf truncate tracking-[-0.005em]">
-              PLAYBACK &times; PlayerData
+              {t('announcement.title')}
             </span>
             <span
               aria-hidden
@@ -724,7 +717,7 @@ function AnnouncementBar() {
               -
             </span>
             <span className="hidden sm:inline truncate tracking-[-0.005em]">
-              Elite GPS tracking, now standard for every Academy player.
+              {t('announcement.description')}
             </span>
           </span>
 
@@ -732,8 +725,8 @@ function AnnouncementBar() {
             aria-hidden
             className="hidden sm:inline-flex items-center gap-1 whitespace-nowrap text-[12px] font-medium text-timberwolf flex-shrink-0 opacity-0 -translate-x-1 group-hover/announce:opacity-100 group-hover/announce:translate-x-0 transition-[opacity,transform] duration-250 ease-[cubic-bezier(0.32,0.72,0,1)]"
           >
-            Read
-            <span className="inline-block transition-transform duration-250 group-hover/announce:translate-x-0.5">
+            {t('announcement.readCta')}
+            <span className="inline-block transition-transform duration-250 group-hover/announce:translate-x-0.5 rtl:rotate-180">
               →
             </span>
           </span>
@@ -741,9 +734,9 @@ function AnnouncementBar() {
 
         <button
           type="button"
-          aria-label="Dismiss announcement"
+          aria-label={t('announcement.dismiss')}
           onClick={onDismiss}
-          className="flex-shrink-0 inline-flex items-center justify-center h-11 w-11 -mr-2 rounded-full text-[rgba(214,213,201,0.45)] hover:text-timberwolf hover:bg-[rgba(214,213,201,0.08)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-timberwolf/60"
+          className="flex-shrink-0 inline-flex items-center justify-center h-11 w-11 -me-2 rounded-full text-[rgba(214,213,201,0.45)] hover:text-timberwolf hover:bg-[rgba(214,213,201,0.08)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-timberwolf/60"
         >
           <X className="h-3 w-3" aria-hidden />
         </button>
@@ -753,6 +746,8 @@ function AnnouncementBar() {
 }
 
 export default function NavBar() {
+  const t = useTranslations('nav');
+  const navItems = useNavItems();
   const scrolled = useScrolled(8);
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const isActive = useIsActive();
@@ -761,9 +756,9 @@ export default function NavBar() {
     <>
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[70] focus:rounded-md focus:bg-timberwolf focus:text-night focus:px-3 focus:py-2 focus:text-[13px] focus:font-medium"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:start-2 focus:z-[70] focus:rounded-md focus:bg-timberwolf focus:text-night focus:px-3 focus:py-2 focus:text-[13px] focus:font-medium"
       >
-        Skip to content
+        {t('skipToContent')}
       </a>
 
       <AnnouncementBar />
@@ -785,11 +780,11 @@ export default function NavBar() {
         >
           <div className="flex items-center gap-10">
             <Logo />
-            <nav aria-label="Primary" className="hidden md:block">
+            <nav aria-label={t('primaryNavLabel')} className="hidden md:block">
               <LayoutGroup id="primary-nav">
                 <ul className="flex items-center gap-6">
                   {navItems.map((item) => (
-                    <li key={item.label} className="group relative">
+                    <li key={item.key} className="group relative">
                       <NavLink item={item} active={isActive(item)} />
                       {item.description && !item.external ? (
                         <HoverPanel description={item.description} />
@@ -800,18 +795,24 @@ export default function NavBar() {
               </LayoutGroup>
             </nav>
           </div>
-          <div className="hidden md:flex items-center">
+          <div className="hidden md:flex items-center gap-5">
+            <LanguageSwitcher />
             <AuthActions variant="desktop" />
           </div>
-          <button
-            type="button"
-            aria-label="Open menu"
-            aria-expanded={mobileOpen}
-            onClick={() => setMobileOpen(true)}
-            className="md:hidden inline-flex items-center justify-center h-10 w-10 -mr-2 rounded-full text-[rgba(214,213,201,0.72)] hover:text-timberwolf focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-timberwolf/60 focus-visible:ring-offset-2 focus-visible:ring-offset-night"
-          >
-            <Menu className="h-5 w-5" aria-hidden />
-          </button>
+          {/* Mobile: switcher lives in the top bar (not the drawer) so
+              language is reachable without opening the menu. */}
+          <div className="md:hidden flex items-center gap-1">
+            <LanguageSwitcher className="px-2 py-2" />
+            <button
+              type="button"
+              aria-label={t('openMenu')}
+              aria-expanded={mobileOpen}
+              onClick={() => setMobileOpen(true)}
+              className="inline-flex items-center justify-center h-10 w-10 -me-2 rounded-full text-[rgba(214,213,201,0.72)] hover:text-timberwolf focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-timberwolf/60 focus-visible:ring-offset-2 focus-visible:ring-offset-night"
+            >
+              <Menu className="h-5 w-5" aria-hidden />
+            </button>
+          </div>
         </div>
       </header>
 

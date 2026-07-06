@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useTranslations, useFormatter } from 'next-intl';
 import {
   Button,
   Card,
@@ -43,7 +44,18 @@ export default function FilterPanel({
   searchResults,
   className = '',
 }: FilterPanelProps) {
+  const t = useTranslations('playscanner.filters');
+  const format = useFormatter();
   const [isOpen, setIsOpen] = useState(false);
+
+  const currency = searchResults[0]?.currency ?? 'GBP';
+  const formatPrice = (pence: number) =>
+    format.number(pence / 100, {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 0,
+      numberingSystem: 'latn',
+    });
 
   const updateFilter = <K extends keyof FilterState>(
     key: K,
@@ -101,11 +113,11 @@ export default function FilterPanel({
             className="w-full justify-between h-12"
             type="button"
           >
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
               <SlidersHorizontalIcon className="h-4 w-4" />
-              <span>Filters</span>
+              <span>{t('title')}</span>
               {hasActiveFilters() && (
-                <Badge variant="secondary" className="ml-2">
+                <Badge variant="secondary" className="ms-2">
                   {getActiveFilterCount()}
                 </Badge>
               )}
@@ -120,7 +132,7 @@ export default function FilterPanel({
           <Card>
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Filter Options</CardTitle>
+                <CardTitle className="text-lg">{t('filterOptions')}</CardTitle>
                 {hasActiveFilters() && (
                   <Button
                     variant="ghost"
@@ -128,8 +140,8 @@ export default function FilterPanel({
                     onClick={clearFilters}
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    <XIcon className="h-4 w-4 mr-1" />
-                    Clear All
+                    <XIcon className="h-4 w-4 me-1" />
+                    {t('clearAll')}
                   </Button>
                 )}
               </div>
@@ -138,7 +150,9 @@ export default function FilterPanel({
               {/* Provider Filters */}
               {Object.keys(providerCounts).length > 1 && (
                 <div className="space-y-3">
-                  <Label className="text-sm font-medium">Providers</Label>
+                  <Label className="text-sm font-medium">
+                    {t('providers')}
+                  </Label>
                   <div className="flex flex-wrap gap-2">
                     {Object.entries(providerCounts).map(([provider, count]) => {
                       const config = PROVIDER_CONFIG[provider] || {
@@ -224,7 +238,7 @@ export default function FilterPanel({
       {hasActiveFilters() && (
         <div className="mt-4 space-y-2">
           <div className="text-sm font-medium text-muted-foreground">
-            Active Filters:
+            {t('activeFilters')}
           </div>
           <div className="flex flex-wrap gap-2">
             {filters.selectedProviders &&
@@ -233,7 +247,9 @@ export default function FilterPanel({
                   {filters.selectedProviders.length === 1
                     ? PROVIDER_CONFIG[filters.selectedProviders[0]]
                         ?.displayName || filters.selectedProviders[0]
-                    : `${filters.selectedProviders.length} providers`}
+                    : t('providersCount', {
+                        count: filters.selectedProviders.length,
+                      })}
                   <Button
                     variant="ghost"
                     size="sm"
@@ -248,7 +264,7 @@ export default function FilterPanel({
               <Badge variant="secondary" className="gap-1">
                 {filters.selectedVenues.length === 1
                   ? filters.selectedVenues[0]
-                  : `${filters.selectedVenues.length} venues`}
+                  : t('venuesCount', { count: filters.selectedVenues.length })}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -261,7 +277,10 @@ export default function FilterPanel({
             )}
             {filters.timeRange && (
               <Badge variant="secondary" className="gap-1">
-                {filters.timeRange.start} - {filters.timeRange.end}
+                {/* dir="ltr" pins "18:00 - 21:00" so times don't reorder in RTL */}
+                <span dir="ltr">
+                  {filters.timeRange.start} - {filters.timeRange.end}
+                </span>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -274,8 +293,8 @@ export default function FilterPanel({
             )}
             {filters.priceRange && (
               <Badge variant="secondary" className="gap-1">
-                £{filters.priceRange.min / 100} - £
-                {filters.priceRange.max / 100}
+                {formatPrice(filters.priceRange.min)} -{' '}
+                {formatPrice(filters.priceRange.max)}
                 <Button
                   variant="ghost"
                   size="sm"

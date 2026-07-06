@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useFormatter, useTranslations } from 'next-intl';
 import {
   useAuth,
   useProfile,
@@ -112,12 +113,13 @@ function SocialLink({
     >
       <Icon className="h-5 w-5" />
       <span
+        dir="ltr"
         className="text-sm font-medium"
         style={{ color: 'var(--timberwolf)' }}
       >
         @{username}
       </span>
-      <ExternalLink className="h-4 w-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <ExternalLink className="h-4 w-4 ms-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 rtl:-scale-x-100" />
     </a>
   );
 }
@@ -133,6 +135,8 @@ function CareerEntryForm({
   ) => Promise<{ success: boolean; error?: string }>;
   onCancel: () => void;
 }) {
+  const t = useTranslations('dashboard.careerForm');
+  const tc = useTranslations('dashboard.common');
   const [orgName, setOrgName] = useState(initial?.organization_name || '');
   const [role, setRole] = useState(initial?.role || '');
   const [startDate, setStartDate] = useState(initial?.start_date || '');
@@ -144,7 +148,7 @@ function CareerEntryForm({
 
   const handleSubmit = async () => {
     if (!orgName.trim()) {
-      setError('Organization name is required');
+      setError(t('errorOrgRequired'));
       return;
     }
     setSaving(true);
@@ -159,7 +163,7 @@ function CareerEntryForm({
     });
     setSaving(false);
     if (!result.success) {
-      setError(result.error || 'Failed to save');
+      setError(result.error || tc('saveFailed'));
     }
   };
 
@@ -178,49 +182,49 @@ function CareerEntryForm({
       )}
       <div className="space-y-2">
         <Label htmlFor="career-org" className="text-[var(--timberwolf)]">
-          Organization <span className="text-red-400">*</span>
+          {t('organization')} <span className="text-red-400">*</span>
         </Label>
         <Input
           id="career-org"
           value={orgName}
           onChange={(e) => setOrgName(e.target.value)}
           maxLength={255}
-          placeholder="e.g. Chelsea FC Academy"
+          placeholder={t('organizationPlaceholder')}
         />
       </div>
       <div className="space-y-2">
         <Label htmlFor="career-role" className="text-[var(--timberwolf)]">
-          Role
+          {t('role')}
         </Label>
         <Input
           id="career-role"
           value={role}
           onChange={(e) => setRole(e.target.value)}
           maxLength={100}
-          placeholder="e.g. Midfielder, U18 Captain"
+          placeholder={t('rolePlaceholder')}
         />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="career-start" className="text-[var(--timberwolf)]">
-            Start Date
+            {t('startDate')}
           </Label>
           <DatePicker
             id="career-start"
             value={startDate}
             onChange={setStartDate}
-            placeholder="Select date"
+            placeholder={tc('selectDate')}
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor="career-end" className="text-[var(--timberwolf)]">
-            End Date
+            {t('endDate')}
           </Label>
           <DatePicker
             id="career-end"
             value={isCurrent ? '' : endDate}
             onChange={setEndDate}
-            placeholder={isCurrent ? 'Currently here' : 'Select date'}
+            placeholder={isCurrent ? t('currentlyHere') : tc('selectDate')}
             min={startDate || undefined}
           />
         </div>
@@ -230,11 +234,13 @@ function CareerEntryForm({
           checked={isCurrent}
           onCheckedChange={(c) => setIsCurrent(c === true)}
         />
-        <span className="text-sm text-[var(--timberwolf)]">Currently here</span>
+        <span className="text-sm text-[var(--timberwolf)]">
+          {t('currentlyHere')}
+        </span>
       </label>
       <div className="space-y-2">
         <Label htmlFor="career-desc" className="text-[var(--timberwolf)]">
-          Description
+          {t('description')}
         </Label>
         <Textarea
           id="career-desc"
@@ -242,7 +248,7 @@ function CareerEntryForm({
           onChange={(e) => setDescription(e.target.value)}
           maxLength={500}
           rows={2}
-          placeholder="Brief description…"
+          placeholder={t('descriptionPlaceholder')}
         />
       </div>
       <div className="flex justify-end gap-2 pt-2">
@@ -253,7 +259,7 @@ function CareerEntryForm({
           onClick={onCancel}
           className="text-[var(--ash-grey)] hover:text-[var(--timberwolf)]"
         >
-          Cancel
+          {tc('cancel')}
         </Button>
         <Button
           type="submit"
@@ -261,7 +267,7 @@ function CareerEntryForm({
           disabled={saving}
           className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white"
         >
-          {saving ? <LoadingSpinner size="sm" /> : 'Save'}
+          {saving ? <LoadingSpinner size="sm" /> : tc('save')}
         </Button>
       </div>
     </form>
@@ -279,6 +285,8 @@ function EducationEntryForm({
   ) => Promise<{ success: boolean; error?: string }>;
   onCancel: () => void;
 }) {
+  const t = useTranslations('dashboard.educationForm');
+  const tc = useTranslations('dashboard.common');
   const [institutionName, setInstitutionName] = useState(
     initial?.institution_name || ''
   );
@@ -298,7 +306,7 @@ function EducationEntryForm({
 
   const handleSubmit = async () => {
     if (!institutionName.trim()) {
-      setError('Institution name is required');
+      setError(t('errorInstitutionRequired'));
       return;
     }
     setSaving(true);
@@ -315,7 +323,7 @@ function EducationEntryForm({
     });
     setSaving(false);
     if (!result.success) {
-      setError(result.error || 'Failed to save');
+      setError(result.error || tc('saveFailed'));
     }
   };
 
@@ -334,83 +342,83 @@ function EducationEntryForm({
       )}
       <div className="space-y-2">
         <Label htmlFor="edu-inst" className="text-[var(--timberwolf)]">
-          Institution <span className="text-red-400">*</span>
+          {t('institution')} <span className="text-red-400">*</span>
         </Label>
         <Input
           id="edu-inst"
           value={institutionName}
           onChange={(e) => setInstitutionName(e.target.value)}
           maxLength={255}
-          placeholder="e.g. University of Manchester"
+          placeholder={t('institutionPlaceholder')}
         />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="edu-type" className="text-[var(--timberwolf)]">
-            Type
+            {t('type')}
           </Label>
           <Select
             value={institutionType || undefined}
             onValueChange={(v) => setInstitutionType(v === '__none__' ? '' : v)}
           >
             <SelectTrigger id="edu-type" className="w-full">
-              <SelectValue placeholder="Select type" />
+              <SelectValue placeholder={t('selectType')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="school">School</SelectItem>
-              <SelectItem value="college">College</SelectItem>
-              <SelectItem value="university">University</SelectItem>
-              <SelectItem value="academy">Academy</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
+              <SelectItem value="school">{t('typeSchool')}</SelectItem>
+              <SelectItem value="college">{t('typeCollege')}</SelectItem>
+              <SelectItem value="university">{t('typeUniversity')}</SelectItem>
+              <SelectItem value="academy">{t('typeAcademy')}</SelectItem>
+              <SelectItem value="other">{t('typeOther')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
           <Label htmlFor="edu-degree" className="text-[var(--timberwolf)]">
-            Degree/Program
+            {t('degree')}
           </Label>
           <Input
             id="edu-degree"
             value={degree}
             onChange={(e) => setDegree(e.target.value)}
             maxLength={255}
-            placeholder="e.g. BSc"
+            placeholder={t('degreePlaceholder')}
           />
         </div>
       </div>
       <div className="space-y-2">
         <Label htmlFor="edu-field" className="text-[var(--timberwolf)]">
-          Field of Study
+          {t('fieldOfStudy')}
         </Label>
         <Input
           id="edu-field"
           value={fieldOfStudy}
           onChange={(e) => setFieldOfStudy(e.target.value)}
           maxLength={255}
-          placeholder="e.g. Sport Science"
+          placeholder={t('fieldOfStudyPlaceholder')}
         />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="edu-start" className="text-[var(--timberwolf)]">
-            Start Date
+            {t('startDate')}
           </Label>
           <DatePicker
             id="edu-start"
             value={startDate}
             onChange={setStartDate}
-            placeholder="Select date"
+            placeholder={tc('selectDate')}
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor="edu-end" className="text-[var(--timberwolf)]">
-            End Date
+            {t('endDate')}
           </Label>
           <DatePicker
             id="edu-end"
             value={isCurrent ? '' : endDate}
             onChange={setEndDate}
-            placeholder={isCurrent ? 'Currently attending' : 'Select date'}
+            placeholder={isCurrent ? t('currentlyAttending') : tc('selectDate')}
             min={startDate || undefined}
           />
         </div>
@@ -421,7 +429,7 @@ function EducationEntryForm({
           onCheckedChange={(c) => setIsCurrent(c === true)}
         />
         <span className="text-sm text-[var(--timberwolf)]">
-          Currently attending
+          {t('currentlyAttending')}
         </span>
       </label>
       <div className="flex justify-end gap-2 pt-2">
@@ -432,7 +440,7 @@ function EducationEntryForm({
           onClick={onCancel}
           className="text-[var(--ash-grey)] hover:text-[var(--timberwolf)]"
         >
-          Cancel
+          {tc('cancel')}
         </Button>
         <Button
           type="submit"
@@ -440,7 +448,7 @@ function EducationEntryForm({
           disabled={saving}
           className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white"
         >
-          {saving ? <LoadingSpinner size="sm" /> : 'Save'}
+          {saving ? <LoadingSpinner size="sm" /> : tc('save')}
         </Button>
       </div>
     </form>
@@ -448,6 +456,8 @@ function EducationEntryForm({
 }
 
 function DashboardContent() {
+  const t = useTranslations('dashboard');
+  const format = useFormatter();
   const { user, signOut, loading } = useAuth();
   const { profile, refreshProfile } = useProfile();
   const onboardingStatus = useOnboardingStatus();
@@ -1001,7 +1011,7 @@ function DashboardContent() {
           <DashboardTopBar
             username={profile.data?.username ?? ''}
             fullName={profile.data?.full_name ?? null}
-            firstName={profile.data?.full_name?.split(' ')[0] || 'there'}
+            firstName={profile.data?.full_name?.split(' ')[0] || ''}
             avatarUrl={profile.data?.avatar_url ?? null}
             verifications={profileVerifications.map((v) => ({
               id: v.id,
@@ -1013,7 +1023,7 @@ function DashboardContent() {
                     {
                       variantId: playerVariantId,
                       moduleSlug: playerModuleSlug,
-                      label: 'Player',
+                      label: t('page.playerModuleLabel'),
                       visibility: playerVariantVisibility,
                     },
                   ]
@@ -1037,12 +1047,12 @@ function DashboardContent() {
           {/* Match clips — connective-tissue lede */}
           <FadeIn delay={100}>
             {attributedClips.length === 0 ? (
-              <DashboardSection title="Match clips">
+              <DashboardSection title={t('page.matchClips')}>
                 <DashboardEmptyState hasAnyVariant={hasPlayerVariant} />
               </DashboardSection>
             ) : (
               <DashboardSection
-                title="Match clips"
+                title={t('page.matchClips')}
                 count={attributedClips.length}
               >
                 <DashboardFeed
@@ -1064,7 +1074,7 @@ function DashboardContent() {
                         variantId: playerVariantId,
                         moduleSlug: playerModuleSlug,
                         variantType: 'player',
-                        label: 'Player profile',
+                        label: t('page.playerProfileLabel'),
                         visibility: playerVariantVisibility,
                         isActive: true,
                       },
@@ -1110,9 +1120,9 @@ function DashboardContent() {
       <Dialog open={showPlayerForm} onOpenChange={setShowPlayerForm}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Create Player Profile</DialogTitle>
+            <DialogTitle>{t('page.createPlayerTitle')}</DialogTitle>
             <DialogDescription>
-              Set up your football player profile to showcase your skills.
+              {t('page.createPlayerDescription')}
             </DialogDescription>
           </DialogHeader>
           <PlayerProfileForm
@@ -1132,8 +1142,8 @@ function DashboardContent() {
       <EditProfileSheet
         open={showEditForm}
         onOpenChange={setShowEditForm}
-        title="Edit profile"
-        description="Update your profile details across modules."
+        title={t('page.editProfileTitle')}
+        description={t('page.editProfileDescription')}
       >
         {profile.data && footballData && (
           <ProfileEditForm
@@ -1171,9 +1181,9 @@ function DashboardContent() {
       >
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Upload Highlight</DialogTitle>
+            <DialogTitle>{t('page.uploadHighlightTitle')}</DialogTitle>
             <DialogDescription>
-              Add a video highlight to your profile.
+              {t('page.uploadHighlightDescription')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -1182,13 +1192,13 @@ function DashboardContent() {
                 className="text-sm font-medium"
                 style={{ color: 'var(--timberwolf)' }}
               >
-                Title *
+                {t('page.uploadFieldTitle')}
               </label>
               <input
                 type="text"
                 value={uploadTitle}
                 onChange={(e) => setUploadTitle(e.target.value)}
-                placeholder="e.g. Match Highlights vs FC United"
+                placeholder={t('page.uploadTitlePlaceholder')}
                 maxLength={100}
                 className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-sm focus:outline-none focus:border-green-400"
                 style={{ color: 'var(--timberwolf)' }}
@@ -1199,12 +1209,12 @@ function DashboardContent() {
                 className="text-sm font-medium"
                 style={{ color: 'var(--timberwolf)' }}
               >
-                Description
+                {t('page.uploadFieldDescription')}
               </label>
               <textarea
                 value={uploadDescription}
                 onChange={(e) => setUploadDescription(e.target.value)}
-                placeholder="Optional description..."
+                placeholder={t('page.uploadDescriptionPlaceholder')}
                 maxLength={500}
                 rows={2}
                 className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-sm focus:outline-none focus:border-green-400 resize-none"
@@ -1232,7 +1242,7 @@ function DashboardContent() {
                 className="border-neutral-600"
                 style={{ color: 'var(--ash-grey)' }}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button
                 size="sm"
@@ -1245,10 +1255,10 @@ function DashboardContent() {
                 {savingHighlight ? (
                   <>
                     <LoadingSpinner size="sm" />
-                    <span className="ml-2">Saving...</span>
+                    <span className="ms-2">{t('common.saving')}</span>
                   </>
                 ) : (
-                  'Save Highlight'
+                  t('page.saveHighlight')
                 )}
               </Button>
             </div>
@@ -1267,10 +1277,12 @@ function DashboardContent() {
         <DialogContent className="max-w-lg sm:max-w-xl">
           <DialogHeader className="pb-2 mb-2 border-b border-neutral-800/50">
             <DialogTitle className="text-[var(--timberwolf)]">
-              {editingCareerEntry ? 'Edit Career Entry' : 'Add Career Entry'}
+              {editingCareerEntry
+                ? t('page.careerDialogTitleEdit')
+                : t('page.careerDialogTitleAdd')}
             </DialogTitle>
             <DialogDescription className="text-[var(--ash-grey)]">
-              Add your clubs, academies, or team history.
+              {t('page.careerDialogDescription')}
             </DialogDescription>
           </DialogHeader>
           <CareerEntryForm
@@ -1309,11 +1321,11 @@ function DashboardContent() {
           <DialogHeader className="pb-2 mb-2 border-b border-neutral-800/50">
             <DialogTitle className="text-[var(--timberwolf)]">
               {editingEducationEntry
-                ? 'Edit Education Entry'
-                : 'Add Education Entry'}
+                ? t('page.educationDialogTitleEdit')
+                : t('page.educationDialogTitleAdd')}
             </DialogTitle>
             <DialogDescription className="text-[var(--ash-grey)]">
-              Add your schools, colleges, or courses.
+              {t('page.educationDialogDescription')}
             </DialogDescription>
           </DialogHeader>
           <EducationEntryForm
@@ -1362,9 +1374,9 @@ function DashboardContent() {
       <Dialog open={showPlayhubPicker} onOpenChange={setShowPlayhubPicker}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Import from PLAYHUB</DialogTitle>
+            <DialogTitle>{t('page.importPlayhubTitle')}</DialogTitle>
             <DialogDescription>
-              Add match recordings you have access to as profile highlights.
+              {t('page.importPlayhubDescription')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 max-h-[60vh] overflow-y-auto">
@@ -1379,13 +1391,13 @@ function DashboardContent() {
                   style={{ color: 'var(--ash-grey)' }}
                 />
                 <p className="text-sm" style={{ color: 'var(--ash-grey)' }}>
-                  No recordings available
+                  {t('page.noRecordings')}
                 </p>
                 <p
                   className="text-xs mt-1"
                   style={{ color: 'var(--ash-grey)' }}
                 >
-                  Purchase match recordings on PLAYHUB to import them here.
+                  {t('page.noRecordingsHint')}
                 </p>
               </div>
             ) : (
@@ -1422,21 +1434,38 @@ function DashboardContent() {
                         className="text-sm font-medium truncate"
                         style={{ color: 'var(--timberwolf)' }}
                       >
-                        {rec.title || `${rec.home_team} vs ${rec.away_team}`}
+                        {rec.title ||
+                          t('page.teamsVs', {
+                            homeTeam: rec.home_team,
+                            awayTeam: rec.away_team,
+                          })}
                       </p>
                       <p
                         className="text-xs mt-0.5"
                         style={{ color: 'var(--ash-grey)' }}
                       >
-                        {rec.home_team} vs {rec.away_team}
-                        {rec.match_date &&
-                          ` · ${new Date(rec.match_date).toLocaleDateString()}`}
+                        {(() => {
+                          const d = rec.match_date
+                            ? new Date(rec.match_date)
+                            : null;
+                          const hasDate = !!d && !Number.isNaN(d.getTime());
+                          return hasDate
+                            ? t('page.teamsVsWithDate', {
+                                homeTeam: rec.home_team,
+                                awayTeam: rec.away_team,
+                                date: format.dateTime(d!, 'short'),
+                              })
+                            : t('page.teamsVs', {
+                                homeTeam: rec.home_team,
+                                awayTeam: rec.away_team,
+                              });
+                        })()}
                       </p>
                     </div>
                     {alreadyImported ? (
                       <span className="text-xs text-green-400 flex items-center gap-1 flex-shrink-0">
                         <CheckCircle className="h-3 w-3" />
-                        Added
+                        {t('page.added')}
                       </span>
                     ) : (
                       <Button

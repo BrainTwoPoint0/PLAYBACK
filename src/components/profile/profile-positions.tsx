@@ -1,7 +1,6 @@
-import {
-  FOOTBALL_POSITION_LABELS,
-  type FootballPosition,
-} from '@/lib/profile/constants';
+import { useTranslations } from 'next-intl';
+import { type FootballPosition } from '@/lib/profile/constants';
+import { useFootballPositionLabels } from '@/lib/profile/use-profile-labels';
 
 interface ProfilePositionsProps {
   primaryPosition: string | null;
@@ -12,11 +11,13 @@ export function ProfilePositions({
   primaryPosition,
   secondaryPositions,
 }: ProfilePositionsProps) {
+  const t = useTranslations('profile.positions');
+  const positionLabels = useFootballPositionLabels();
+
   if (!primaryPosition) return null;
 
   const primaryLabel =
-    FOOTBALL_POSITION_LABELS[primaryPosition as FootballPosition] ||
-    primaryPosition;
+    positionLabels[primaryPosition as FootballPosition] || primaryPosition;
 
   return (
     <div className="space-y-3">
@@ -24,7 +25,7 @@ export function ProfilePositions({
         className="text-xs font-semibold uppercase tracking-widest"
         style={{ color: 'var(--ash-grey)' }}
       >
-        Positions
+        {t('title')}
       </h2>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -32,7 +33,11 @@ export function ProfilePositions({
         <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-green-400/10 text-green-400 border border-green-400/20">
           <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
           {primaryLabel}
-          <span className="text-green-400/60 text-xs font-normal ml-1">
+          {/* Position codes (GK, CB…) are LTR abbreviations. */}
+          <span
+            className="text-green-400/60 text-xs font-normal ms-1"
+            dir="ltr"
+          >
             {primaryPosition}
           </span>
         </span>
@@ -40,8 +45,7 @@ export function ProfilePositions({
         {/* Secondary positions */}
         {secondaryPositions &&
           secondaryPositions.map((pos) => {
-            const label =
-              FOOTBALL_POSITION_LABELS[pos as FootballPosition] || pos;
+            const label = positionLabels[pos as FootballPosition] || pos;
             return (
               <span
                 key={pos}
@@ -49,7 +53,9 @@ export function ProfilePositions({
                 style={{ color: 'var(--ash-grey)' }}
               >
                 {label}
-                <span className="opacity-50 text-xs">{pos}</span>
+                <span className="opacity-50 text-xs" dir="ltr">
+                  {pos}
+                </span>
               </span>
             );
           })}

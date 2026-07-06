@@ -1,15 +1,43 @@
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { HoverEffect } from '@braintwopoint0/playback-commons/ui';
 import SectionTitle from './ui/section-title';
 
 export function TournamentSubscriptions() {
+  const t = useTranslations('tournament.subscriptions');
+  const items = [
+    // Tournament names are data — never translated. Descriptions come from
+    // tournament.subscriptions.items.*.
+    {
+      title: 'Ramadan Youth Cup 2025',
+      description: t('items.ramadan'),
+      link: 'https://buy.stripe.com/28o8Ab5R884Y0QUdR0',
+      logoUrl: '/partners/city.svg',
+    },
+    {
+      title: 'Atomics Tournament',
+      description: t('items.atomics'),
+      link: 'https://buy.stripe.com/14k4jVgvM84Y6be00b',
+      logoUrl: '/partners/atomics.png',
+    },
+    {
+      title: t('items.comingSoonTitle'),
+      description: t('items.comingSoon'),
+      link: '/',
+      logoUrl: '/branding/PB-icon.png',
+    },
+  ];
+
   return (
     <div className="max-w-5xl mx-auto px-8">
-      <SectionTitle title="PLAYBACK Tournament Services" />
-      <HoverEffect items={teams} />
+      <SectionTitle title={t('sectionTitle')} />
+      <HoverEffect items={items} />
       <Link href="https://billing.stripe.com/p/login/cN29D13rV5X84UgdQQ">
         <button className="bg-gradient-to-br border border-neutral-400/[0.5] relative group/btn from-[var(--night)] to-[var(--night)] block bg-[var(--night)] w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]">
-          Billing Management &rarr;
+          {t('billing')}{' '}
+          <span aria-hidden className="inline-block rtl:-scale-x-100">
+            →
+          </span>
           <BottomGradient />
         </button>
       </Link>
@@ -18,29 +46,6 @@ export function TournamentSubscriptions() {
     </div>
   );
 }
-export const teams = [
-  {
-    title: 'Ramadan Youth Cup 2025',
-    description:
-      'Access your tournament footage and data with AI-deteted highlights and AutoFollow technology.',
-    link: 'https://buy.stripe.com/28o8Ab5R884Y0QUdR0',
-    logoUrl: '/partners/city.svg',
-  },
-  {
-    title: 'Atomics Tournament',
-    description:
-      'Get a personalised folder with your tournament footage and data with AI-deteted highlights and AutoFollow technology.',
-    link: 'https://buy.stripe.com/14k4jVgvM84Y6be00b',
-    logoUrl: '/partners/atomics.png',
-  },
-  {
-    title: 'Coming Soon',
-    description:
-      'The PLAYBACK team is continuously working on POWERING new tournaments. If you would like to be part of the PLAYBACK ecosystem, REACH OUT!',
-    link: '/',
-    logoUrl: '/branding/PB-icon.png',
-  },
-];
 
 const BottomGradient = () => {
   return (
