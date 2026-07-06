@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { urlForImage } from '@/sanity/lib/image';
 import { formatDateNumeric } from '@/lib/utils';
 import { motion } from 'motion/react';

@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { Film, Receipt, ArrowUpRight } from 'lucide-react';
 import { DashboardSection } from './dashboard-section';
 

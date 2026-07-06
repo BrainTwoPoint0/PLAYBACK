@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@braintwopoint0/playback-commons/auth';
 import { LumaSpin } from '@braintwopoint0/playback-commons/ui';
 

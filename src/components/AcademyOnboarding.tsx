@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import React from 'react';
 import { Timeline } from './ui/timeline';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 
 export function AcademyOnboarding() {
   const data = [

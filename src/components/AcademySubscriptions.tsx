@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { Button, HoverEffect } from '@braintwopoint0/playback-commons/ui';
 import SectionTitle from './ui/section-title';
 

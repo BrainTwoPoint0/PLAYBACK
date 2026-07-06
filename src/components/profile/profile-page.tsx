@@ -10,7 +10,7 @@ import { ProfileCareer } from '@/components/profile/profile-career';
 import { ProfileEducation } from '@/components/profile/profile-education';
 import { ProfileModuleSwitcher } from '@/components/profile/profile-module-switcher';
 import { VerifiedBadge } from '@/components/profile/verified-badge';
-import { ProfileLayout } from '@/app/p/[slug]/profile-layout';
+import { ProfileLayout } from '@/app/[locale]/p/[slug]/profile-layout';
 import { getPublicProfile } from '@/lib/profile/get-public-profile';
 
 interface ProfilePageProps {

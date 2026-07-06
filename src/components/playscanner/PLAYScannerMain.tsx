@@ -7,7 +7,8 @@ import {
   useLayoutEffect,
   useRef,
 } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { motion, useReducedMotion } from 'motion/react';
 import SearchResults from './SearchResults';
 import SportIcon from './SportIcon';

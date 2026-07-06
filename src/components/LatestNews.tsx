@@ -2,7 +2,7 @@
 
 import { BlogPostGrid } from './ui/blog-post-grid';
 import SectionTitle from './ui/section-title';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 
 interface LatestNewsProps {
   posts: Array<{

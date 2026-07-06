@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import type { PublicVariant } from '@/lib/profile/get-public-profile';
 
