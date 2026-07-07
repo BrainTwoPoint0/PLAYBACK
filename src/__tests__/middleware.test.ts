@@ -161,7 +161,8 @@ describe('middleware composition (Supabase + next-intl)', () => {
     const res = await middleware(makeRequest('/ar/dashboard'));
     const location = new URL(res.headers.get('location')!);
     expect(location.pathname).toBe('/ar/auth/login');
-    expect(location.searchParams.get('redirectTo')).toBe('/ar/dashboard');
+    // Bare path: the login page's i18n router re-applies the /ar prefix.
+    expect(location.searchParams.get('redirectTo')).toBe('/dashboard');
   });
 
   it('redirects authenticated users off auth pages within their locale', async () => {

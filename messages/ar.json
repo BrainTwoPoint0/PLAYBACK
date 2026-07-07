@@ -35,8 +35,6 @@
       "paymentsNote": "تُعالج المدفوعات عبر Stripe. بعد إتمام الدفع بنجاح ستتلقى دعوة لتفعيل حسابك في PLAYBACK — ويُربط اشتراكك بالبريد الإلكتروني الذي أدخلته."
     },
     "picker": {
-      "scrollLeft": "تمرير الأندية إلى اليسار",
-      "scrollRight": "تمرير الأندية إلى اليمين",
       "railLabel": "الأندية في {club}",
       "chooseClub": "اختيار {name}",
       "ageGroupsEyebrow": "{name} · الفئات العمرية",
@@ -51,7 +49,9 @@
       "subscribeAriaNested": "الاشتراك في {team} ضمن {subclub} في {club}",
       "subscribeAria": "الاشتراك في {team} لدى {club}",
       "redirecting": "جارٍ التحويل إلى Stripe…",
-      "subscribe": "اشترك"
+      "subscribe": "اشترك",
+      "scrollPrev": "عرض الأندية السابقة",
+      "scrollNext": "عرض المزيد من الأندية"
     },
     "checkout": {
       "invalidSelection": "حدث خلل في اختيار الفريق — يرجى تحديث الصفحة والمحاولة مرة أخرى.",
@@ -189,6 +189,11 @@
           "tooManyAttempts": "محاولات كثيرة. يرجى الانتظار {seconds} ثانية.",
           "unexpected": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
         }
+      },
+      "urlErrors": {
+        "resetLinkInvalid": "رابط إعادة تعيين كلمة المرور غير صالح أو منتهي الصلاحية. اطلب رابطًا جديدًا.",
+        "verificationFailed": "تعذّر التحقق من البريد الإلكتروني. حاول تسجيل الدخول أو اطلب رسالة تحقق جديدة.",
+        "generic": "حدث خطأ ما. حاول تسجيل الدخول."
       }
     },
     "forgotPassword": {

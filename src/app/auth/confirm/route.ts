@@ -38,6 +38,8 @@ export async function GET(request: Request) {
   }
 
   return NextResponse.redirect(
-    `${APP_URL}/auth/login?error=Could not verify reset link`
+    // Fixed code, not free text — the login page maps known codes to
+    // localized copy and never reflects the raw param value.
+    `${APP_URL}/auth/login?error=reset_link_invalid`
   );
 }

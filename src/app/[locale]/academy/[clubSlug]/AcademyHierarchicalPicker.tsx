@@ -76,16 +76,20 @@ export function AcademyHierarchicalPicker({
   // when the rail has already hit the respective edge — chevrons that
   // never do anything are visual debt.
   const railRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [canScrollStart, setCanScrollStart] = useState(false);
+  const [canScrollEnd, setCanScrollEnd] = useState(true);
 
   const recomputeScrollState = useCallback(() => {
     const el = railRef.current;
     if (!el) return;
-    // 1px tolerance — `scrollLeft` can land on a fractional pixel after
-    // a snap and trigger arrow flicker without it.
-    setCanScrollLeft(el.scrollLeft > 1);
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+    // Logical (start/end) rather than physical: in RTL, scrollLeft runs
+    // from 0 to a NEGATIVE max, so the raw value inverts the conditions.
+    // abs() gives distance-from-inline-start in both directions.
+    // 1px tolerance — scroll can land on a fractional pixel after a snap
+    // and trigger arrow flicker without it.
+    const fromStart = Math.abs(el.scrollLeft);
+    setCanScrollStart(fromStart > 1);
+    setCanScrollEnd(fromStart + el.clientWidth < el.scrollWidth - 1);
   }, []);
 
   useEffect(() => {
@@ -97,15 +101,17 @@ export function AcademyHierarchicalPicker({
     return () => window.removeEventListener('resize', recomputeScrollState);
   }, [recomputeScrollState]);
 
-  function scrollByCards(direction: 'left' | 'right') {
+  function scrollByCards(direction: 'start' | 'end') {
     const el = railRef.current;
     if (!el) return;
     // Scroll by ~80% of the visible width so the parent sees a fresh page
     // of cards but a couple of the previously-visible ones stay in view as
     // a continuity anchor. Native scrollBehavior:'smooth' handles easing.
-    const delta = el.clientWidth * 0.8;
+    // scrollBy's `left` is physical: toward-end is +x in LTR, -x in RTL.
+    const rtl = getComputedStyle(el).direction === 'rtl';
+    const towardEnd = el.clientWidth * 0.8 * (rtl ? -1 : 1);
     el.scrollBy({
-      left: direction === 'left' ? -delta : delta,
+      left: direction === 'end' ? towardEnd : -towardEnd,
       behavior: 'smooth',
     });
   }
@@ -168,14 +174,14 @@ export function AcademyHierarchicalPicker({
         {/* Left edge fade — only renders while there's content to the
             left to reveal. `bg-gradient-to-r from-[#0a100d]` matches the
             page background exactly so the fade dissolves into it. */}
-        {canScrollLeft && (
+        {canScrollStart && (
           <div
             aria-hidden
             className="pointer-events-none absolute inset-y-0 start-0 z-10 w-16 bg-gradient-to-r from-[#0a100d] via-[#0a100d]/80 to-transparent rtl:bg-gradient-to-l motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200"
           />
         )}
         {/* Right edge fade — symmetric. */}
-        {canScrollRight && (
+        {canScrollEnd && (
           <div
             aria-hidden
             className="pointer-events-none absolute inset-y-0 end-0 z-10 w-16 bg-gradient-to-l from-[#0a100d] via-[#0a100d]/80 to-transparent rtl:bg-gradient-to-r motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200"
@@ -183,21 +189,21 @@ export function AcademyHierarchicalPicker({
         )}
         {/* Left chevron — hidden when fully scrolled left. Sits above the
             fade overlay (z-20 > z-10). Small, subtle, non-disruptive. */}
-        {canScrollLeft && (
+        {canScrollStart && (
           <button
             type="button"
-            onClick={() => scrollByCards('left')}
-            aria-label={t('scrollLeft')}
+            onClick={() => scrollByCards('start')}
+            aria-label={t('scrollPrev')}
             className="absolute start-2 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center rounded-full border border-[#d6d5c9]/20 bg-[#0a100d]/80 p-2 text-[#d6d5c9] backdrop-blur-sm transition-all hover:border-[#d6d5c9]/50 hover:bg-[#0a100d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6d5c9]/60 md:inline-flex"
           >
             <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
           </button>
         )}
-        {canScrollRight && (
+        {canScrollEnd && (
           <button
             type="button"
-            onClick={() => scrollByCards('right')}
-            aria-label={t('scrollRight')}
+            onClick={() => scrollByCards('end')}
+            aria-label={t('scrollNext')}
             className="absolute end-2 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center rounded-full border border-[#d6d5c9]/20 bg-[#0a100d]/80 p-2 text-[#d6d5c9] backdrop-blur-sm transition-all hover:border-[#d6d5c9]/50 hover:bg-[#0a100d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6d5c9]/60 md:inline-flex"
           >
             <ChevronRight className="h-4 w-4 rtl:rotate-180" />

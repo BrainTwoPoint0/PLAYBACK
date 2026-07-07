@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
 
   // Return the user to an error page with instructions
   return NextResponse.redirect(
-    `${origin}/auth/login?error=${encodeURIComponent('Email verification failed')}`
+    // Fixed code, not free text — see the login page's URL_ERROR_KEYS map.
+    `${origin}/auth/login?error=verification_failed`
   );
 }

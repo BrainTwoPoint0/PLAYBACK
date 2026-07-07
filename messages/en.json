@@ -35,8 +35,6 @@
       "paymentsNote": "Payments are processed by Stripe. After successful checkout you'll be invited to claim your PLAYBACK account — your subscription is held against the email address you provide."
     },
     "picker": {
-      "scrollLeft": "Scroll clubs left",
-      "scrollRight": "Scroll clubs right",
       "railLabel": "Clubs in {club}",
       "chooseClub": "Choose {name}",
       "ageGroupsEyebrow": "{name} · Age groups",
@@ -51,7 +49,9 @@
       "subscribeAriaNested": "Subscribe to {team} in {subclub} at {club}",
       "subscribeAria": "Subscribe to {team} on {club}",
       "redirecting": "Redirecting to Stripe…",
-      "subscribe": "Subscribe"
+      "subscribe": "Subscribe",
+      "scrollPrev": "Show previous clubs",
+      "scrollNext": "Show more clubs"
     },
     "checkout": {
       "invalidSelection": "Something looked wrong with that team selection — please refresh and try again.",
@@ -189,6 +189,11 @@
           "tooManyAttempts": "Too many attempts. Please wait {seconds} seconds.",
           "unexpected": "An unexpected error occurred. Please try again."
         }
+      },
+      "urlErrors": {
+        "resetLinkInvalid": "That password reset link is invalid or has expired. Request a new one.",
+        "verificationFailed": "Email verification failed. Try signing in, or request a new verification email.",
+        "generic": "Something went wrong. Please try signing in."
       }
     },
     "forgotPassword": {

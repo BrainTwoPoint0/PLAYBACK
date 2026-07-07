@@ -35,8 +35,6 @@
       "paymentsNote": "Los pagos se procesan a través de Stripe. Tras completar el pago, te invitaremos a reclamar tu cuenta de PLAYBACK — tu suscripción queda vinculada al correo electrónico que proporciones."
     },
     "picker": {
-      "scrollLeft": "Desplazar clubes a la izquierda",
-      "scrollRight": "Desplazar clubes a la derecha",
       "railLabel": "Clubes en {club}",
       "chooseClub": "Elegir {name}",
       "ageGroupsEyebrow": "{name} · Categorías",
@@ -51,7 +49,9 @@
       "subscribeAriaNested": "Suscribirse a {team} en {subclub} de {club}",
       "subscribeAria": "Suscribirse a {team} en {club}",
       "redirecting": "Redirigiendo a Stripe…",
-      "subscribe": "Suscribirse"
+      "subscribe": "Suscribirse",
+      "scrollPrev": "Mostrar clubes anteriores",
+      "scrollNext": "Mostrar más clubes"
     },
     "checkout": {
       "invalidSelection": "Algo salió mal con esa selección de equipo — actualiza la página e inténtalo de nuevo.",
@@ -189,6 +189,11 @@
           "tooManyAttempts": "Demasiados intentos. Espera {seconds} segundos.",
           "unexpected": "Ocurrió un error inesperado. Inténtalo de nuevo."
         }
+      },
+      "urlErrors": {
+        "resetLinkInvalid": "El enlace para restablecer la contraseña no es válido o ha caducado. Solicita uno nuevo.",
+        "verificationFailed": "No se pudo verificar el correo electrónico. Intenta iniciar sesión o solicita un nuevo correo de verificación.",
+        "generic": "Algo salió mal. Intenta iniciar sesión."
       }
     },
     "forgotPassword": {

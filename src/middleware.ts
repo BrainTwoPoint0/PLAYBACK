@@ -142,7 +142,9 @@ export async function middleware(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = `${prefix}/auth/login`;
     redirectUrl.search = '';
-    redirectUrl.searchParams.set('redirectTo', pathname);
+    // Bare (locale-less) path: the login page pushes it through the i18n
+    // router, which re-applies the active locale from the URL prefix.
+    redirectUrl.searchParams.set('redirectTo', bare);
     response = NextResponse.redirect(redirectUrl);
   } else if (hasSession && isAuthPath) {
     const redirectUrl = request.nextUrl.clone();
