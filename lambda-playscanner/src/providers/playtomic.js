@@ -8,7 +8,11 @@ const { URL } = require('url');
 
 class PlaytomicProvider {
   constructor() {
-    this.baseUrl = 'https://api.playtomic.io';
+    // Playtomic walled off the public api.playtomic.io behind an AWS WAF
+    // (blanket 403) and retired /venues/{city}. Both the venue list and
+    // availability are now served from the same-origin playtomic.com BFF,
+    // which is reachable with plain server-side requests (no browser / token).
+    this.baseUrl = 'https://playtomic.com';
     this.userAgent =
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36';
 
@@ -88,116 +92,88 @@ class PlaytomicProvider {
   }
 
   /**
-   * Search venues using API approach (tenants endpoint)
+   * Search venues by scraping Playtomic's public city landing page
+   * (e.g. https://playtomic.com/padel-courts/london). The page embeds a flat
+   * tenant object per club — { id, slug, name, country_code, address, image } —
+   * in its server-rendered payload, which is all we need to fetch availability.
    */
   async searchVenuesAPI(location) {
-    const coordinates = this.getLocationCoordinates(location);
-    const url = `${this.baseUrl}/v1/tenants`;
+    const sportPrefix = this._currentSport === 'tennis' ? 'tennis' : 'padel';
+    const citySlug = location.toLowerCase().trim().replace(/\s+/g, '-');
+    const url = `${this.baseUrl}/${sportPrefix}-courts/${citySlug}`;
 
-    const searchParams = new URLSearchParams({
-      coordinate: `${coordinates.lat},${coordinates.lng}`,
-      sport_id: this._currentSport === 'tennis' ? 'TENNIS' : 'PADEL',
-      radius: '25000', // 25km radius to limit to Greater London area
-    });
-
+    let html;
     try {
-      const response = await this.httpRequest(`${url}?${searchParams}`);
-      const data = JSON.parse(response);
-
-      if (!data || !Array.isArray(data)) {
-        console.log('No venues found in tenants API response');
-        return [];
-      }
-
-      // Filter to only include London venues using Playtomic's own location data
-      const londonVenues = data.filter((venue) => {
-        const city = venue.address?.city;
-
-        // Only include venues that are explicitly in London city
-        // Exclude outer areas like Purley, Epsom, Romford even if they're in Greater London
-        return (
-          city === 'London' ||
-          city === 'Лондон' || // Russian translation
-          city === 'Londra' || // Italian/Turkish translation
-          city === 'Londres' // French/Spanish translation
-        );
-      });
-
-      console.log(
-        `🏙️ Filtered ${data.length} venues down to ${londonVenues.length} London venues`
-      );
-
-      // Transform venue data
-      return londonVenues.map((venue) => ({
-        id: venue.tenant_id || venue.id,
-        name: venue.tenant_name || venue.name,
-        slug: venue.tenant_slug || venue.slug || venue.id,
-        address: venue.address || '',
-        postcode: venue.postal_code || '',
-        latitude: venue.coordinates?.lat || venue.lat || 0,
-        longitude: venue.coordinates?.lng || venue.lng || 0,
-        indoor: venue.indoor || false,
-        surface: venue.surface_type || 'unknown',
-        amenities: venue.amenities || [],
-      }));
+      html = await this.httpRequest(url);
     } catch (error) {
-      throw new Error(`Tenants API failed: ${error.message}`);
+      throw new Error(`City page fetch failed (${url}): ${error.message}`);
     }
+
+    const venues = PlaytomicProvider.parseVenues(html);
+    console.log(
+      `🏙️ Found ${venues.length} venues on ${sportPrefix}-courts/${citySlug}`
+    );
+    return venues;
   }
 
   /**
-   * Get coordinates for a location (London coordinates for now)
+   * Extract venue objects from a city landing page's HTML. Kept static and
+   * pure so it can be unit-tested against a captured fixture without any
+   * network access. The RSC payload escapes quotes (\") — unescape first,
+   * then match each flat tenant object and JSON.parse it (robust to key order).
    */
-  getLocationCoordinates(location) {
-    const locationCoords = {
-      london: { lat: 51.5074, lng: -0.1278 },
-      // Add more cities as needed
-    };
+  static parseVenues(html) {
+    const unescaped = String(html || '').replace(/\\"/g, '"');
+    const objects = unescaped.match(/\{"id":"[0-9a-f-]{36}"[^{}]*\}/g) || [];
 
-    const locationLower = location.toLowerCase();
-    return locationCoords[locationLower] || locationCoords['london'];
+    const byId = new Map();
+    for (const raw of objects) {
+      let tenant;
+      try {
+        tenant = JSON.parse(raw);
+      } catch {
+        continue;
+      }
+      // A venue object carries a slug + human name + address; other id-objects
+      // on the page (images, resources) don't and are skipped.
+      if (!tenant.id || !tenant.slug || !tenant.name || !tenant.address) {
+        continue;
+      }
+      if (byId.has(tenant.id)) continue;
+
+      const address = String(tenant.address).trim();
+      const postcodeMatch = address.match(
+        /\b[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b/i
+      );
+
+      byId.set(tenant.id, {
+        id: tenant.id,
+        name: String(tenant.name).trim(),
+        slug: tenant.slug,
+        address,
+        postcode: postcodeMatch ? postcodeMatch[0].toUpperCase() : '',
+      });
+    }
+
+    return [...byId.values()];
   }
 
   /**
    * Get availability for a specific venue
    */
   async getVenueAvailability(venue, date) {
-    // Use the exact working implementation from local-collector.js
-    const availabilityUrl = 'https://api.playtomic.io/v1/availability';
-
-    // Use correct date format from working script
-    const dateStr = date; // date is already in YYYY-MM-DD format
-    const startMin = `${dateStr}T00:00:00`;
-    const startMax = `${dateStr}T23:59:59`;
+    const sportId = this._currentSport === 'tennis' ? 'TENNIS' : 'PADEL';
 
     const queryParams = new URLSearchParams({
-      sport_id: this._currentSport === 'tennis' ? 'TENNIS' : 'PADEL',
       tenant_id: venue.id,
-      start_min: startMin,
-      start_max: startMax,
+      date, // already in YYYY-MM-DD format
+      sport_id: sportId,
     });
+    const availabilityUrl = `${this.baseUrl}/api/clubs/availability`;
 
     try {
-      // Use exact headers from working script
-      const headers = {
-        Accept: 'application/json, text/plain, */*',
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        Referer: 'https://playtomic.com/venues/london',
-        Origin: 'https://playtomic.com',
-        'Sec-Fetch-Site': 'same-origin',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Dest': 'empty',
-        'User-Agent': this.userAgent,
-        'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
-        'Accept-Encoding': 'identity',
-        'Cache-Control': 'no-cache',
-        Pragma: 'no-cache',
-      };
-
       const response = await this.httpRequest(
-        `${availabilityUrl}?${queryParams}`,
-        { headers }
+        `${availabilityUrl}?${queryParams}`
       );
       const data = JSON.parse(response);
 
@@ -244,7 +220,7 @@ class PlaytomicProvider {
             price: Math.round(price * 100), // Convert to pence
             currency: 'GBP',
             available: true,
-            link: `https://playtomic.com/venue/${venue.id}?date=${date}&time=${timeSlot.start_time}`,
+            link: `${this.baseUrl}/clubs/${venue.slug}?sport=${this._currentSport === 'tennis' ? 'TENNIS' : 'PADEL'}&date=${date}`,
           });
         });
       });

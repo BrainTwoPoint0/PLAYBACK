@@ -43,19 +43,33 @@ const sinceIso = new Date(
   Date.now() - WINDOW_HOURS * 60 * 60 * 1000
 ).toISOString();
 
-// Aggregate per provider from the collection log.
-const { data, error } = await queryWithRetry(
-  () =>
-    supabase
-      .from('playscanner_collection_log')
-      .select('provider, slots_collected, status, error_message, created_at')
-      .gte('created_at', sinceIso),
-  'collection_log'
-);
+// Aggregate per provider from the collection log. PostgREST caps a single
+// response at 1000 rows, and a busy 24h window holds several thousand — so we
+// MUST paginate, or the newest runs get silently truncated (which masked a
+// just-fixed provider as still producing zero slots). Ordering by created_at
+// ascending means concurrent inserts land past the current offset, so they
+// can't shift earlier pages during paging.
+const PAGE_SIZE = 1000;
+const data = [];
+for (let from = 0; ; from += PAGE_SIZE) {
+  const { data: page, error } = await queryWithRetry(
+    () =>
+      supabase
+        .from('playscanner_collection_log')
+        .select('provider, slots_collected, status, error_message, created_at')
+        .gte('created_at', sinceIso)
+        .order('created_at', { ascending: true })
+        .range(from, from + PAGE_SIZE - 1),
+    `collection_log[${from}]`
+  );
 
-if (error) {
-  console.error('Query failed:', error.message || error);
-  process.exit(2);
+  if (error) {
+    console.error('Query failed:', error.message || error);
+    process.exit(2);
+  }
+
+  data.push(...(page || []));
+  if (!page || page.length < PAGE_SIZE) break;
 }
 
 async function queryWithRetry(fn, label, attempts = 3, baseDelayMs = 2000) {
