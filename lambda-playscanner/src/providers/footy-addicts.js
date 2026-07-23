@@ -9,6 +9,7 @@
 const https = require('https');
 const { URL } = require('url');
 const cheerio = require('cheerio');
+const { warnSelectorDrift } = require('../parse-drift');
 // Uses Intl.DateTimeFormat for UK timezone handling (no external deps)
 
 class FootyAddictsProvider {
@@ -69,6 +70,21 @@ class FootyAddictsProvider {
     const $ = cheerio.load(html);
     const games = [];
     const now = Date.now();
+
+    // Structural anchors: a listing page always has date-section labels and
+    // game cards, even when every game is full. Zero matches = markup drift.
+    warnSelectorDrift(
+      'footy_addicts',
+      'date labels div.uppercase.tracking-wider',
+      html,
+      $('div.uppercase.tracking-wider').length
+    );
+    warnSelectorDrift(
+      'footy_addicts',
+      'game cards a.group.block',
+      html,
+      $('a.group.block').length
+    );
 
     // Each date section is a div whose first child holds the date label
     // and whose second child holds the game cards. Match the label on its

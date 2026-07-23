@@ -11,6 +11,7 @@ const https = require('https');
 const { URL } = require('url');
 const cheerio = require('cheerio');
 const { getUKOffset } = require('../utils');
+const { warnSelectorDrift } = require('../parse-drift');
 
 class MatchiProvider {
   constructor() {
@@ -192,6 +193,16 @@ class MatchiProvider {
 
     const $ = cheerio.load(html);
     const facilities = [];
+
+    // Structural anchor: a London facility search always returns facility
+    // panels (member-only clubs are filtered later, not here). Zero matches
+    // in real HTML = markup drift.
+    warnSelectorDrift(
+      'matchi',
+      'facility panels [id^="slots_"]',
+      html,
+      $('[id^="slots_"]').length
+    );
 
     $('[id^="slots_"]').each((_, slotsEl) => {
       const facilityId = $(slotsEl).attr('id').replace('slots_', '');

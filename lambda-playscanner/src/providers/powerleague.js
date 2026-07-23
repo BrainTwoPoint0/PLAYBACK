@@ -10,6 +10,7 @@ const https = require('https');
 const { URL } = require('url');
 const cheerio = require('cheerio');
 const { getUKOffset } = require('../utils');
+const { warnSelectorDrift } = require('../parse-drift');
 
 // Curated London-area PowerLeague venues
 const VENUES = [
@@ -147,6 +148,15 @@ class PowerLeagueProvider {
   parseBookingPage(html, venue) {
     const $ = cheerio.load(html);
     const slots = [];
+
+    // Structural anchor: a booking page always renders day columns, even
+    // when every slot is taken. Zero matches = markup drift, not emptiness.
+    warnSelectorDrift(
+      'powerleague',
+      `day columns [data-day-column] (${venue.name})`,
+      html,
+      $('[data-day-column]').length
+    );
 
     // Each day column has data-day-column="YYYY-MM-DD"
     $('[data-day-column]').each((_, col) => {
