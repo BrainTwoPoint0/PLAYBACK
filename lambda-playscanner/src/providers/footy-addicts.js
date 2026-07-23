@@ -71,9 +71,11 @@ class FootyAddictsProvider {
     const now = Date.now();
 
     // Each date section is a div whose first child holds the date label
-    // (class "text-black mb-2 ml-1 text-xs font-medium uppercase tracking-wider")
-    // and whose second child holds the game cards.
-    $('div.text-black.uppercase.tracking-wider').each((_, labelEl) => {
+    // and whose second child holds the game cards. Match the label on its
+    // typographic classes only — the color/background classes get restyled
+    // (2026-07: "text-black …" became a "bg-blue-800 … text-white" pill),
+    // and parseDateLabel() rejects any non-date div this matches.
+    $('div.uppercase.tracking-wider').each((_, labelEl) => {
       const dateLabel = $(labelEl).text().trim();
       const ukDate = this.parseDateLabel(dateLabel);
       if (!ukDate) return;
